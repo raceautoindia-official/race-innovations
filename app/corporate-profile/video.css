@@ -1,0 +1,10 @@
+@media (max-width: 768px) {
+  .react-pdf__Page {
+    width: 100% !important;
+  }
+
+  .react-pdf__Document {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+}

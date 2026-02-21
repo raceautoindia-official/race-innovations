@@ -1,0 +1,77 @@
+.shining {
+    position: relative;
+    display: inline-block;
+    color: white; 
+    -webkit-mask-image: linear-gradient(
+        -75deg, 
+        black 50%, 
+        rgba(255, 255, 255, 0.1) 50%, 
+        black 60%
+    );
+    -webkit-mask-size: 200%;
+    mask-image: linear-gradient(
+        -75deg, 
+        black 50%, 
+        rgba(255, 255, 255, 0.1) 50%, 
+        black 60%
+    );
+    mask-size: 200%;
+    animation: shine 2s infinite linear;
+}
+
+@keyframes shine {
+    from {
+        -webkit-mask-position: 150%;
+        mask-position: 150%;
+    }
+    to {
+        -webkit-mask-position: -50%;
+        mask-position: -50%;
+    }
+}
+.custom-it-solutions {
+    background-color: transparent;
+    padding: 20px;
+}
+
+.custom-it-item {
+    transition: color 0.3s ease-in-out;
+}
+
+.custom-it-item:hover {
+    color: #00d1f6 !important; 
+}
+
+@media (max-width: 768px) {
+    .sticky-sidebar {
+      display: none !important;
+    }
+    
+  }
+  .footer-hidden-mobile {
+    display: none !important;
+  }
+  
+  @media (min-width: 768px) {
+    .footer-hidden-mobile {
+      display: block !important;
+    }
+   
+  }
+  .main-content {
+    z-index: 1;
+    background: white;
+    min-height: 100vh;
+    margin-bottom: 350px; 
+    padding-top: 50px;
+  }
+
+  @media (max-width: 768px) {
+    .main-content {
+      margin-bottom: 0;
+    }
+  }
+  
+  
+  
+  
