@@ -13,6 +13,22 @@ function slugify(text = "") {
     .slice(0, 60);
 }
 
+const MAX_INLINE_IMAGES = 3;
+const MAX_INLINE_IMAGE_SIZE = 100 * 1024; // 100KB
+
+function countInlineImages(html = "") {
+  const matches = String(html || "").match(/<img\b[^>]*>/gi);
+  return matches ? matches.length : 0;
+}
+
+function extractImgSrcs(html = "") {
+  const srcs = [];
+  const re = /<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*>/gi;
+  let m;
+  while ((m = re.exec(String(html || "")))) srcs.push(m[1]);
+  return srcs;
+}
+
 export default function NewPostPage() {
   const editorRef = useRef(null);
 
@@ -32,8 +48,15 @@ export default function NewPostPage() {
 
   const [coverImage, setCoverImage] = useState("");
 
+  // ✅ NEW: LinkedIn / iframe source URL stored with post
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState([]);
+
+  // ✅ Inline content image state
+  const [inlineFiles, setInlineFiles] = useState([]); // [{id, name, size, url}]
+  const [uploadingInline, setUploadingInline] = useState(false);
 
   // ✅ Load meta (only categories)
   useEffect(() => {
@@ -91,11 +114,90 @@ export default function NewPostPage() {
     setTags((prev) => prev.filter((x) => x !== t));
   }
 
+  function insertImageIntoContent(url) {
+    const imgHtml = `<p><img src="${url}" style="width:100%;height:auto;" /></p>`;
+    setContent((prev) => `${prev || ""}\n${imgHtml}\n`);
+  }
+
+  function resyncInlineFilesFromContent(nextContent) {
+    // If user deletes <img> from editor, remove from our tracker too
+    const srcs = new Set(extractImgSrcs(nextContent));
+    setInlineFiles((prev) => prev.filter((x) => srcs.has(x.url)));
+  }
+
+  async function uploadInlineImage(file) {
+    if (!file) return;
+
+    if (file.size > MAX_INLINE_IMAGE_SIZE) {
+      alert("Content image must be 100KB or less.");
+      return;
+    }
+
+    const currentCount = countInlineImages(content);
+    if (currentCount >= MAX_INLINE_IMAGES) {
+      alert("Maximum 3 images allowed inside content.");
+      return;
+    }
+
+    try {
+      setUploadingInline(true);
+
+      const fd = new FormData();
+      fd.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: fd,
+      });
+
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        const text = await res.text();
+        console.error("upload returned non-JSON:", text.slice(0, 200));
+        alert("Upload API is not returning JSON.");
+        return;
+      }
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data?.error || "Upload failed");
+        return;
+      }
+
+      const url = data.url;
+
+      // Double-check after upload (in case content changed)
+      const afterCount = countInlineImages(content);
+      if (afterCount >= MAX_INLINE_IMAGES) {
+        alert("Maximum 3 images allowed inside content.");
+        return;
+      }
+
+      setInlineFiles((prev) => [
+        ...prev,
+        { id: `${Date.now()}-${Math.random()}`, name: file.name, size: file.size, url },
+      ]);
+
+      insertImageIntoContent(url);
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    } finally {
+      setUploadingInline(false);
+    }
+  }
+
   async function onSubmit(status) {
     const finalContent = content;
 
     if (!title.trim()) return alert("Title is required");
     if (!finalContent.trim()) return alert("Content is required");
+
+    // ✅ enforce content limits at save time too
+    const imgCount = countInlineImages(finalContent);
+    if (imgCount > MAX_INLINE_IMAGES) {
+      return alert("Content allows maximum 3 images only.");
+    }
 
     setSaving(true);
 
@@ -109,6 +211,9 @@ export default function NewPostPage() {
         cover_image: coverImage ? String(coverImage).trim() : null,
         tags,
         status,
+
+        // ✅ NEW: store the LinkedIn URL (or any iframe-source URL)
+        linkedin_url: linkedinUrl ? String(linkedinUrl).trim() : null,
       };
 
       const res = await fetch("/api/admin/posts", {
@@ -252,12 +357,61 @@ export default function NewPostPage() {
           {/* Content Editor */}
           <div className="mb-3">
             <label className="form-label fw-semibold">Content</label>
-            <div className="form-text mb-2">
-              Note: Set the image property to <code>width: 100%; height: auto;</code> for proper display
-              within the content.
+
+            {/* ✅ Inline image uploader for content */}
+            <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
+              <input
+                type="file"
+                className="form-control"
+                accept="image/*"
+                disabled={uploadingInline}
+                onChange={async (e) => {
+                  const file = e.target.files && e.target.files[0];
+                  e.target.value = ""; // allow re-selecting same file
+                  if (!file) return;
+                  await uploadInlineImage(file);
+                }}
+                style={{ maxWidth: 420 }}
+              />
+              <div className="text-muted" style={{ fontSize: 13 }}>
+                Content images: max <b>3</b> images, each max <b>100KB</b>.
+              </div>
             </div>
 
-            <ExactEditor value={content} onChange={setContent} />
+            {/* Show inline images added */}
+            {inlineFiles.length > 0 ? (
+              <div className="mb-2">
+                <div className="text-muted" style={{ fontSize: 13, marginBottom: 6 }}>
+                  Added to content ({inlineFiles.length}/{MAX_INLINE_IMAGES})
+                </div>
+                <div className="d-flex gap-2 flex-wrap">
+                  {inlineFiles.map((f) => (
+                    <span key={f.id} className="badge text-bg-light border">
+                      {f.name} ({Math.round(f.size / 1024)}KB)
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="form-text mb-2">
+              Note: Images inserted into content are auto-set to{" "}
+              <code>width: 100%; height: auto;</code>.
+            </div>
+
+            <ExactEditor
+              value={content}
+              onChange={(next) => {
+                // Prevent adding more than 3 images via pasting HTML into editor
+                const imgCount = countInlineImages(next);
+                if (imgCount > MAX_INLINE_IMAGES) {
+                  alert("Maximum 3 images allowed inside content.");
+                  return;
+                }
+                setContent(next);
+                resyncInlineFilesFromContent(next);
+              }}
+            />
           </div>
         </div>
 
@@ -347,6 +501,32 @@ export default function NewPostPage() {
               </div>
             ) : null}
           </div>
+
+          {/* ✅ NEW: LinkedIn / iframe URL */}
+          <div className="mb-3">
+            <label className="form-label fw-semibold">LinkedIn Post URL (optional)</label>
+            <input
+              className="form-control"
+              placeholder="Paste LinkedIn post URL..."
+              value={linkedinUrl}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+            />
+            <div className="form-text">
+              Example: https://www.linkedin.com/posts/...activity
+            </div>
+          </div>
+
+          {/* Optional: quick preview (not an iframe) */}
+          {linkedinUrl ? (
+            <div className="mb-3">
+              <div className="text-muted" style={{ fontSize: 13, marginBottom: 6 }}>
+                Preview link
+              </div>
+              <a href={linkedinUrl} target="_blank" rel="noreferrer" className="btn btn-sm btn-light">
+                Open LinkedIn →
+              </a>
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

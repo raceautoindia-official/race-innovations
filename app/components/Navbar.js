@@ -215,7 +215,7 @@ const Navbar = () => {
               </li>
               <li className="nav-item ms-5">
                   <Link className={`nav-link menus ${styles.navbarCustom}`} href="/web-blog" onClick={handleOffcanvasHide} style={{ color: "#293BB1" }}>
-                   Blog
+                   Blogs
                   </Link>
                 </li>
             </ul>
@@ -408,7 +408,7 @@ const Navbar = () => {
                 </li>
                 <li className="nav-item ms-5">
                   <Link className={`nav-link menus ${styles.navbarCustom}`} href="/web-blog" onClick={handleOffcanvasHide} style={{ color: "#293BB1" }}>
-                   Blog
+                   Blogs
                   </Link>
                 </li>
 

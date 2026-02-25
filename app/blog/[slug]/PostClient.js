@@ -18,11 +18,6 @@ function resolveImg(src) {
   return s;
 }
 
-function stripHtml(html) {
-  const s = String(html || "");
-  return s.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
-}
-
 function formatDateStable(input) {
   if (!input) return "";
   const d = new Date(input);
@@ -53,20 +48,47 @@ function isValidEmail(v) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
 }
 
+/**
+ * ✅ Extract LinkedIn "activity" id from common LinkedIn URLs.
+ */
+function extractLinkedInActivityId(url) {
+  const s = String(url || "").trim();
+  if (!s) return "";
+
+  const m1 = s.match(/urn:li:activity:(\d+)/i);
+  if (m1 && m1[1]) return m1[1];
+
+  const m2 = s.match(/activity-(\d+)/i);
+  if (m2 && m2[1]) return m2[1];
+
+  const m3 = s.match(/(\d{12,})/);
+  if (m3 && m3[1]) return m3[1];
+
+  return "";
+}
+
 const LS_EMAIL_KEY = "commenter_email_v1";
 const FALLBACK_POST_IMG = "/default-banner.jpg";
 
-export default function InsightDetailPage() {
+/** ✅ Static fallback LinkedIn URL */
+const LINKEDIN_POST_URL =
+  "https://www.linkedin.com/posts/race-innovations-private-limited_raceinnovations-indonesiamining-businessgrowth-activity-7368138962076430336-NEUm?utm_source=share&utm_medium=member_desktop&rcm=ACoAAF3_G9IBEMRowcRVIMvHqy6IGZiDev2Lmw0";
+
+export default function PostClient() {
   const params = useParams();
   const slug = params?.slug;
 
-  // ✅ Center: one post
+  // Center: one post
   const [post, setPost] = useState(null);
   const [loadingPost, setLoadingPost] = useState(true);
 
-  // ✅ Left: latest posts
+  // Left: posts (only to build categories + search)
   const [latest, setLatest] = useState([]);
   const [loadingLatest, setLoadingLatest] = useState(false);
+
+  // Sidebar search + active type
+  const [q, setQ] = useState("");
+  const [activeCat, setActiveCat] = useState("All");
 
   // Right: comments
   const [comments, setComments] = useState([]);
@@ -79,6 +101,9 @@ export default function InsightDetailPage() {
   const [emailReady, setEmailReady] = useState(false);
   const [showEmailPrompt, setShowEmailPrompt] = useState(false);
   const emailInputRef = useRef(null);
+
+  // Share toast
+  const [shareMsg, setShareMsg] = useState("");
 
   useEffect(() => {
     try {
@@ -115,7 +140,7 @@ export default function InsightDetailPage() {
   async function loadLatestPosts() {
     setLoadingLatest(true);
     try {
-      const res = await fetch(`/api/posts?limit=12`, { cache: "no-store" });
+      const res = await fetch(`/api/posts?limit=200`, { cache: "no-store" });
       const ct = res.headers.get("content-type") || "";
       if (!ct.includes("application/json")) {
         console.error("latest non-JSON:", res.status, await res.text());
@@ -216,10 +241,67 @@ export default function InsightDetailPage() {
     await postComment(postId);
   }
 
+  function scrollToComments() {
+    const el = document.getElementById("commentBox");
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.focus?.();
+  }
+
+  async function handleShare() {
+    try {
+      const url = window.location.href;
+      const title = post?.title || "Race Auto India";
+      const text = title;
+
+      if (navigator.share) {
+        await navigator.share({ title, text, url });
+        return;
+      }
+
+      await navigator.clipboard.writeText(url);
+      setShareMsg("Link copied");
+      setTimeout(() => setShareMsg(""), 1400);
+    } catch (e) {
+      console.error(e);
+      setShareMsg("Could not share");
+      setTimeout(() => setShareMsg(""), 1400);
+    }
+  }
+
   const imgSrc = useMemo(
     () => resolveImg(post?.cover_image) || FALLBACK_POST_IMG,
     [post?.cover_image]
   );
+
+  // Build categories from all posts
+  const categories = useMemo(() => {
+    const set = new Set();
+    (latest || []).forEach((p) => {
+      const c = String(p?.category_name || "").trim();
+      if (c) set.add(c);
+    });
+    return ["All", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, [latest]);
+
+  // Show types one-by-one
+  const typeList = useMemo(() => {
+    const query = String(q || "").trim().toLowerCase();
+    return (categories || [])
+      .filter((c) => c !== "All")
+      .filter((c) => (!query ? true : String(c).toLowerCase().includes(query)))
+      .map((c) => ({
+        name: c,
+        count: (latest || []).filter((p) => String(p?.category_name || "").trim() === c).length,
+      }));
+  }, [categories, latest, q]);
+
+  // ✅ LinkedIn embed (DB first, else static fallback)
+  const linkedInUrl = String(post?.linkedin_url || LINKEDIN_POST_URL || "").trim();
+  const linkedInActivityId = useMemo(() => extractLinkedInActivityId(linkedInUrl), [linkedInUrl]);
+  const linkedInEmbedSrc = linkedInActivityId
+    ? `https://www.linkedin.com/embed/feed/update/urn:li:activity:${linkedInActivityId}`
+    : "";
 
   return (
     <>
@@ -234,19 +316,28 @@ export default function InsightDetailPage() {
           </div>
 
           <div className="raGrid mt-5">
-            {/* ✅ LEFT: latest blogs cards (image on top) */}
+            {/* LEFT */}
             <aside className="raLeft">
               <div className="raSideCard">
-                <div className="raSideCover" />
-                <div className="raSideBody">
-                  <div className="raSideAvatar">R</div>
-                  <div className="raSideName">Race Auto India</div>
-                  <div className="raSideSub">Insights & Reports</div>
+                <div className="raSideBodyNoHero">
+                  <div className="raSearchRow">
+                    <div className="raSearchWrap">
+                      <span className="raSearchIcon" aria-hidden="true">
+                        🔎
+                      </span>
+                      <input
+                        className="raSearchInput"
+                        placeholder="Search types…"
+                        value={q}
+                        onChange={(e) => setQ(e.target.value)}
+                      />
+                      {q ? (
+                        <button className="raClearBtn" onClick={() => setQ("")} title="Clear">
+                          ✕
+                        </button>
+                      ) : null}
+                    </div>
 
-                  <div className="raSideLine" />
-
-                  <div className="raSideTitleRow">
-                    <div className="raSideTitle">Latest Blogs</div>
                     <button
                       className="raSideRefresh"
                       onClick={loadLatestPosts}
@@ -257,51 +348,61 @@ export default function InsightDetailPage() {
                     </button>
                   </div>
 
-                  <div className="raLatestCards">
+                  <div className="raSideLine" />
+
+                  <div className="raTypeHeaderRow">
+                    <div className="raTypeHeader">Blogs</div>
+                    <div className="raTypeSub">Select a type</div>
+                  </div>
+
+                  <div className="raTypeList">
                     {loadingLatest ? (
                       <div className="muted small">Loading…</div>
-                    ) : latest?.length ? (
-                      latest
-                        .filter((p) => p?.slug && p.slug !== slug)
-                        .slice(0, 8)
-                        .map((p) => {
-                          const thumb = resolveImg(p.cover_image) || FALLBACK_POST_IMG;
-                          const excerpt =
-                            p.excerpt ||
-                            (p.content ? stripHtml(p.content).slice(0, 130) + "…" : "");
-                          return (
-                            <Link
-                              key={p.id || p.slug}
-                              href={`/blog/${p.slug}`}
-                              className="raLatestCard"
-                            >
-                              <img
-                                src={thumb}
-                                alt={p.title || "blog"}
-                                className="raLatestCardImg"
-                                onError={(e) => {
-                                  e.currentTarget.src = FALLBACK_POST_IMG;
-                                }}
-                              />
-
-                              <div className="raLatestCardBody">
-                                <div className="raLatestCardTitle">{p.title}</div>
-                                {excerpt ? <div className="raLatestCardExcerpt">{excerpt}</div> : null}
-
-                                <div className="raLatestCardFooter">
-                                  <span className="raLatestCat">{p.category_name || "Insights"}</span>
-                                  <span className="raLatestDate">
-                                    {formatDateStable(p.published_at || p.created_at)}
-                                  </span>
-                                </div>
-                              </div>
-                            </Link>
-                          );
-                        })
+                    ) : typeList?.length ? (
+                      typeList.map((t) => (
+                        <button
+                          key={t.name}
+                          type="button"
+                          className={`raTypeItem ${activeCat === t.name ? "active" : ""}`}
+                          onClick={() => setActiveCat(t.name)}
+                        >
+                          <span className="raTypeName">{t.name}</span>
+                          <span className="raTypeCount">{t.count}</span>
+                        </button>
+                      ))
                     ) : (
-                      <div className="muted small">No posts found.</div>
+                      <div className="muted small">No types found.</div>
                     )}
                   </div>
+
+                  {/* ✅ LinkedIn embed */}
+                  <div className="raSideLine" />
+
+                  <div className="raLiHeaderRow">
+                    <div className="raTypeHeader">LinkedIn</div>
+                    <div className="raTypeSub">{post?.linkedin_url ? "From post" : "Static"}</div>
+                  </div>
+
+                  {linkedInEmbedSrc ? (
+                    <>
+                      <div className="raLiFrameWrap">
+                        <iframe
+                          src={linkedInEmbedSrc}
+                          width="100%"
+                          height="520"
+                          frameBorder="0"
+                          allowFullScreen
+                          title="LinkedIn Post"
+                        />
+                      </div>
+
+                      <a className="raLiOpenBtn" href={linkedInUrl} target="_blank" rel="noreferrer">
+                        Open on LinkedIn →
+                      </a>
+                    </>
+                  ) : (
+                    <div className="muted small">LinkedIn URL invalid or missing activity id.</div>
+                  )}
                 </div>
               </div>
             </aside>
@@ -313,46 +414,54 @@ export default function InsightDetailPage() {
               ) : !post ? (
                 <div className="raCenterCard centerMuted">Post not found.</div>
               ) : (
-                <article className="raPost">
-                  <div className="raPostHead">
-                    <div className="raAvatarCircle">R</div>
+                <article className="raPostClean">
+                  <div className="raArticleOuter">
+                    <div className="raArticleInner">
+                      {/* ✅ TITLE ROW: title left, share icon right (like your screenshot) */}
+                      <div className="raTitleRow">
+                        <h1 className="raHeroTitle">{post.title}</h1>
 
-                    <div className="raHeadMeta">
-                      <div className="raAuthorName">Race Auto India</div>
-                      <div className="raMetaRow">
-                        <span>{post.category_name || "Insights"}</span>
-                        <span className="dot">•</span>
-                        <span>{formatDateStable(post.published_at || post.created_at)}</span>
+                        <button className="raShareIconBtn" onClick={handleShare} type="button" title="Share">
+                          ⤴
+                        </button>
                       </div>
+
+                      <div className="raTitleMetaRow">
+                        <div className="raTitleMeta">
+                          {formatDateStable(post.published_at || post.created_at)}
+                        </div>
+
+                        <button className="raCommentsPill" onClick={scrollToComments} type="button">
+                          💬 <span className="raCommentsCount">{comments?.length || 0}</span> Comments
+                        </button>
+                      </div>
+
+                      {shareMsg ? <div className="raShareToast">{shareMsg}</div> : null}
+
+                      {/* ✅ COVER IMAGE: directly below title */}
+                      {imgSrc ? (
+                        <div className="raCoverMedia">
+                          <img
+                            src={imgSrc}
+                            alt={post.title}
+                            className="raCoverImg"
+                            onError={(e) => {
+                              e.currentTarget.src = FALLBACK_POST_IMG;
+                            }}
+                          />
+                        </div>
+                      ) : null}
+
+                      {/* ✅ CONTENT */}
+                      {post.content ? (
+                        <div
+                          className="raPostContentRef"
+                          dangerouslySetInnerHTML={{ __html: post.content }}
+                        />
+                      ) : post.excerpt ? (
+                        <p className="raPara">{post.excerpt}</p>
+                      ) : null}
                     </div>
-
-                    <div className="raKebab" aria-hidden="true">
-                      •••
-                    </div>
-                  </div>
-
-                  <div className="raPostBody">
-                    <div className="raPostTitle">{post.title}</div>
-
-                    {post.content ? (
-                      <div
-                        className="raPostContent"
-                        dangerouslySetInnerHTML={{ __html: post.content }}
-                      />
-                    ) : post.excerpt ? (
-                      <div className="raPostText">{post.excerpt}</div>
-                    ) : null}
-                  </div>
-
-                  <div className="raPostMedia">
-                    <img
-                      src={imgSrc}
-                      alt={post.title}
-                      className="raPostMediaImg"
-                      onError={(e) => {
-                        e.currentTarget.src = FALLBACK_POST_IMG;
-                      }}
-                    />
                   </div>
                 </article>
               )}
@@ -508,155 +617,149 @@ export default function InsightDetailPage() {
             position: sticky;
             top: 92px;
           }
-          .raSideCover {
-            height: 72px;
-            background: linear-gradient(90deg, #111827, #374151);
-          }
-          .raSideBody {
+          .raSideBodyNoHero {
             padding: 14px;
-            position: relative;
-          }
-          .raSideAvatar {
-            width: 58px;
-            height: 58px;
-            border-radius: 50%;
-            background: #e5e7eb;
-            display: grid;
-            place-items: center;
-            font-weight: 900;
-            position: absolute;
-            top: -29px;
-            left: 14px;
-            border: 2px solid #fff;
-          }
-          .raSideName {
-            margin-top: 18px;
-            font-weight: 900;
-            color: #111827;
-            font-size: 16px;
-          }
-          .raSideSub {
-            margin-top: 4px;
-            color: #6b7280;
-            font-size: 13px;
           }
           .raSideLine {
             height: 1px;
             background: rgba(17, 24, 39, 0.08);
             margin: 12px 0;
           }
-          .raSideTitleRow {
+          .raSearchRow {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             gap: 10px;
-            margin-bottom: 10px;
           }
-          .raSideTitle {
-            font-weight: 950;
-            color: #111827;
+          .raSearchWrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid rgba(17, 24, 39, 0.14);
+            background: #fff;
+            border-radius: 999px;
+            padding: 8px 10px;
+          }
+          .raSearchIcon {
             font-size: 13px;
+            opacity: 0.75;
+          }
+          .raSearchInput {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 13px;
+            color: #111827;
+            background: transparent;
+          }
+          .raClearBtn {
+            border: none;
+            background: transparent;
+            font-weight: 900;
+            opacity: 0.7;
+            padding: 0 6px;
+            cursor: pointer;
+          }
+          .raClearBtn:hover {
+            opacity: 1;
           }
           .raSideRefresh {
             border: 1px solid rgba(17, 24, 39, 0.12);
             background: #fff;
             border-radius: 10px;
-            padding: 6px 10px;
+            padding: 8px 10px;
             font-weight: 900;
           }
 
-          .raLatestCards {
+          .raTypeHeaderRow {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+          }
+          .raTypeHeader {
+            font-size: 13px;
+            font-weight: 950;
+            color: #111827;
+          }
+          .raTypeSub {
+            font-size: 12px;
+            color: #6b7280;
+          }
+          .raTypeList {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            max-height: 62vh;
+            gap: 10px;
+            max-height: 44vh;
             overflow: auto;
             padding-right: 4px;
           }
+          .raTypeItem {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(17, 24, 39, 0.12);
+            background: #fff;
+            border-radius: 12px;
+            padding: 12px 12px;
+            cursor: pointer;
+          }
+          .raTypeItem.active {
+            background: #111827;
+            border-color: #111827;
+          }
+          .raTypeName {
+            font-size: 14px;
+            font-weight: 900;
+            color: #111827;
+          }
+          .raTypeItem.active .raTypeName {
+            color: #fff;
+          }
+          .raTypeCount {
+            font-size: 12px;
+            font-weight: 900;
+            color: #6b7280;
+            background: rgba(17, 24, 39, 0.06);
+            padding: 4px 8px;
+            border-radius: 999px;
+          }
+          .raTypeItem.active .raTypeCount {
+            color: #111827;
+            background: #fff;
+          }
 
-          /* ✅ remove blue underline/link highlight */
-          .raLatestCard {
-            text-decoration: none !important;
-            color: inherit !important;
-            border: 1px solid rgba(17, 24, 39, 0.08);
+          /* LinkedIn */
+          .raLiHeaderRow {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+          }
+          .raLiFrameWrap {
+            border: 1px solid rgba(17, 24, 39, 0.12);
             border-radius: 12px;
             overflow: hidden;
             background: #fff;
-            display: block;
-            transition: transform 0.12s ease, border-color 0.12s ease;
           }
-          .raLatestCard * {
-            text-decoration: none !important;
-            color: inherit !important;
-          }
-          .raLatestCard:hover {
-            transform: translateY(-1px);
-            border-color: rgba(17, 24, 39, 0.18);
-          }
-          .raLatestCard:focus,
-          .raLatestCard:focus-visible {
-            outline: none !important;
-            box-shadow: none !important;
-          }
-
-          .raLatestCardImg {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            display: block;
-            background: #f3f4f6;
-          }
-          .raLatestCardBody {
-            padding: 10px;
-          }
-          .raLatestCardTitle {
-            font-weight: 950;
-            color: #111827;
-            font-size: 14px;
-            line-height: 1.25;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-          .raLatestCardExcerpt {
-            margin-top: 8px;
-            color: #4b5563;
-            font-size: 12.5px;
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-          .raLatestCardFooter {
+          .raLiOpenBtn {
+            display: inline-block;
             margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: #6b7280;
-            font-size: 12px;
+            font-weight: 900;
+            color: #2563eb;
+            text-decoration: none;
           }
-          .raLatestCat {
-            font-weight: 800;
-            color: #111827;
+          .raLiOpenBtn:hover {
+            text-decoration: underline;
           }
 
           /* CENTER */
           .raCenter {
             min-width: 0;
             display: block;
-          }
-          .raPost,
-          .raCenterCard {
-            width: 100%;
-            max-width: none;
-          }
-          .raPost {
-            background: #fff;
-            border: 1px solid rgba(17, 24, 39, 0.12);
-            border-radius: 12px;
-            overflow: hidden;
           }
           .raCenterCard {
             background: #fff;
@@ -668,84 +771,176 @@ export default function InsightDetailPage() {
             color: #6b7280;
             text-align: center;
           }
+          .raPostClean {
+            background: #fff;
+            border: 1px solid rgba(17, 24, 39, 0.12);
+            border-radius: 12px;
+            overflow: hidden;
+          }
 
-          .raPostHead {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 12px 12px 8px;
+          .raArticleOuter {
+            padding: 0 56px;
           }
-          .raAvatarCircle {
-            width: 44px;
-            height: 44px;
-            border-radius: 14px;
-            background: #111827;
-            color: #fff;
-            display: grid;
-            place-items: center;
-            font-weight: 900;
-            flex: 0 0 auto;
+          .raArticleInner {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 18px 0 30px;
           }
-          .raHeadMeta {
-            flex: 1;
-            min-width: 0;
-          }
-          .raAuthorName {
-            font-weight: 900;
-            color: #111827;
-            font-size: 14px;
-          }
-          .raMetaRow {
-            margin-top: 2px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: #6b7280;
-            font-size: 12px;
-          }
-          .dot {
-            opacity: 0.7;
-          }
-          .raKebab {
-            color: #6b7280;
-            font-weight: 900;
-            padding: 6px 8px;
-          }
-          @media (min-width: 1100px) {
-            .raKebab {
-              display: none !important;
+          @media (max-width: 900px) {
+            .raArticleOuter {
+              padding: 0 18px;
+            }
+            .raArticleInner {
+              max-width: 100%;
             }
           }
 
-          .raPostBody {
-            padding: 0 12px 10px;
+          /* ✅ TITLE row */
+          .raTitleRow {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
           }
-          .raPostTitle {
-            font-size: 28px;
+          .raHeroTitle {
+            font-size: 38px;
             font-weight: 950;
             color: #111827;
-            margin: 2px 0 10px;
-            line-height: 1.15;
+            line-height: 1.06;
+            letter-spacing: -0.02em;
+            margin: 6px 0 0;
+            flex: 1;
+          }
+          .raShareIconBtn {
+            width: 54px;
+            height: 54px;
+            border-radius: 12px;
+            border: 2px solid #111827;
+            background: #fff;
+            font-weight: 950;
+            font-size: 18px;
+            cursor: pointer;
+            flex: 0 0 auto;
+          }
+          .raShareIconBtn:hover {
+            background: rgba(17, 24, 39, 0.04);
           }
 
-          .raPostContent :global(p) {
-            margin: 0 0 12px;
-            color: #374151;
-            line-height: 1.75;
-            font-size: 14.5px;
+          .raTitleMetaRow {
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+          }
+          .raTitleMeta {
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 700;
           }
 
-          .raPostMedia {
-            border-top: 1px solid rgba(17, 24, 39, 0.08);
-            border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+          .raCommentsPill {
+            border: none;
+            background: rgba(37, 99, 235, 0.12);
+            color: #2563eb;
+            font-weight: 950;
+            border-radius: 10px;
+            padding: 10px 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+          }
+          .raCommentsPill:hover {
+            background: rgba(37, 99, 235, 0.16);
+          }
+          .raCommentsCount {
+            font-weight: 950;
+          }
+
+          .raShareToast {
+            display: inline-block;
+            margin-top: 10px;
+            margin-bottom: 6px;
+            color: #111827;
+            background: rgba(17, 24, 39, 0.06);
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 900;
+          }
+
+          /* ✅ COVER IMAGE below title */
+          .raCoverMedia {
+            margin-top: 14px;
+            border: 1px solid rgba(17, 24, 39, 0.08);
+            border-radius: 14px;
+            overflow: hidden;
             background: #fff;
           }
-          .raPostMediaImg {
+          .raCoverImg {
             width: 100%;
             display: block;
-            height: 360px;
+            height: auto;
+            max-height: 420px;
             object-fit: contain;
             background: #fff;
+          }
+
+          /* CONTENT */
+          .raPostContentRef {
+            margin-top: 18px;
+            text-align: justify;
+            text-justify: inter-word;
+            hyphens: auto;
+          }
+          .raPostContentRef :global(p),
+          .raPostContentRef :global(h1),
+          .raPostContentRef :global(h2),
+          .raPostContentRef :global(h3),
+          .raPostContentRef :global(h4),
+          .raPostContentRef :global(blockquote),
+          .raPostContentRef :global(ul),
+          .raPostContentRef :global(ol),
+          .raPostContentRef :global(li) {
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+          }
+          .raPostContentRef :global(p) {
+            margin: 0 0 26px !important;
+            line-height: 1.85;
+            font-size: 18px;
+          }
+          .raPostContentRef :global(ul),
+          .raPostContentRef :global(ol) {
+            margin: 0 0 26px !important;
+            padding: 0 !important;
+            list-style: none !important;
+          }
+          .raPostContentRef :global(li) {
+            margin: 0 0 14px !important;
+            padding: 0 !important;
+            list-style: none !important;
+            font-size: 18px;
+            line-height: 1.85;
+          }
+          .raPostContentRef :global(li::marker) {
+            content: "" !important;
+          }
+          .raPostContentRef :global(a) {
+            color: #2563eb;
+            text-decoration: underline;
+            font-weight: 800;
+          }
+
+          .raPara {
+            margin: 0 0 26px;
+            line-height: 1.85;
+            font-size: 18px;
+            text-align: justify;
+            text-justify: inter-word;
+            hyphens: auto;
           }
 
           /* RIGHT */
@@ -757,7 +952,6 @@ export default function InsightDetailPage() {
             border-radius: 12px;
             padding: 12px;
           }
-
           .raDiscussTitle {
             font-size: 14px;
             font-weight: 950;
@@ -830,6 +1024,13 @@ export default function InsightDetailPage() {
             }
             .raDiscuss {
               position: static;
+            }
+            .raHeroTitle {
+              font-size: 40px;
+            }
+            .raPostContentRef :global(p),
+            .raPostContentRef :global(li) {
+              font-size: 16px;
             }
           }
         `}</style>
