@@ -3,7 +3,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import path from "path";
 
-const REGION = process.env.AWS_REGION;
+const REGION = process.env.AWS_S3_REGION;
 const ACCESS_KEY_ID = process.env.AWS_S3_ACCESS_KEY_ID;
 const SECRET_ACCESS_KEY = process.env.AWS_S3_SECRET_ACCESS_KEY;
 const BUCKET = process.env.AWS_S3_BUCKET_NAME;
