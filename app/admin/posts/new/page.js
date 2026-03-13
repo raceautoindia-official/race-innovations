@@ -31,6 +31,21 @@ function extractImgSrcs(html = "") {
   return srcs;
 }
 
+function normalizeUploadedUrl(rawUrl = "") {
+  const url = String(rawUrl || "").trim();
+  if (!url) return "";
+
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+
+  if (url.startsWith("/")) {
+    return url;
+  }
+
+  return `/${url}`;
+}
+
 export default function NewPostPage() {
   const editorRef = useRef(null);
 
@@ -52,7 +67,7 @@ export default function NewPostPage() {
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState([]);
 
-  const [inlineFiles, setInlineFiles] = useState([]); // [{id, name, size, url}]
+  const [inlineFiles, setInlineFiles] = useState([]);
   const [uploadingInline, setUploadingInline] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
 
@@ -64,8 +79,8 @@ export default function NewPostPage() {
         setLoadingMeta(true);
 
         const res = await fetch("/api/blog-meta", { cache: "no-store" });
-
         const ct = res.headers.get("content-type") || "";
+
         if (!ct.includes("application/json")) {
           const html = await res.text();
           console.error("blog-meta returned non-JSON:", html.slice(0, 200));
@@ -115,7 +130,7 @@ export default function NewPostPage() {
   }
 
   function insertImageIntoContent(url) {
-    const safeUrl = String(url || "").trim();
+    const safeUrl = normalizeUploadedUrl(url);
     if (!safeUrl) return;
 
     const imgHtml = `<p><img src="${safeUrl}" alt="content-image" style="max-width:100%;height:auto;display:block;" /></p>`;
@@ -167,19 +182,16 @@ export default function NewPostPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        console.error("Inline upload failed response:", data);
         alert(data?.error || "Upload failed");
         return;
       }
 
-      const url = data?.url;
+      const url = normalizeUploadedUrl(data?.url);
+      console.log("Inline uploaded URL:", url);
+
       if (!url) {
         alert("Upload succeeded but image URL is missing.");
-        return;
-      }
-
-      const afterCount = countInlineImages(content);
-      if (afterCount >= MAX_INLINE_IMAGES) {
-        alert("Maximum 3 images allowed inside content.");
         return;
       }
 
@@ -232,16 +244,20 @@ export default function NewPostPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        console.error("Cover upload failed response:", data);
         alert(data?.error || "Upload failed");
         return;
       }
 
-      if (!data?.url) {
+      const url = normalizeUploadedUrl(data?.url);
+      console.log("Cover uploaded URL:", url);
+
+      if (!url) {
         alert("Upload succeeded but image URL is missing.");
         return;
       }
 
-      setCoverImage(data.url);
+      setCoverImage(url);
     } catch (err) {
       console.error(err);
       alert("Upload failed");
