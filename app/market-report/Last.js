@@ -1,110 +1,87 @@
 "use client";
-
 import React from "react";
-import Image from "next/image";
-import { motion } from "framer-motion";
 
-// Animation Variants
-const fadeInVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
-};
+export default function ReportCategoriesSection() {
+  const categories = [
+    { title: "Market Forecast Reports", href: "/reports/market-forecast" },
+    { title: "Flash Reports", href: "/reports/flash-reports" },
+    { title: "EV Intelligence", href: "/reports/ev-intelligence" },
+    { title: "Country Reports", href: "/reports/country-reports" },
+    { title: "OEM Benchmarking", href: "/reports/oem-benchmarking" },
+    { title: "Segment Analysis", href: "/reports/segment-analysis" },
+    { title: "Production Forecasts", href: "/reports/production-forecasts" },
+    { title: "Custom Research", href: "/reports/custom-research" },
+  ];
 
-const slideUpVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: { opacity: 1, y: 0 },
-};
-
-function Last() {
   return (
-    <motion.div
-      className="container-fluid"
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.3 }}
-      variants={fadeInVariants}
-      transition={{ duration: 0.4 }} // faster fade
+    <section
+      style={{
+        backgroundColor: "#f6f7fb",
+        paddingTop: "90px",
+        paddingBottom: "90px",
+      }}
     >
-      {/* Section Title */}
-      <motion.h5
-        className="mt-4 text-center"
-        style={{ fontSize: "2.5rem", whiteSpace: "nowrap" }}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={slideUpVariants}
-        transition={{ duration: 0.4, delay: 0.1 }} // faster + light delay
-      >
-        <span style={{ color: "black" }}>Why</span>
-        <span style={{ color: "#293BB1", marginLeft: "15px" }}>
-          Choose Us?
-        </span>
-      </motion.h5>
-
-      {/* Content Section */}
-      <div className="container" style={{ marginBottom: "100px" }}>
-        <div className="row justify-content-center mt-4">
-          {/* Text Content */}
-          <motion.div
-            className="col-md-8"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={slideUpVariants}
-            transition={{ duration: 0.4, delay: 0.2 }}
+      <div className="container-fluid px-4 px-md-5 px-lg-5">
+        <div className="text-center mb-5">
+          <h2
+            className="fw-bold mb-0"
+            style={{
+              color: "#111827",
+              fontSize: "clamp(2rem, 3.2vw, 3.3rem)",
+              lineHeight: "1.15",
+              letterSpacing: "-0.5px",
+            }}
           >
-            {[
-              {
-                title: "Industry-Specific Expertise",
-                text: "Proven experience across diverse sectors.",
-              },
-              {
-                title: "Custom Research Solutions",
-                text: "Tailored studies designed to meet your unique business needs.",
-              },
-              {
-                title: "Global & Regional Coverage",
-                text: "Market intelligence spanning international and local markets.",
-              },
-              {
-                title: "Data-Driven Decision Making",
-                text: "Actionable insights backed by advanced analytics.",
-              },
-            ].map((item, index) => (
-              <p key={index}>
-                <strong style={{ color: "#293BB1" }}>{item.title}</strong> –{" "}
-                {item.text}
-              </p>
-            ))}
-          </motion.div>
+            Report Categories
+          </h2>
+        </div>
 
-          {/* Image Section */}
-          <motion.div
-            className="col-md-4"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-            variants={slideUpVariants}
-            transition={{ duration: 0.4, delay: 0.3 }}
-          >
-            <Image
-              src="/images/notes.png"
-              width={250}
-              height={250}
-              className="card-img-top"
-              style={{
-                width: "100%",
-                height: "100%",
-                margin: "0 auto",
-                objectFit: "contain",
-              }}
-              alt="Why Choose Us"
-            />
-          </motion.div>
+        <div className="row g-4">
+          {categories.map((item, index) => (
+            <div key={index} className="col-12 col-sm-6 col-xl-3">
+              <a
+                href={item.href}
+                className="text-decoration-none d-block h-100"
+              >
+                <div
+                  className="h-100 d-flex flex-column align-items-center justify-content-center text-center"
+                  style={{
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #dfe5ef",
+                    borderRadius: "14px",
+                    minHeight: "130px",
+                    padding: "28px 20px",
+                    transition: "all 0.25s ease",
+                    boxShadow: "0 4px 14px rgba(17, 24, 39, 0.03)",
+                  }}
+                >
+                  <div
+                    style={{
+                      color: "#0f172a",
+                      fontSize: "1.1rem",
+                      fontWeight: 600,
+                      lineHeight: "1.45",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    {item.title}
+                  </div>
+
+                  <div
+                    style={{
+                      color: "#7b879c",
+                      fontSize: "1.5rem",
+                      lineHeight: 1,
+                    }}
+                  >
+                    ›
+                  </div>
+                </div>
+              </a>
+            </div>
+          ))}
         </div>
       </div>
-    </motion.div>
+    </section>
   );
 }
-
-export default Last;

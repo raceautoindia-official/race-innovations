@@ -14,7 +14,7 @@ function slugify(text = "") {
 }
 
 const MAX_INLINE_IMAGES = 3;
-const MAX_INLINE_IMAGE_SIZE = 100 * 1024; // 100KB
+const MAX_INLINE_IMAGE_SIZE = 3 * 1024 * 1024; // 3MB
 
 function countInlineImages(html = "") {
   const matches = String(html || "").match(/<img\b[^>]*>/gi);
@@ -25,14 +25,15 @@ function extractImgSrcs(html = "") {
   const srcs = [];
   const re = /<img\b[^>]*\bsrc\s*=\s*["']([^"']+)["'][^>]*>/gi;
   let m;
-  while ((m = re.exec(String(html || "")))) srcs.push(m[1]);
+  while ((m = re.exec(String(html || "")))) {
+    srcs.push(m[1]);
+  }
   return srcs;
 }
 
 export default function NewPostPage() {
   const editorRef = useRef(null);
 
-  // ✅ meta only what we still use (categories)
   const [meta, setMeta] = useState({ categories: [] });
   const [loadingMeta, setLoadingMeta] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -45,20 +46,16 @@ export default function NewPostPage() {
   const [content, setContent] = useState("");
 
   const [categoryId, setCategoryId] = useState("");
-
   const [coverImage, setCoverImage] = useState("");
-
-  // ✅ NEW: LinkedIn / iframe source URL stored with post
   const [linkedinUrl, setLinkedinUrl] = useState("");
 
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState([]);
 
-  // ✅ Inline content image state
   const [inlineFiles, setInlineFiles] = useState([]); // [{id, name, size, url}]
   const [uploadingInline, setUploadingInline] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
 
-  // ✅ Load meta (only categories)
   useEffect(() => {
     let ignore = false;
 
@@ -96,17 +93,20 @@ export default function NewPostPage() {
     };
   }, []);
 
-  // ✅ Auto slug until user edits manually
   useEffect(() => {
-    if (!slugManuallyEdited) setSlug(slugify(title));
+    if (!slugManuallyEdited) {
+      setSlug(slugify(title));
+    }
   }, [title, slugManuallyEdited]);
 
   function addTag(value) {
     const t = String(value || "").trim();
     if (!t) return;
+
     const exists = tags.some((x) => String(x).toLowerCase() === t.toLowerCase());
     if (exists) return;
     if (tags.length >= 5) return;
+
     setTags((prev) => [...prev, t]);
   }
 
@@ -115,12 +115,18 @@ export default function NewPostPage() {
   }
 
   function insertImageIntoContent(url) {
-    const imgHtml = `<p><img src="${url}" style="width:100%;height:auto;" /></p>`;
-    setContent((prev) => `${prev || ""}\n${imgHtml}\n`);
+    const safeUrl = String(url || "").trim();
+    if (!safeUrl) return;
+
+    const imgHtml = `<p><img src="${safeUrl}" alt="content-image" style="max-width:100%;height:auto;display:block;" /></p>`;
+
+    setContent((prev) => {
+      const oldContent = String(prev || "").trim();
+      return oldContent ? `${oldContent}\n${imgHtml}` : imgHtml;
+    });
   }
 
   function resyncInlineFilesFromContent(nextContent) {
-    // If user deletes <img> from editor, remove from our tracker too
     const srcs = new Set(extractImgSrcs(nextContent));
     setInlineFiles((prev) => prev.filter((x) => srcs.has(x.url)));
   }
@@ -129,7 +135,7 @@ export default function NewPostPage() {
     if (!file) return;
 
     if (file.size > MAX_INLINE_IMAGE_SIZE) {
-      alert("Content image must be 100KB or less.");
+      alert("Content image must be 3MB or less.");
       return;
     }
 
@@ -159,14 +165,18 @@ export default function NewPostPage() {
       }
 
       const data = await res.json();
+
       if (!res.ok) {
         alert(data?.error || "Upload failed");
         return;
       }
 
-      const url = data.url;
+      const url = data?.url;
+      if (!url) {
+        alert("Upload succeeded but image URL is missing.");
+        return;
+      }
 
-      // Double-check after upload (in case content changed)
       const afterCount = countInlineImages(content);
       if (afterCount >= MAX_INLINE_IMAGES) {
         alert("Maximum 3 images allowed inside content.");
@@ -175,7 +185,12 @@ export default function NewPostPage() {
 
       setInlineFiles((prev) => [
         ...prev,
-        { id: `${Date.now()}-${Math.random()}`, name: file.name, size: file.size, url },
+        {
+          id: `${Date.now()}-${Math.random()}`,
+          name: file.name,
+          size: file.size,
+          url,
+        },
       ]);
 
       insertImageIntoContent(url);
@@ -187,16 +202,71 @@ export default function NewPostPage() {
     }
   }
 
+  async function uploadCoverImage(file) {
+    if (!file) return;
+
+    if (file.size > 3 * 1024 * 1024) {
+      alert("Max cover image size is 3MB");
+      return;
+    }
+
+    try {
+      setUploadingCover(true);
+
+      const fd = new FormData();
+      fd.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: fd,
+      });
+
+      const ct = res.headers.get("content-type") || "";
+      if (!ct.includes("application/json")) {
+        const text = await res.text();
+        console.error("upload returned non-JSON:", text.slice(0, 200));
+        alert("Upload API is not returning JSON.");
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data?.error || "Upload failed");
+        return;
+      }
+
+      if (!data?.url) {
+        alert("Upload succeeded but image URL is missing.");
+        return;
+      }
+
+      setCoverImage(data.url);
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed");
+    } finally {
+      setUploadingCover(false);
+    }
+  }
+
   async function onSubmit(status) {
-    const finalContent = content;
+    const finalContent = String(content || "").trim();
 
-    if (!title.trim()) return alert("Title is required");
-    if (!finalContent.trim()) return alert("Content is required");
+    if (!title.trim()) {
+      alert("Title is required");
+      return;
+    }
 
-    // ✅ enforce content limits at save time too
+    if (!finalContent) {
+      alert("Content is required");
+      return;
+    }
+
     const imgCount = countInlineImages(finalContent);
     if (imgCount > MAX_INLINE_IMAGES) {
-      return alert("Content allows maximum 3 images only.");
+      alert("Content allows maximum 3 images only.");
+      return;
     }
 
     setSaving(true);
@@ -211,8 +281,6 @@ export default function NewPostPage() {
         cover_image: coverImage ? String(coverImage).trim() : null,
         tags,
         status,
-
-        // ✅ NEW: store the LinkedIn URL (or any iframe-source URL)
         linkedin_url: linkedinUrl ? String(linkedinUrl).trim() : null,
       };
 
@@ -226,7 +294,7 @@ export default function NewPostPage() {
       if (!ct.includes("application/json")) {
         const html = await res.text();
         console.error("posts API returned non-JSON:", html.slice(0, 200));
-        alert("Posts API is not returning JSON (maybe route missing / error).");
+        alert("Posts API is not returning JSON.");
         return;
       }
 
@@ -257,13 +325,16 @@ export default function NewPostPage() {
             className="btn btn-outline-secondary"
             onClick={() => onSubmit("draft")}
             disabled={saving || loadingMeta}
+            type="button"
           >
             {saving ? "Saving..." : "Save Draft"}
           </button>
+
           <button
             className="btn btn-dark"
             onClick={() => onSubmit("published")}
             disabled={saving || loadingMeta}
+            type="button"
           >
             {saving ? "Publishing..." : "Publish"}
           </button>
@@ -271,9 +342,7 @@ export default function NewPostPage() {
       </div>
 
       <div className="row g-4">
-        {/* LEFT */}
         <div className="col-12 col-lg-8">
-          {/* Title */}
           <div className="mb-3">
             <label className="form-label fw-semibold">Title</label>
             <input
@@ -284,7 +353,6 @@ export default function NewPostPage() {
             />
           </div>
 
-          {/* Slug */}
           <div className="mb-3">
             <label className="form-label fw-semibold">Slug</label>
             <input
@@ -296,10 +364,11 @@ export default function NewPostPage() {
                 setSlug(slugify(e.target.value));
               }}
             />
-            <div className="form-text">Best practice slug length 60, no special symbols.</div>
+            <div className="form-text">
+              Best practice slug length 60, no special symbols.
+            </div>
           </div>
 
-          {/* Summary */}
           <div className="mb-3">
             <label className="form-label fw-semibold">Summary</label>
             <textarea
@@ -312,7 +381,6 @@ export default function NewPostPage() {
             <div className="form-text">10–30 characters for better clicks.</div>
           </div>
 
-          {/* Tags */}
           <div className="mb-3">
             <label className="form-label fw-semibold">Tag</label>
             <input
@@ -354,36 +422,38 @@ export default function NewPostPage() {
             )}
           </div>
 
-          {/* Content Editor */}
           <div className="mb-3">
             <label className="form-label fw-semibold">Content</label>
 
-            {/* ✅ Inline image uploader for content */}
             <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
               <input
                 type="file"
                 className="form-control"
                 accept="image/*"
                 disabled={uploadingInline}
+                style={{ maxWidth: 420 }}
                 onChange={async (e) => {
-                  const file = e.target.files && e.target.files[0];
-                  e.target.value = ""; // allow re-selecting same file
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
                   if (!file) return;
                   await uploadInlineImage(file);
                 }}
-                style={{ maxWidth: 420 }}
               />
+
               <div className="text-muted" style={{ fontSize: 13 }}>
-                Content images: max <b>3</b> images, each max <b>100KB</b>.
+                Content images: max <b>3</b> images, each max <b>3MB</b>.
               </div>
             </div>
 
-            {/* Show inline images added */}
-            {inlineFiles.length > 0 ? (
+            {inlineFiles.length > 0 && (
               <div className="mb-2">
-                <div className="text-muted" style={{ fontSize: 13, marginBottom: 6 }}>
+                <div
+                  className="text-muted"
+                  style={{ fontSize: 13, marginBottom: 6 }}
+                >
                   Added to content ({inlineFiles.length}/{MAX_INLINE_IMAGES})
                 </div>
+
                 <div className="d-flex gap-2 flex-wrap">
                   {inlineFiles.map((f) => (
                     <span key={f.id} className="badge text-bg-light border">
@@ -392,32 +462,33 @@ export default function NewPostPage() {
                   ))}
                 </div>
               </div>
-            ) : null}
+            )}
 
             <div className="form-text mb-2">
               Note: Images inserted into content are auto-set to{" "}
-              <code>width: 100%; height: auto;</code>.
+              <code>max-width: 100%; height: auto;</code>
             </div>
 
             <ExactEditor
+              ref={editorRef}
               value={content}
               onChange={(next) => {
-                // Prevent adding more than 3 images via pasting HTML into editor
-                const imgCount = countInlineImages(next);
+                const nextValue = String(next || "");
+                const imgCount = countInlineImages(nextValue);
+
                 if (imgCount > MAX_INLINE_IMAGES) {
                   alert("Maximum 3 images allowed inside content.");
                   return;
                 }
-                setContent(next);
-                resyncInlineFilesFromContent(next);
+
+                setContent(nextValue);
+                resyncInlineFilesFromContent(nextValue);
               }}
             />
           </div>
         </div>
 
-        {/* RIGHT */}
         <div className="col-12 col-lg-4">
-          {/* Category */}
           <div className="mb-3">
             <label className="form-label fw-semibold">Category</label>
             <select
@@ -435,7 +506,6 @@ export default function NewPostPage() {
             </select>
           </div>
 
-          {/* Cover Image Upload */}
           <div className="mb-3">
             <label className="form-label fw-semibold">Select Image</label>
 
@@ -443,43 +513,12 @@ export default function NewPostPage() {
               type="file"
               className="form-control mb-2"
               accept="image/*"
+              disabled={uploadingCover}
               onChange={async (e) => {
-                const file = e.target.files && e.target.files[0];
+                const file = e.target.files?.[0];
+                e.target.value = "";
                 if (!file) return;
-
-                if (file.size > 3 * 1024 * 1024) {
-                  alert("Max image size is 3MB");
-                  return;
-                }
-
-                try {
-                  const fd = new FormData();
-                  fd.append("file", file);
-
-                  const res = await fetch("/api/upload", {
-                    method: "POST",
-                    body: fd,
-                  });
-
-                  const ct = res.headers.get("content-type") || "";
-                  if (!ct.includes("application/json")) {
-                    const text = await res.text();
-                    console.error("upload returned non-JSON:", text.slice(0, 200));
-                    alert("Upload API is not returning JSON.");
-                    return;
-                  }
-
-                  const data = await res.json();
-                  if (!res.ok) {
-                    alert(data?.error || "Upload failed");
-                    return;
-                  }
-
-                  setCoverImage(data.url);
-                } catch (err) {
-                  console.error(err);
-                  alert("Upload failed");
-                }
+                await uploadCoverImage(file);
               }}
             />
 
@@ -491,6 +530,7 @@ export default function NewPostPage() {
                   className="w-100 rounded"
                   style={{ maxHeight: 180, objectFit: "cover" }}
                 />
+
                 <button
                   type="button"
                   className="btn btn-sm btn-outline-danger mt-2"
@@ -502,9 +542,10 @@ export default function NewPostPage() {
             ) : null}
           </div>
 
-          {/* ✅ NEW: LinkedIn / iframe URL */}
           <div className="mb-3">
-            <label className="form-label fw-semibold">LinkedIn Post URL (optional)</label>
+            <label className="form-label fw-semibold">
+              LinkedIn Post URL (optional)
+            </label>
             <input
               className="form-control"
               placeholder="Paste LinkedIn post URL..."
@@ -516,13 +557,21 @@ export default function NewPostPage() {
             </div>
           </div>
 
-          {/* Optional: quick preview (not an iframe) */}
           {linkedinUrl ? (
             <div className="mb-3">
-              <div className="text-muted" style={{ fontSize: 13, marginBottom: 6 }}>
+              <div
+                className="text-muted"
+                style={{ fontSize: 13, marginBottom: 6 }}
+              >
                 Preview link
               </div>
-              <a href={linkedinUrl} target="_blank" rel="noreferrer" className="btn btn-sm btn-light">
+
+              <a
+                href={linkedinUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-sm btn-light"
+              >
                 Open LinkedIn →
               </a>
             </div>
