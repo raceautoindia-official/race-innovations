@@ -1,13 +1,11 @@
+import db from "@/lib/db";
 import { NextResponse } from "next/server";
 
-import { slugify } from "@/lib/report-utils";
-import db from "@/lib/db";
 
-export async function GET(req) {
+export async function GET(_req, { params }) {
   try {
     const conn = db;
-    const { searchParams } = new URL(req.url);
-    const limit = Math.max(1, Math.min(500, Number(searchParams.get("limit") || 100)));
+    const id = params?.id;
 
     const [rows] = await conn.query(
       `
@@ -29,28 +27,31 @@ export async function GET(req) {
         c.name AS category_name
       FROM posts p
       LEFT JOIN categories c ON c.id = p.category_id
-      ORDER BY p.created_at DESC
-      LIMIT ?
+      WHERE p.id = ?
+      LIMIT 1
       `,
-      [limit]
+      [id]
     );
 
-    return NextResponse.json({ success: true, posts: rows });
+    if (!rows.length) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, post: rows[0] });
   } catch (error) {
-    console.error("GET posts error:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch posts" },
-      { status: 500 }
-    );
+    console.error("GET post by id error:", error);
+    return NextResponse.json({ error: "Failed to fetch post" }, { status: 500 });
   }
 }
 
-export async function POST(req) {
+export async function PUT(req, { params }) {
   try {
-    const body = await req.json();
     const conn = db;
+    const id = params?.id;
+    const body = await req.json();
 
     const title = String(body.title || "").trim();
+    const slug = String(body.slug || "").trim();
     const excerpt = String(body.excerpt || "").trim();
     const content = String(body.content || "").trim();
     const categoryId = body.category_id ? Number(body.category_id) : null;
@@ -69,41 +70,27 @@ export async function POST(req) {
       return NextResponse.json({ error: "Content is required" }, { status: 400 });
     }
 
-    const slugBase = String(body.slug || "").trim() || slugify(title);
-    const slug = slugBase || `post-${Date.now()}`;
-
-    const [existing] = await conn.query(
-      `SELECT id FROM posts WHERE slug = ? LIMIT 1`,
-      [slug]
-    );
-
-    let finalSlug = slug;
-    if (existing.length > 0) {
-      finalSlug = `${slug}-${Date.now()}`;
-    }
-
     const publishedAt = status === "published" ? new Date() : null;
 
-    const [result] = await conn.query(
+    await conn.query(
       `
-      INSERT INTO posts (
-        title,
-        slug,
-        excerpt,
-        content,
-        cover_image,
-        category_id,
-        keywords,
-        status,
-        published_at,
-        created_at,
-        linkedin_url
-      )
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+      UPDATE posts
+      SET
+        title = ?,
+        slug = ?,
+        excerpt = ?,
+        content = ?,
+        cover_image = ?,
+        category_id = ?,
+        keywords = ?,
+        status = ?,
+        published_at = ?,
+        linkedin_url = ?
+      WHERE id = ?
       `,
       [
         title,
-        finalSlug,
+        slug,
         excerpt,
         content,
         coverImage,
@@ -112,6 +99,7 @@ export async function POST(req) {
         status,
         publishedAt,
         linkedinUrl,
+        id,
       ]
     );
 
@@ -138,19 +126,33 @@ export async function POST(req) {
       WHERE p.id = ?
       LIMIT 1
       `,
-      [result.insertId]
+      [id]
     );
 
     return NextResponse.json({
       success: true,
-      slug: finalSlug,
       post: rows[0] || null,
     });
   } catch (error) {
-    console.error("POST posts error:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to create post" },
-      { status: 500 }
-    );
+    console.error("PUT post error:", error);
+    return NextResponse.json({ error: "Failed to update post" }, { status: 500 });
+  }
+}
+
+export async function DELETE(_req, { params }) {
+  try {
+    const conn = db;
+    const id = params?.id;
+
+    const [result] = await conn.query(`DELETE FROM posts WHERE id = ?`, [id]);
+
+    if (!result.affectedRows) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE post error:", error);
+    return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
   }
 }

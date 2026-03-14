@@ -166,11 +166,7 @@ const Navbar = () => {
                       Strategic Report
                     </Link>
                   </li>
-                  <li>
-                    <Link className="dropdown-item" href="/flash-reports">
-                      Flash Report
-                    </Link>
-                  </li>
+                 
                 </ul>
               </li>
 

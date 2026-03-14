@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from "react";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 
-/** ✅ Robust image resolver */
 function resolveImg(src) {
   if (!src) return "";
 
@@ -31,12 +30,10 @@ const FALLBACK_HERO = "/default-banner.jpg";
 const FALLBACK_CARD = "/default-banner.jpg";
 
 export default function BlogPage() {
-  const [active, setActive] = useState("all"); // tab = slug
+  const [active, setActive] = useState("all");
   const [q, setQ] = useState("");
-
   const [categories, setCategories] = useState([{ name: "All", slug: "all" }]);
-  const [allPosts, setAllPosts] = useState([]); // store all posts
-
+  const [allPosts, setAllPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingCats, setLoadingCats] = useState(false);
 
@@ -97,7 +94,6 @@ export default function BlogPage() {
     loadAllPosts();
   }, []);
 
-  // ✅ filter using YOUR API keys: category_slug + (title/excerpt search)
   const filteredPosts = useMemo(() => {
     let list = Array.isArray(allPosts) ? [...allPosts] : [];
 
@@ -119,22 +115,15 @@ export default function BlogPage() {
     return list;
   }, [allPosts, active, q]);
 
-  // ✅ hero = first post of filtered list
   const featured = filteredPosts?.[0] || null;
-
-  // ✅ FIX: do NOT slice(1) (this was causing missing posts)
-  const gridPosts = useMemo(() => {
-    if (!filteredPosts?.length) return [];
-    return filteredPosts; // ✅ show all filtered posts
-  }, [filteredPosts]);
+  const gridPosts = filteredPosts?.length ? filteredPosts : [];
 
   return (
     <>
       <Navbar />
 
-      <div className="bg-white">
-        {/* HERO */}
-        <div className="position-relative overflow-hidden" style={{ height: 320 }}>
+      <div className="bg-white main-content">
+        <div className="position-relative overflow-hidden heroWrap">
           <img
             src={HERO_BANNER}
             alt="hero"
@@ -144,21 +133,17 @@ export default function BlogPage() {
               e.currentTarget.src = FALLBACK_HERO;
             }}
           />
-          <div
-            className="position-absolute top-0 start-0 w-100 h-100"
-            style={{ background: "rgba(0,0,0,0.35)" }}
-          />
+          <div className="heroOverlay" />
           <div className="position-absolute top-50 start-50 translate-middle text-center px-3 w-100">
             <span className="badge bg-light text-dark px-3 py-2 rounded-pill">Latest</span>
             <h1 className="text-white mt-3 fw-semibold display-5">{featured?.title || "Blog"}</h1>
-            <p className="text-white mt-2 mb-0 mx-auto fw-bold" style={{ maxWidth: 720 }}>
+            <p className="text-white mt-2 mb-0 mx-auto fw-bold heroExcerpt">
               {featured?.excerpt || "Read our latest updates and guides."}
             </p>
           </div>
         </div>
 
         <div className="container py-4">
-          {/* SEARCH */}
           <div className="topSearch">
             <div className="topSearchInner">
               <input
@@ -167,13 +152,12 @@ export default function BlogPage() {
                 placeholder="Search blogs..."
                 className="topSearchInput"
               />
-              <button className="topSearchBtn" aria-label="Search">
+              <button className="topSearchBtn" aria-label="Search" type="button">
                 🔍
               </button>
             </div>
           </div>
 
-          {/* CATEGORY TABS */}
           <div className="tabsBar mt-3">
             <div className="label">Blogs:</div>
 
@@ -198,7 +182,6 @@ export default function BlogPage() {
             )}
           </div>
 
-          {/* GRID */}
           <div className="mt-4">
             {loading ? (
               <div className="text-center text-muted py-5">Loading...</div>
@@ -210,37 +193,50 @@ export default function BlogPage() {
                   const cardSrc = p?.cover_image ? resolveImg(p.cover_image) : FALLBACK_CARD;
 
                   return (
-                    <div className="col-12 col-md-4" key={p.id}>
-                      <Link href={`/blog/${p.slug}`} className="text-decoration-none">
-                        <div className="card h-100 border-0 shadow-sm">
-                          <div className="p-3 pb-0">
-                            <div className="rounded overflow-hidden">
-                              <img
-                                src={cardSrc || FALLBACK_CARD}
-                                alt={p.title}
-                                className="w-100"
-                                style={{ height: 160, objectFit: "cover" }}
-                                onError={(e) => {
-                                  e.currentTarget.src = FALLBACK_CARD;
-                                }}
-                              />
-                            </div>
+                    <div className="col-12 col-md-6 col-lg-4" key={p.id}>
+                      <Link href={`/web-blog/${p.slug}`} className="text-decoration-none">
+                        <article className="blogHoverCard">
+                          <img
+                            src={cardSrc || FALLBACK_CARD}
+                            alt={p.title || "Blog image"}
+                            className="blogHoverImage"
+                            onError={(e) => {
+                              e.currentTarget.src = FALLBACK_CARD;
+                            }}
+                          />
+
+                          <div className="blogImageFade" />
+
+                          <div className="blogCategoryBadge">
+                            {String(p.category_name || "Uncategorized").toUpperCase()}
                           </div>
 
-                          <div className="card-body">
-                            <h5 className="card-title fw-semibold mb-2">{p.title}</h5>
-                            <p className="card-text text-muted" style={{ fontSize: 14 }}>
-                              {p.excerpt}
+                          <div className="blogHoverOverlay">
+                            <div className="blogMetaRow">
+                              <span className="blogType">ARTICLE</span>
+                              <span className="blogDate">
+                                {new Date(p.published_at || p.created_at || Date.now()).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    month: "long",
+                                    day: "2-digit",
+                                    year: "numeric",
+                                  }
+                                )}
+                              </span>
+                            </div>
+
+                            <h3 className="blogHoverTitle">{p.title || "Untitled Post"}</h3>
+
+                            <p className="blogHoverExcerpt">
+                              {p.excerpt || "Read more about this article."}
                             </p>
-                          </div>
 
-                          <div className="card-footer bg-white border-0 pt-0">
-                            <div className="d-flex justify-content-between text-muted" style={{ fontSize: 12 }}>
-                              <span>{p.category_name || "Uncategorized"}</span>
-                              <span>{new Date(p.published_at || p.created_at).toLocaleDateString()}</span>
-                            </div>
+                            <span className="blogReadMore">
+                              Read More <span className="arrow">→</span>
+                            </span>
                           </div>
-                        </div>
+                        </article>
                       </Link>
                     </div>
                   );
@@ -250,8 +246,23 @@ export default function BlogPage() {
           </div>
         </div>
 
-        {/* STYLES */}
+        <Footer />
+
         <style jsx>{`
+          .heroWrap {
+            height: 320px;
+          }
+
+          .heroOverlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+          }
+
+          .heroExcerpt {
+            max-width: 720px;
+          }
+
           .topSearch {
             border: 1px solid rgba(0, 0, 0, 0.08);
             border-radius: 16px;
@@ -259,11 +270,13 @@ export default function BlogPage() {
             box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
             padding: 12px;
           }
+
           .topSearchInner {
             display: flex;
             gap: 10px;
             align-items: center;
           }
+
           .topSearchInput {
             width: 100%;
             border: 1px solid rgba(0, 0, 0, 0.12);
@@ -272,10 +285,12 @@ export default function BlogPage() {
             outline: none;
             font-size: 14px;
           }
+
           .topSearchInput:focus {
             border-color: rgba(107, 59, 90, 0.7);
             box-shadow: 0 0 0 4px rgba(107, 59, 90, 0.12);
           }
+
           .topSearchBtn {
             border: none;
             background: #6b3b5a;
@@ -296,12 +311,14 @@ export default function BlogPage() {
             border-radius: 14px;
             background: #fff;
           }
+
           .label {
             color: #6c757d;
             font-size: 14px;
             white-space: nowrap;
             flex: 0 0 auto;
           }
+
           .tabsScroller {
             display: flex;
             gap: 10px;
@@ -311,9 +328,11 @@ export default function BlogPage() {
             padding-bottom: 2px;
             scrollbar-width: none;
           }
+
           .tabsScroller::-webkit-scrollbar {
             display: none;
           }
+
           .tabBtn {
             border: 1px solid rgba(0, 0, 0, 0.18);
             background: #fff;
@@ -324,19 +343,260 @@ export default function BlogPage() {
             line-height: 1;
             white-space: nowrap;
             flex: 0 0 auto;
-            transition: all 0.15s ease;
+            transition: all 0.2s ease;
           }
+
           .tabBtn:hover {
             border-color: rgba(0, 0, 0, 0.35);
             transform: translateY(-1px);
           }
+
           .tabBtn.active {
             background: #212529;
             color: #fff;
             border-color: #212529;
           }
+
+          .blogHoverCard {
+            position: relative;
+            height: 520px;
+            overflow: hidden;
+            background: #ddd;
+            cursor: pointer;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+          }
+
+          .blogHoverImage {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transform: scale(1);
+            opacity: 1;
+            transition:
+              transform 0.6s ease,
+              opacity 0.45s ease;
+            z-index: 1;
+          }
+
+          .blogImageFade {
+            position: absolute;
+            inset: 0;
+            background: #f3f3f3;
+            opacity: 0;
+            transition: opacity 0.45s ease;
+            z-index: 2;
+          }
+
+          .blogHoverCard::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+              to top,
+              rgba(0, 0, 0, 0.24) 0%,
+              rgba(0, 0, 0, 0.08) 35%,
+              rgba(0, 0, 0, 0.02) 100%
+            );
+            pointer-events: none;
+            z-index: 3;
+            transition: opacity 0.35s ease;
+          }
+
+          .blogCategoryBadge {
+            position: absolute;
+            top: 22px;
+            left: 24px;
+            z-index: 6;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 0 20px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            background: rgba(77, 83, 79, 0.72);
+            backdrop-filter: blur(8px);
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            transition: all 0.35s ease;
+          }
+
+          .blogHoverOverlay {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 5;
+            background: rgba(239, 239, 239, 0.97);
+            backdrop-filter: blur(10px);
+            border-radius: 34px 34px 0 0;
+            padding: 30px 30px 26px;
+            min-height: 210px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            transition:
+              min-height 0.4s ease,
+              background 0.3s ease;
+          }
+
+          .blogMetaRow {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+            color: #2b2b2b;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+          }
+
+          .blogType {
+            font-weight: 800;
+          }
+
+          .blogDate {
+            color: #444;
+            font-weight: 500;
+          }
+
+          .blogHoverTitle {
+            margin: 0;
+            color: #222;
+            font-size: 24px;
+            line-height: 1.35;
+            font-weight: 400;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+
+          .blogHoverExcerpt {
+            margin: 18px 0 0;
+            color: #3f3f3f;
+            font-size: 15px;
+            line-height: 1.7;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition:
+              opacity 0.35s ease,
+              max-height 0.35s ease,
+              margin 0.35s ease;
+          }
+
+          .blogReadMore {
+            margin-top: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #111;
+            font-size: 14px;
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+          }
+
+          .arrow {
+            font-size: 18px;
+            line-height: 1;
+          }
+
+          .blogHoverCard:hover .blogHoverImage {
+            transform: scale(1.03);
+            opacity: 0;
+          }
+
+          .blogHoverCard:hover .blogImageFade {
+            opacity: 1;
+          }
+
+          .blogHoverCard:hover::after {
+            opacity: 0;
+          }
+
+          .blogHoverCard:hover .blogHoverOverlay {
+            min-height: 290px;
+            background: rgba(245, 245, 245, 0.99);
+          }
+
+          .blogHoverCard:hover .blogHoverExcerpt {
+            opacity: 1;
+            max-height: 180px;
+            margin-top: 18px;
+          }
+
+          .blogHoverCard:hover .blogReadMore {
+            opacity: 1;
+          }
+
+          @media (max-width: 991px) {
+            .blogHoverCard {
+              height: 460px;
+            }
+
+            .blogHoverTitle {
+              font-size: 22px;
+            }
+
+            .blogHoverOverlay {
+              min-height: 200px;
+            }
+
+            .blogHoverCard:hover .blogHoverOverlay {
+              min-height: 270px;
+            }
+          }
+
+          @media (max-width: 575px) {
+            .heroWrap {
+              height: 260px;
+            }
+
+            .blogHoverCard {
+              height: 400px;
+            }
+
+            .blogCategoryBadge {
+              top: 16px;
+              left: 16px;
+              min-height: 34px;
+              padding: 0 16px;
+              font-size: 12px;
+            }
+
+            .blogHoverOverlay {
+              left: 0;
+              right: 0;
+              bottom: 0;
+              border-radius: 24px 24px 0 0;
+              padding: 20px;
+              min-height: 190px;
+            }
+
+            .blogHoverCard:hover .blogHoverOverlay {
+              min-height: 250px;
+            }
+
+            .blogHoverTitle {
+              font-size: 20px;
+            }
+
+            .blogHoverExcerpt {
+              font-size: 14px;
+              line-height: 1.6;
+            }
+          }
         `}</style>
       </div>
+      <Footer />
     </>
   );
 }

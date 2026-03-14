@@ -12,7 +12,7 @@ import {
 
 const navLinks = [
   { href: "/dashboard", Icon: MdDashboard, text: "Dashboard" },
-  { href: "/admin/blog", Icon: MdArticle, text: "Blog" },
+  { href: "/admin/posts/new", Icon: MdArticle, text: "Blog" },
   { href: "/admin/report", Icon: MdAssessment, text: "Reports" },
   { href: "/admin/gallery", Icon: MdImage, text: "Gallery" },
   { href: "/admin/funding", Icon: MdAttachMoney, text: "Funding" },
