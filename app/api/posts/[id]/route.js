@@ -6,7 +6,7 @@ export async function GET(_req, { params }) {
   try {
     const conn = db;
     const id = params?.id;
-
+console.log("Fetching post with ID:", id);
     const [rows] = await conn.query(
       `
       SELECT
@@ -27,7 +27,7 @@ export async function GET(_req, { params }) {
         c.name AS category_name
       FROM posts p
       LEFT JOIN categories c ON c.id = p.category_id
-      WHERE p.id = ?
+      WHERE p.slug = ?
       LIMIT 1
       `,
       [id]
