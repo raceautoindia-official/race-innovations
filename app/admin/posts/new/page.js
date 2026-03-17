@@ -159,7 +159,7 @@ export default function NewPostPage() {
   async function loadPosts() {
     try {
       setLoadingPosts(true);
-      const res = await fetch("/api/posts?limit=500", { cache: "no-store" });
+      const res = await fetch("/api/admin/posts?limit=500", { cache: "no-store" });
       const ct = res.headers.get("content-type") || "";
 
       if (!ct.includes("application/json")) {
@@ -426,7 +426,7 @@ export default function NewPostPage() {
         linkedin_url: linkedinUrl ? String(linkedinUrl).trim() : null,
       };
 
-      const res = await fetch("/api/posts", {
+      const res = await fetch("/api/admin/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -466,7 +466,7 @@ export default function NewPostPage() {
       setEditLoading(true);
       setShowEditModal(true);
 
-      const res = await fetch(`/api/posts/${encodeURIComponent(postId)}`, {
+      const res = await fetch(`/api/admin/posts/${encodeURIComponent(postId)}`, {
         cache: "no-store",
       });
 
@@ -576,7 +576,7 @@ export default function NewPostPage() {
         linkedin_url: editLinkedinUrl ? String(editLinkedinUrl).trim() : null,
       };
 
-      const res = await fetch(`/api/posts/${encodeURIComponent(editPostId)}`, {
+      const res = await fetch(`/api/admin/posts/${encodeURIComponent(editPostId)}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -617,7 +617,7 @@ export default function NewPostPage() {
     try {
       setDeletingId(String(postId));
 
-      const res = await fetch(`/api/posts/${encodeURIComponent(postId)}`, {
+      const res = await fetch(`/api/admin/posts/${encodeURIComponent(postId)}`, {
         method: "DELETE",
       });
 

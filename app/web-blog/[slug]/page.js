@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
+import { FaInstagram, FaFacebook, FaLinkedin } from "react-icons/fa";
+import { FaXTwitter, FaShareNodes } from "react-icons/fa6";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
 
@@ -22,6 +24,7 @@ function resolveImg(src) {
 function formatDateStable(input) {
   if (!input) return "";
   const d = new Date(input);
+  if (Number.isNaN(d.getTime())) return "";
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
@@ -49,61 +52,40 @@ function isValidEmail(v) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s);
 }
 
-/**
- * ✅ Extract LinkedIn "activity" id from common LinkedIn URLs.
- */
-function extractLinkedInActivityId(url) {
-  const s = String(url || "").trim();
-  if (!s) return "";
-
-  const m1 = s.match(/urn:li:activity:(\d+)/i);
-  if (m1 && m1[1]) return m1[1];
-
-  const m2 = s.match(/activity-(\d+)/i);
-  if (m2 && m2[1]) return m2[1];
-
-  const m3 = s.match(/(\d{12,})/);
-  if (m3 && m3[1]) return m3[1];
-
-  return "";
+function normalizeSlug(slugValue) {
+  if (Array.isArray(slugValue)) return String(slugValue[0] || "").trim();
+  return String(slugValue || "").trim();
 }
 
 const LS_EMAIL_KEY = "commenter_email_v1";
-const FALLBACK_POST_IMG = "/default-banner.jpg";
+const FALLBACK_POST_IMG = "";
 
-/** ✅ Static fallback LinkedIn URL */
 const LINKEDIN_POST_URL =
   "https://www.linkedin.com/posts/race-innovations-private-limited_raceinnovations-indonesiamining-businessgrowth-activity-7368138962076430336-NEUm?utm_source=share&utm_medium=member_desktop&rcm=ACoAAF3_G9IBEMRowcRVIMvHqy6IGZiDev2Lmw0";
 
 export default function PostClient() {
   const params = useParams();
-  const slug = params?.slug;
+  const slug = normalizeSlug(params?.slug);
 
-  // Center: one post
   const [post, setPost] = useState(null);
   const [loadingPost, setLoadingPost] = useState(true);
 
-  // Left: posts (only to build categories + search)
   const [latest, setLatest] = useState([]);
   const [loadingLatest, setLoadingLatest] = useState(false);
 
-  // Sidebar search + active type
   const [q, setQ] = useState("");
   const [activeCat, setActiveCat] = useState("All");
 
-  // Right: comments
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
   const [posting, setPosting] = useState(false);
   const [loadingComments, setLoadingComments] = useState(false);
 
-  // Email capture
   const [email, setEmail] = useState("");
   const [emailReady, setEmailReady] = useState(false);
   const [showEmailPrompt, setShowEmailPrompt] = useState(false);
   const emailInputRef = useRef(null);
 
-  // Share toast
   const [shareMsg, setShareMsg] = useState("");
 
   useEffect(() => {
@@ -118,20 +100,43 @@ export default function PostClient() {
   }, []);
 
   async function loadPostBySlug(slugVal) {
-    if (!slugVal) return;
+    const safeSlug = normalizeSlug(slugVal);
+
+    if (!safeSlug) {
+      setPost(null);
+      setLoadingPost(false);
+      return;
+    }
+
     setLoadingPost(true);
+
     try {
-      const res = await fetch(`/api/posts/${encodeURIComponent(slugVal)}`, { cache: "no-store" });
+      const res = await fetch(`/api/posts/${encodeURIComponent(safeSlug)}`, {
+        cache: "no-store",
+      });
+
       const ct = res.headers.get("content-type") || "";
+
       if (!ct.includes("application/json")) {
         console.error("post non-JSON:", res.status, await res.text());
         setPost(null);
         return;
       }
+
       const data = await res.json();
-      setPost(data.post || null);
+
+      if (!res.ok) {
+        console.error("post fetch failed:", data);
+        setPost(null);
+        return;
+      }
+
+      console.log("Loaded post:", data?.post);
+      console.log("post.content length:", data?.post?.content?.length || 0);
+
+      setPost(data?.post || null);
     } catch (e) {
-      console.error(e);
+      console.error("loadPostBySlug error:", e);
       setPost(null);
     } finally {
       setLoadingPost(false);
@@ -143,16 +148,18 @@ export default function PostClient() {
     try {
       const res = await fetch(`/api/posts?limit=200`, { cache: "no-store" });
       const ct = res.headers.get("content-type") || "";
+
       if (!ct.includes("application/json")) {
         console.error("latest non-JSON:", res.status, await res.text());
         setLatest([]);
         return;
       }
+
       const data = await res.json();
       const postsArr = data?.posts || data?.data || data?.items || data?.result || [];
       setLatest(Array.isArray(postsArr) ? postsArr : []);
     } catch (e) {
-      console.error(e);
+      console.error("loadLatestPosts error:", e);
       setLatest([]);
     } finally {
       setLoadingLatest(false);
@@ -162,23 +169,27 @@ export default function PostClient() {
   async function loadComments(postId) {
     if (!postId) {
       setComments([]);
+      setLoadingComments(false);
       return;
     }
+
     setLoadingComments(true);
     try {
       const res = await fetch(`/api/comments?post_id=${encodeURIComponent(postId)}`, {
         cache: "no-store",
       });
       const ct = res.headers.get("content-type") || "";
+
       if (!ct.includes("application/json")) {
         console.error("comments non-JSON:", res.status, await res.text());
         setComments([]);
         return;
       }
+
       const data = await res.json();
-      setComments(data.comments || []);
+      setComments(Array.isArray(data?.comments) ? data.comments : []);
     } catch (e) {
-      console.error(e);
+      console.error("loadComments error:", e);
       setComments([]);
     } finally {
       setLoadingComments(false);
@@ -187,17 +198,14 @@ export default function PostClient() {
 
   useEffect(() => {
     loadPostBySlug(slug);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   useEffect(() => {
     loadLatestPosts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     loadComments(post?.id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post?.id]);
 
   async function postComment(postId) {
@@ -255,13 +263,19 @@ export default function PostClient() {
       const title = post?.title || "Race Auto India";
       const text = title;
 
-      if (navigator.share) {
+      if (typeof navigator !== "undefined" && navigator.share) {
         await navigator.share({ title, text, url });
         return;
       }
 
-      await navigator.clipboard.writeText(url);
-      setShareMsg("Link copied");
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+        setShareMsg("Link copied");
+        setTimeout(() => setShareMsg(""), 1400);
+        return;
+      }
+
+      setShareMsg("Share not supported");
       setTimeout(() => setShareMsg(""), 1400);
     } catch (e) {
       console.error(e);
@@ -275,7 +289,6 @@ export default function PostClient() {
     [post?.cover_image]
   );
 
-  // Build categories from all posts
   const categories = useMemo(() => {
     const set = new Set();
     (latest || []).forEach((p) => {
@@ -285,7 +298,6 @@ export default function PostClient() {
     return ["All", ...Array.from(set).sort((a, b) => a.localeCompare(b))];
   }, [latest]);
 
-  // Show types one-by-one
   const typeList = useMemo(() => {
     const query = String(q || "").trim().toLowerCase();
     return (categories || [])
@@ -297,12 +309,7 @@ export default function PostClient() {
       }));
   }, [categories, latest, q]);
 
-  // ✅ LinkedIn embed (DB first, else static fallback)
   const linkedInUrl = String(post?.linkedin_url || LINKEDIN_POST_URL || "").trim();
-  const linkedInActivityId = useMemo(() => extractLinkedInActivityId(linkedInUrl), [linkedInUrl]);
-  const linkedInEmbedSrc = linkedInActivityId
-    ? `https://www.linkedin.com/embed/feed/update/urn:li:activity:${linkedInActivityId}`
-    : "";
 
   return (
     <>
@@ -317,7 +324,6 @@ export default function PostClient() {
           </div>
 
           <div className="raGrid mt-5">
-            {/* LEFT */}
             <aside className="raLeft">
               <div className="raSideCard">
                 <div className="raSideBodyNoHero">
@@ -344,6 +350,7 @@ export default function PostClient() {
                       onClick={loadLatestPosts}
                       disabled={loadingLatest}
                       title="Refresh"
+                      type="button"
                     >
                       {loadingLatest ? "…" : "↻"}
                     </button>
@@ -376,7 +383,6 @@ export default function PostClient() {
                     )}
                   </div>
 
-                  {/* ✅ LinkedIn embed */}
                   <div className="raSideLine" />
 
                   <div className="raLiHeaderRow">
@@ -384,31 +390,31 @@ export default function PostClient() {
                     <div className="raTypeSub">{post?.linkedin_url ? "From post" : "Static"}</div>
                   </div>
 
-                  {linkedInEmbedSrc ? (
-                    <>
-                      <div className="raLiFrameWrap">
-                        <iframe
-                          src={linkedInEmbedSrc}
-                          width="100%"
-                          height="520"
-                          frameBorder="0"
-                          allowFullScreen
-                          title="LinkedIn Post"
-                        />
+                  {linkedInUrl ? (
+                    <div className="raLiCard">
+                      <div className="raLiCardIcon">in</div>
+                      <div className="raLiCardContent">
+                        <div className="raLiCardTitle">View LinkedIn post</div>
+                        <div className="raLiCardText">
+                          Open the original LinkedIn post in a new tab.
+                        </div>
+                        <a
+                          className="raLiOpenBtn"
+                          href={linkedInUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Open on LinkedIn →
+                        </a>
                       </div>
-
-                      <a className="raLiOpenBtn" href={linkedInUrl} target="_blank" rel="noreferrer">
-                        Open on LinkedIn →
-                      </a>
-                    </>
+                    </div>
                   ) : (
-                    <div className="muted small">LinkedIn URL invalid or missing activity id.</div>
+                    <div className="muted small">LinkedIn URL not available.</div>
                   )}
                 </div>
               </div>
             </aside>
 
-            {/* CENTER */}
             <main className="raCenter">
               {loadingPost ? (
                 <div className="raCenterCard centerMuted">Loading post...</div>
@@ -418,13 +424,61 @@ export default function PostClient() {
                 <article className="raPostClean">
                   <div className="raArticleOuter">
                     <div className="raArticleInner">
-                      {/* ✅ TITLE ROW: title left, share icon right (like your screenshot) */}
                       <div className="raTitleRow">
                         <h1 className="raHeroTitle">{post.title}</h1>
 
-                        <button className="raShareIconBtn" onClick={handleShare} type="button" title="Share">
-                          ⤴
-                        </button>
+                        <div className="raTitleActions">
+                          <button
+                            className="raShareIconBtn"
+                            onClick={handleShare}
+                            type="button"
+                            title="Share this post"
+                          >
+                            <FaShareNodes size={20} />
+                          </button>
+
+                          <div className="raSocialLinks">
+                            <a
+                              href="https://www.instagram.com/raceinnovations/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="raSocialIcon raInstagram"
+                              title="Instagram"
+                            >
+                              <FaInstagram size={18} />
+                            </a>
+
+                            <a
+                              href="https://www.facebook.com/raceinnovationspvtltd/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="raSocialIcon raFacebook"
+                              title="Facebook"
+                            >
+                              <FaFacebook size={18} />
+                            </a>
+
+                            <a
+                              href="https://x.com/raceinnovations"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="raSocialIcon raTwitter"
+                              title="X"
+                            >
+                              <FaXTwitter size={16} />
+                            </a>
+
+                            <a
+                              href="https://www.linkedin.com/company/race-innovations-private-limited/"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="raSocialIcon raLinkedin"
+                              title="LinkedIn"
+                            >
+                              <FaLinkedin size={18} />
+                            </a>
+                          </div>
+                        </div>
                       </div>
 
                       <div className="raTitleMetaRow">
@@ -432,14 +486,17 @@ export default function PostClient() {
                           {formatDateStable(post.published_at || post.created_at)}
                         </div>
 
-                        <button className="raCommentsPill" onClick={scrollToComments} type="button">
+                        <button
+                          className="raCommentsPill"
+                          onClick={scrollToComments}
+                          type="button"
+                        >
                           💬 <span className="raCommentsCount">{comments?.length || 0}</span> Comments
                         </button>
                       </div>
 
                       {shareMsg ? <div className="raShareToast">{shareMsg}</div> : null}
 
-                      {/* ✅ COVER IMAGE: directly below title */}
                       {imgSrc ? (
                         <div className="raCoverMedia">
                           <img
@@ -453,22 +510,22 @@ export default function PostClient() {
                         </div>
                       ) : null}
 
-                      {/* ✅ CONTENT */}
                       {post.content ? (
                         <div
                           className="raPostContentRef"
-                          dangerouslySetInnerHTML={{ __html: post.content }}
+                          dangerouslySetInnerHTML={{ __html: String(post.content) }}
                         />
                       ) : post.excerpt ? (
                         <p className="raPara">{post.excerpt}</p>
-                      ) : null}
+                      ) : (
+                        <p className="raPara muted">No content available.</p>
+                      )}
                     </div>
                   </div>
                 </article>
               )}
             </main>
 
-            {/* RIGHT */}
             <aside className="raRight">
               <div className="raDiscuss">
                 <div className="raDiscussTitle">Discussions</div>
@@ -491,6 +548,7 @@ export default function PostClient() {
                   className="raPrimaryBtn"
                   disabled={posting || !String(commentText || "").trim() || !post?.id}
                   onClick={handlePostClick}
+                  type="button"
                 >
                   {posting ? "Posting…" : "Post"}
                 </button>
@@ -518,7 +576,6 @@ export default function PostClient() {
             </aside>
           </div>
 
-          {/* Email modal */}
           {showEmailPrompt ? (
             <div
               className="emailBackdrop"
@@ -554,11 +611,16 @@ export default function PostClient() {
                 />
 
                 <div className="d-flex gap-2 justify-content-end mt-3">
-                  <button className="btn btn-light" onClick={() => setShowEmailPrompt(false)}>
+                  <button
+                    className="btn btn-light"
+                    onClick={() => setShowEmailPrompt(false)}
+                    type="button"
+                  >
                     Cancel
                   </button>
                   <button
                     className="btn btn-dark"
+                    type="button"
                     onClick={() => {
                       const v = String(email || "").trim();
                       if (!isValidEmail(v)) return alert("Please enter a valid email");
@@ -579,24 +641,28 @@ export default function PostClient() {
 
         <style jsx>{`
           .raPage {
-            background: #f6f7fb;
+            background: linear-gradient(180deg, #e9eef6 0%, #dde6f2 100%);
             min-height: 100vh;
           }
+
           .raShellFluid {
             padding-left: 14px;
             padding-right: 14px;
             padding-bottom: 28px;
           }
+
           .raHeaderRow {
             display: flex;
             align-items: center;
             padding: 10px 0;
           }
+
           .raBackBtn {
             text-decoration: none;
             color: #2563eb;
             font-weight: 800;
           }
+
           .raBackBtn:hover {
             text-decoration: underline;
           }
@@ -609,42 +675,49 @@ export default function PostClient() {
             align-items: start;
           }
 
-          /* LEFT */
           .raSideCard {
-            background: #fff;
-            border: 1px solid rgba(17, 24, 39, 0.12);
-            border-radius: 12px;
+            background: rgba(243, 247, 252, 0.88);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 18px;
             overflow: hidden;
             position: sticky;
             top: 92px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+            backdrop-filter: blur(8px);
           }
+
           .raSideBodyNoHero {
             padding: 14px;
           }
+
           .raSideLine {
             height: 1px;
             background: rgba(17, 24, 39, 0.08);
             margin: 12px 0;
           }
+
           .raSearchRow {
             display: flex;
             align-items: center;
             gap: 10px;
           }
+
           .raSearchWrap {
             flex: 1;
             display: flex;
             align-items: center;
             gap: 8px;
-            border: 1px solid rgba(17, 24, 39, 0.14);
-            background: #fff;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            background: rgba(255, 255, 255, 0.62);
             border-radius: 999px;
             padding: 8px 10px;
           }
+
           .raSearchIcon {
             font-size: 13px;
             opacity: 0.75;
           }
+
           .raSearchInput {
             border: none;
             outline: none;
@@ -653,6 +726,7 @@ export default function PostClient() {
             color: #111827;
             background: transparent;
           }
+
           .raClearBtn {
             border: none;
             background: transparent;
@@ -661,13 +735,15 @@ export default function PostClient() {
             padding: 0 6px;
             cursor: pointer;
           }
+
           .raClearBtn:hover {
             opacity: 1;
           }
+
           .raSideRefresh {
-            border: 1px solid rgba(17, 24, 39, 0.12);
-            background: #fff;
-            border-radius: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            background: rgba(255, 255, 255, 0.62);
+            border-radius: 12px;
             padding: 8px 10px;
             font-weight: 900;
           }
@@ -679,15 +755,18 @@ export default function PostClient() {
             gap: 10px;
             margin-bottom: 10px;
           }
+
           .raTypeHeader {
             font-size: 13px;
             font-weight: 950;
             color: #111827;
           }
+
           .raTypeSub {
             font-size: 12px;
             color: #6b7280;
           }
+
           .raTypeList {
             display: flex;
             flex-direction: column;
@@ -696,43 +775,54 @@ export default function PostClient() {
             overflow: auto;
             padding-right: 4px;
           }
+
           .raTypeItem {
             width: 100%;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border: 1px solid rgba(17, 24, 39, 0.12);
-            background: #fff;
-            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            background: rgba(255, 255, 255, 0.52);
+            border-radius: 14px;
             padding: 12px 12px;
             cursor: pointer;
+            transition: all 0.2s ease;
           }
+
+          .raTypeItem:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
+          }
+
           .raTypeItem.active {
-            background: #111827;
-            border-color: #111827;
+            background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%);
+            border-color: transparent;
           }
+
           .raTypeName {
             font-size: 14px;
             font-weight: 900;
             color: #111827;
           }
+
           .raTypeItem.active .raTypeName {
             color: #fff;
           }
+
           .raTypeCount {
             font-size: 12px;
             font-weight: 900;
-            color: #6b7280;
-            background: rgba(17, 24, 39, 0.06);
+            color: #475569;
+            background: rgba(15, 23, 42, 0.06);
             padding: 4px 8px;
             border-radius: 999px;
           }
+
           .raTypeItem.active .raTypeCount {
             color: #111827;
             background: #fff;
           }
 
-          /* LinkedIn */
           .raLiHeaderRow {
             display: flex;
             align-items: baseline;
@@ -740,91 +830,188 @@ export default function PostClient() {
             gap: 10px;
             margin-bottom: 10px;
           }
-          .raLiFrameWrap {
-            border: 1px solid rgba(17, 24, 39, 0.12);
-            border-radius: 12px;
-            overflow: hidden;
-            background: #fff;
+
+          .raLiCard {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.58);
+            padding: 14px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
           }
+
+          .raLiCardIcon {
+            width: 42px;
+            height: 42px;
+            flex: 0 0 42px;
+            border-radius: 12px;
+            background: #0a66c2;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 900;
+            text-transform: lowercase;
+          }
+
+          .raLiCardContent {
+            min-width: 0;
+          }
+
+          .raLiCardTitle {
+            font-size: 14px;
+            font-weight: 900;
+            color: #111827;
+            margin-bottom: 4px;
+          }
+
+          .raLiCardText {
+            font-size: 12.5px;
+            color: #6b7280;
+            line-height: 1.5;
+            margin-bottom: 10px;
+          }
+
           .raLiOpenBtn {
             display: inline-block;
-            margin-top: 10px;
             font-weight: 900;
             color: #2563eb;
             text-decoration: none;
           }
+
           .raLiOpenBtn:hover {
             text-decoration: underline;
           }
 
-          /* CENTER */
           .raCenter {
             min-width: 0;
             display: block;
           }
+
           .raCenterCard {
-            background: #fff;
-            border: 1px solid rgba(17, 24, 39, 0.12);
-            border-radius: 12px;
+            background: rgba(246, 249, 253, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 18px;
             padding: 18px;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.07);
           }
+
           .centerMuted {
             color: #6b7280;
             text-align: center;
           }
+
           .raPostClean {
-            background: #fff;
-            border: 1px solid rgba(17, 24, 39, 0.12);
-            border-radius: 12px;
+            background: rgba(246, 249, 253, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 18px;
             overflow: hidden;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.07);
+            backdrop-filter: blur(8px);
           }
 
           .raArticleOuter {
             padding: 0 56px;
           }
+
           .raArticleInner {
             max-width: 860px;
             margin: 0 auto;
-            padding: 18px 0 30px;
-          }
-          @media (max-width: 900px) {
-            .raArticleOuter {
-              padding: 0 18px;
-            }
-            .raArticleInner {
-              max-width: 100%;
-            }
+            padding: 20px 0 30px;
           }
 
-          /* ✅ TITLE row */
           .raTitleRow {
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
             gap: 16px;
           }
+
           .raHeroTitle {
             font-size: 38px;
-            font-weight: 950;
-            color: #111827;
-            line-height: 1.06;
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1.08;
             letter-spacing: -0.02em;
             margin: 6px 0 0;
             flex: 1;
+            text-shadow: 2px 2px 0 rgba(37, 99, 235, 0.08);
           }
-          .raShareIconBtn {
-            width: 54px;
-            height: 54px;
-            border-radius: 12px;
-            border: 2px solid #111827;
-            background: #fff;
-            font-weight: 950;
-            font-size: 18px;
-            cursor: pointer;
+
+          .raTitleActions {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
             flex: 0 0 auto;
           }
+
+          .raShareIconBtn {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            border: 1.5px solid rgba(148, 163, 184, 0.28);
+            background: rgba(255, 255, 255, 0.68);
+            color: #2563eb;
+            box-shadow: 0 10px 24px rgba(37, 99, 235, 0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.22s ease;
+          }
+
           .raShareIconBtn:hover {
-            background: rgba(17, 24, 39, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(37, 99, 235, 0.16);
+            background: rgba(255, 255, 255, 0.82);
+          }
+
+          .raSocialLinks {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            max-width: 88px;
+          }
+
+          .raSocialIcon {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+          }
+
+          .raSocialIcon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(15, 23, 42, 0.1);
+          }
+
+          .raInstagram {
+            color: #e4405f;
+          }
+
+          .raFacebook {
+            color: #1877f2;
+          }
+
+          .raTwitter {
+            color: #000000;
+          }
+
+          .raLinkedin {
+            color: #0077b5;
           }
 
           .raTitleMetaRow {
@@ -834,8 +1021,9 @@ export default function PostClient() {
             justify-content: space-between;
             gap: 12px;
           }
+
           .raTitleMeta {
-            color: #6b7280;
+            color: #64748b;
             font-size: 13px;
             font-weight: 700;
           }
@@ -845,7 +1033,7 @@ export default function PostClient() {
             background: rgba(37, 99, 235, 0.12);
             color: #2563eb;
             font-weight: 950;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 10px 12px;
             cursor: pointer;
             display: inline-flex;
@@ -853,9 +1041,11 @@ export default function PostClient() {
             gap: 6px;
             white-space: nowrap;
           }
+
           .raCommentsPill:hover {
             background: rgba(37, 99, 235, 0.16);
           }
+
           .raCommentsCount {
             font-weight: 950;
           }
@@ -872,67 +1062,125 @@ export default function PostClient() {
             font-weight: 900;
           }
 
-          /* ✅ COVER IMAGE below title */
           .raCoverMedia {
             margin-top: 14px;
-            border: 1px solid rgba(17, 24, 39, 0.08);
-            border-radius: 14px;
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 16px;
             overflow: hidden;
-            background: #fff;
+            background: rgba(255, 255, 255, 0.8);
           }
+
           .raCoverImg {
             width: 100%;
             display: block;
             height: auto;
             max-height: 420px;
             object-fit: contain;
-            background: #fff;
+            background: transparent;
           }
 
-          /* CONTENT */
           .raPostContentRef {
             margin-top: 18px;
             text-align: justify;
             text-justify: inter-word;
             hyphens: auto;
+            overflow: visible !important;
+            max-height: none !important;
+            height: auto !important;
           }
+
+          .raPostContentRef :global(*) {
+            max-height: none !important;
+          }
+
           .raPostContentRef :global(p),
           .raPostContentRef :global(h1),
           .raPostContentRef :global(h2),
           .raPostContentRef :global(h3),
           .raPostContentRef :global(h4),
+          .raPostContentRef :global(h5),
+          .raPostContentRef :global(h6),
           .raPostContentRef :global(blockquote),
           .raPostContentRef :global(ul),
           .raPostContentRef :global(ol),
-          .raPostContentRef :global(li) {
+          .raPostContentRef :global(li),
+          .raPostContentRef :global(div),
+          .raPostContentRef :global(section),
+          .raPostContentRef :global(article),
+          .raPostContentRef :global(span) {
             margin-left: 0 !important;
             padding-left: 0 !important;
+            overflow: visible !important;
+            max-height: none !important;
+            height: auto !important;
           }
+
           .raPostContentRef :global(p) {
             margin: 0 0 26px !important;
             line-height: 1.85;
             font-size: 18px;
+            color: #1f2937;
           }
+
           .raPostContentRef :global(ul),
           .raPostContentRef :global(ol) {
             margin: 0 0 26px !important;
-            padding: 0 !important;
-            list-style: none !important;
+            padding-left: 22px !important;
+            list-style-position: outside !important;
           }
+
+          .raPostContentRef :global(ul) {
+            list-style: disc !important;
+          }
+
+          .raPostContentRef :global(ol) {
+            list-style: decimal !important;
+          }
+
           .raPostContentRef :global(li) {
             margin: 0 0 14px !important;
-            padding: 0 !important;
-            list-style: none !important;
             font-size: 18px;
             line-height: 1.85;
+            color: #1f2937;
           }
-          .raPostContentRef :global(li::marker) {
-            content: "" !important;
-          }
+
           .raPostContentRef :global(a) {
             color: #2563eb;
             text-decoration: underline;
             font-weight: 800;
+            word-break: break-word;
+          }
+
+          .raPostContentRef :global(img) {
+            max-width: 100% !important;
+            height: auto !important;
+            display: block;
+            margin: 18px auto;
+            border-radius: 12px;
+          }
+
+          .raPostContentRef :global(table) {
+            width: 100% !important;
+            border-collapse: collapse;
+            margin: 18px 0 24px;
+            display: block;
+            overflow-x: auto;
+          }
+
+          .raPostContentRef :global(th),
+          .raPostContentRef :global(td) {
+            border: 1px solid rgba(17, 24, 39, 0.12);
+            padding: 10px 12px;
+            font-size: 15px;
+            text-align: left;
+          }
+
+          .raPostContentRef :global(iframe),
+          .raPostContentRef :global(video) {
+            width: 100% !important;
+            max-width: 100% !important;
+            border-radius: 12px;
+            margin: 18px 0 24px;
           }
 
           .raPara {
@@ -942,55 +1190,120 @@ export default function PostClient() {
             text-align: justify;
             text-justify: inter-word;
             hyphens: auto;
+            color: #1f2937;
           }
 
-          /* RIGHT */
           .raDiscuss {
             position: sticky;
             top: 92px;
-            background: #fff;
-            border: 1px solid rgba(17, 24, 39, 0.12);
-            border-radius: 12px;
-            padding: 12px;
+            background: rgba(243, 247, 252, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+            border-radius: 18px;
+            padding: 14px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+            backdrop-filter: blur(8px);
           }
+
           .raDiscussTitle {
             font-size: 14px;
             font-weight: 950;
             color: #111827;
           }
+
           .raDiscussOn {
             margin-top: 6px;
             font-size: 12.5px;
             color: #6b7280;
             line-height: 1.3;
           }
+
           .raDiscussOnTitle {
             color: #111827;
             font-weight: 900;
           }
+
           .raDiscussDivider {
             height: 1px;
             background: rgba(17, 24, 39, 0.08);
             margin: 10px 0;
           }
+
           .raTextarea {
             width: 100%;
-            border: 1px solid rgba(17, 24, 39, 0.18);
-            border-radius: 12px;
-            padding: 10px;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            border-radius: 14px;
+            padding: 12px;
             outline: none;
             font-size: 13.5px;
             resize: vertical;
+            background: rgba(255, 255, 255, 0.72);
           }
+
           .raPrimaryBtn {
             width: 100%;
             margin-top: 10px;
             border: none;
-            border-radius: 12px;
-            padding: 10px 12px;
+            border-radius: 14px;
+            padding: 12px 12px;
             font-weight: 950;
-            background: #111827;
+            background: linear-gradient(135deg, #4b5563 0%, #111827 100%);
             color: #fff;
+            cursor: pointer;
+          }
+
+          .raPrimaryBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+
+          .raDiscussListWrap {
+            margin-top: 12px;
+          }
+
+          .raDiscussList {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 520px;
+            overflow: auto;
+            padding-right: 4px;
+          }
+
+          .raComment {
+            background: rgba(255, 255, 255, 0.62);
+            border: 1px solid rgba(148, 163, 184, 0.16);
+            border-radius: 14px;
+            padding: 10px;
+          }
+
+          .raCommentTop {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 6px;
+          }
+
+          .raCommentEmail {
+            font-size: 12px;
+            font-weight: 900;
+            color: #111827;
+            word-break: break-word;
+          }
+
+          .raCommentTime {
+            font-size: 11px;
+            font-weight: 700;
+            color: #6b7280;
+            white-space: nowrap;
+          }
+
+          .raCommentText {
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: #1f2937;
+            white-space: pre-wrap;
+            word-break: break-word;
           }
 
           .muted {
@@ -1007,10 +1320,11 @@ export default function PostClient() {
             z-index: 9999;
             padding: 12px;
           }
+
           .emailCard {
             width: 100%;
             max-width: 420px;
-            background: #fff;
+            background: #f8fafc;
             border-radius: 16px;
             padding: 16px;
             box-shadow: 0 16px 60px rgba(0, 0, 0, 0.25);
@@ -1020,22 +1334,78 @@ export default function PostClient() {
             .raGrid {
               grid-template-columns: 1fr;
             }
+
             .raLeft {
               display: none;
             }
+
             .raDiscuss {
               position: static;
             }
+
             .raHeroTitle {
               font-size: 40px;
             }
+
             .raPostContentRef :global(p),
             .raPostContentRef :global(li) {
               font-size: 16px;
             }
           }
+
+          @media (max-width: 900px) {
+            .raArticleOuter {
+              padding: 0 18px;
+            }
+
+            .raArticleInner {
+              max-width: 100%;
+            }
+
+            .raTitleRow {
+              flex-direction: column;
+              align-items: stretch;
+            }
+
+            .raTitleActions {
+              flex-direction: row;
+              justify-content: space-between;
+              align-items: center;
+            }
+
+            .raSocialLinks {
+              max-width: none;
+              justify-content: flex-start;
+            }
+          }
+
+          @media (max-width: 640px) {
+            .raHeroTitle {
+              font-size: 30px;
+            }
+
+            .raTitleMetaRow {
+              flex-direction: column;
+              align-items: flex-start;
+            }
+
+            .raShareIconBtn {
+              width: 50px;
+              height: 50px;
+            }
+
+            .raSocialIcon {
+              width: 32px;
+              height: 32px;
+            }
+
+            .raLiCard {
+              padding: 12px;
+            }
+          }
         `}</style>
       </div>
+
       <Footer />
     </>
   );
