@@ -12,6 +12,24 @@ function toJson(value, fallback) {
   }
 }
 
+async function getUniqueSlug(baseSlug) {
+  const cleanBase = (baseSlug || "report").trim();
+  let slug = cleanBase;
+  let count = 1;
+
+  while (true) {
+    const [rows] = await db.query(
+      `SELECT id FROM reports WHERE slug = ? LIMIT 1`,
+      [slug]
+    );
+
+    if (!rows.length) return slug;
+
+    count += 1;
+    slug = `${cleanBase}-${count}`;
+  }
+}
+
 export async function GET() {
   try {
     const reports = await getAllReports();
@@ -29,7 +47,8 @@ export async function POST(req) {
   try {
     const body = await req.json();
 
-    const slug = body.slug?.trim() || slugify(body.title || "");
+    const rawSlug = body.slug?.trim() || slugify(body.title || "");
+    const slug = await getUniqueSlug(rawSlug || "report");
 
     const [result] = await db.query(
       `INSERT INTO reports (
@@ -80,9 +99,9 @@ export async function POST(req) {
         toJson(body.deliverables || [], []),
         toJson(body.faqs || [], []),
 
-        body.isFeatured ? 1 : 0,
+        body.isFeatured === false ? 0 : 1,
         body.isActive === false ? 0 : 1,
-        Number(body.sortOrder || 0),
+        Number.isFinite(Number(body.sortOrder)) ? Number(body.sortOrder) : 9999,
       ]
     );
 
@@ -90,11 +109,15 @@ export async function POST(req) {
       success: true,
       message: "Report created successfully",
       id: result.insertId,
+      slug,
     });
   } catch (error) {
     console.error("POST admin reports error:", error);
     return NextResponse.json(
-      { success: false, message: "Failed to create report" },
+      {
+        success: false,
+        message: error?.message || "Failed to create report",
+      },
       { status: 500 }
     );
   }
