@@ -71,7 +71,7 @@ export async function POST(req) {
         body.accent || "#2f45bf",
 
         body.price || null,
-        body.currency || "USD",
+        body.currency || "RS",
         body.formatText || "PDF + Excel",
         body.licenseText || "Single User",
         body.deliveryText || "Within 24 hours",

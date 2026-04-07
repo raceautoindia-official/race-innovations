@@ -134,7 +134,7 @@ export default function BuyNowModal({ report }) {
           width: "100%",
         }}
       >
-        Buy Now
+       Request Sample
       </button>
 
       {open && (
