@@ -28,9 +28,9 @@ function Itpage() {
         <div id="digital">
           <Digital />
         </div>
-        <div id="mining">
+        {/* <div id="mining">
           <Mining />
-        </div>
+        </div> */}
         <div className="mt-5">
           <Why />
         </div>

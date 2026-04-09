@@ -188,11 +188,11 @@ const Navbar = () => {
                       Investors
                     </Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link className="dropdown-item" href="/partner">
                       Funding
                     </Link>
-                  </li>
+                  </li> */}
                 </ul>
               </li>
 
@@ -383,11 +383,11 @@ const Navbar = () => {
                         Investors
                       </Link>
                     </li>
-                    <li>
+                    {/* <li>
                       <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/partner">
                         Funding
                       </Link>
-                    </li>
+                    </li> */}
                   </ul>
                 </li>
 

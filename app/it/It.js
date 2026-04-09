@@ -117,11 +117,7 @@ function It() {
                   icon: <FaBullhorn size={23} />,
                   id: "digital",
                 },
-                {
-                  label: "Data Mining & Business Intelligence Data Mining",
-                  icon: <FaDatabase size={23} />,
-                  id: "mining",
-                },
+                
               ].map((item, i) => (
                 <p
                   key={i}
