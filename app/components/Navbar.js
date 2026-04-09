@@ -166,23 +166,20 @@ const Navbar = () => {
                       Strategic Report
                     </Link>
                   </li>
-                 
+
                 </ul>
               </li>
 
               {/* ✅ Investors + Funding like your screenshot (as dropdown under one menu) */}
-              <li className="nav-item dropdown ms-5">
-                <Link
-                  href="#"
-                  className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
-                  id="investDropdown"
-                  role="button"
-                  data-bs-toggle="dropdown"
-                  style={{ color: "#293BB1" }}
-                >
-                  Investors
-                </Link>
-                {/* <ul className="dropdown-menu" aria-labelledby="investDropdown">
+
+              <Link
+                href="/about-us/investors"
+                className={`nav-link menus ms-4 ${styles.navbarCustom}`}
+                style={{ color: "#293BB1" }}
+              >
+                Investors
+              </Link>
+              {/* <ul className="dropdown-menu" aria-labelledby="investDropdown">
                   <li>
                     <Link className="dropdown-item" href="/about-us/investors">
                       Investors
@@ -194,7 +191,7 @@ const Navbar = () => {
                     </Link>
                   </li>
                 </ul> */}
-              </li>
+
 
               {/* IT Services */}
               <li className="nav-item ms-5">
@@ -210,10 +207,10 @@ const Navbar = () => {
                 </Link>
               </li>
               <li className="nav-item ms-5">
-                  <Link className={`nav-link menus ${styles.navbarCustom}`} href="/web-blog" onClick={handleOffcanvasHide} style={{ color: "#293BB1" }}>
-                   Blogs
-                  </Link>
-                </li>
+                <Link className={`nav-link menus ${styles.navbarCustom}`} href="/web-blog" onClick={handleOffcanvasHide} style={{ color: "#293BB1" }}>
+                  Blogs
+                </Link>
+              </li>
             </ul>
 
             <div className="d-flex">
@@ -404,7 +401,7 @@ const Navbar = () => {
                 </li>
                 <li className="nav-item ms-5">
                   <Link className={`nav-link menus ${styles.navbarCustom}`} href="/web-blog" onClick={handleOffcanvasHide} style={{ color: "#293BB1" }}>
-                   Blogs
+                    Blogs
                   </Link>
                 </li>
 
