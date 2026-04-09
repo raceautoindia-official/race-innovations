@@ -182,18 +182,18 @@ const Navbar = () => {
                 >
                   Investors
                 </Link>
-                <ul className="dropdown-menu" aria-labelledby="investDropdown">
+                {/* <ul className="dropdown-menu" aria-labelledby="investDropdown">
                   <li>
                     <Link className="dropdown-item" href="/about-us/investors">
                       Investors
                     </Link>
                   </li>
-                  {/* <li>
+                  <li>
                     <Link className="dropdown-item" href="/partner">
                       Funding
                     </Link>
-                  </li> */}
-                </ul>
+                  </li>
+                </ul> */}
               </li>
 
               {/* IT Services */}
