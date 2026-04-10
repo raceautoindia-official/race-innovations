@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getReportById } from "@/lib/report-service";
+import { getReportById } from "../../../../../lib/report-service";
 import { slugify } from "@/lib/report-utils";
 import db from "@/lib/db";
 
@@ -12,9 +12,24 @@ function toJson(value, fallback) {
   }
 }
 
+function normalizeText(value, fallback = "") {
+  if (value === undefined || value === null) return fallback;
+  return String(value).trim();
+}
+
 export async function GET(req, { params }) {
   try {
-    const report = await getReportById(params.id);
+    const id = params?.id;
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Report id is required" },
+        { status: 400 }
+      );
+    }
+
+    const report = await getReportById(id);
+
     if (!report) {
       return NextResponse.json(
         { success: false, message: "Report not found" },
@@ -34,10 +49,36 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   try {
+    const id = params?.id;
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Report id is required" },
+        { status: 400 }
+      );
+    }
+
+    const existingReport = await getReportById(id);
+
+    if (!existingReport) {
+      return NextResponse.json(
+        { success: false, message: "Report not found" },
+        { status: 404 }
+      );
+    }
+
     const body = await req.json();
 
+    const title = normalizeText(body.title, existingReport.title || "");
+    const slug =
+      normalizeText(body.slug) || slugify(title || existingReport.title || "");
 
-    const slug = body.slug?.trim() || slugify(body.title || "");
+    const sampleImage =
+      body.sampleImage !== undefined
+        ? body.sampleImage
+        : body.sample_image !== undefined
+          ? body.sample_image
+          : existingReport.sampleImage;
 
     await db.query(
       `UPDATE reports SET
@@ -46,55 +87,68 @@ export async function PUT(req, { params }) {
         meta_title = ?, meta_description = ?, hero_description = ?, why_this_report = ?,
         sample_table_title = ?, sample_table_note = ?, sample_image = ?,
         tags_json = ?, highlights_json = ?, sections_json = ?, buyers_json = ?, deliverables_json = ?, faqs_json = ?,
-        is_featured = ?, is_active = ?, sort_order = ?
+        is_featured = ?, is_active = ?, sort_order = ?,
+        updated_at = NOW()
       WHERE id = ?`,
       [
         slug,
-        body.title || "",
-        body.previewTitle || body.title || "",
-        body.company || "RACE Innovations",
-        body.description || "",
-        body.region || "",
-        body.period || "",
-        body.badge || "NEW",
-        body.accent || "#2f45bf",
+        title,
+        normalizeText(body.previewTitle, body.title || existingReport.previewTitle || title),
+        normalizeText(body.company, existingReport.company || "RACE Innovations"),
+        normalizeText(body.description, existingReport.description || ""),
+        normalizeText(body.region, existingReport.region || ""),
+        normalizeText(body.period, existingReport.period || ""),
+        normalizeText(body.badge, existingReport.badge || "NEW"),
+        normalizeText(body.accent, existingReport.accent || "#2f45bf"),
 
-        body.price || null,
-        body.currency || "INR",
-        body.formatText || "PDF + Excel",
-        body.licenseText || "Single User",
-        body.deliveryText || "Within 24 hours",
-        body.pages || null,
-        body.geography || "",
-        body.forecastText || "",
-        body.publisher || "RACE Innovations",
+        body.price ?? existingReport.price ?? null,
+        normalizeText(body.currency, existingReport.currency || "INR"),
+        normalizeText(body.formatText, existingReport.formatText || "PDF + Excel"),
+        normalizeText(body.licenseText, existingReport.licenseText || "Single User"),
+        normalizeText(body.deliveryText, existingReport.deliveryText || "Within 24 hours"),
+        body.pages ?? existingReport.pages ?? null,
+        normalizeText(body.geography, existingReport.geography || ""),
+        normalizeText(body.forecastText, existingReport.forecastText || ""),
+        normalizeText(body.publisher, existingReport.publisher || "RACE Innovations"),
 
-        body.metaTitle || "",
-        body.metaDescription || "",
-        body.heroDescription || "",
-        body.whyThisReport || "",
+        normalizeText(body.metaTitle, existingReport.metaTitle || ""),
+        normalizeText(body.metaDescription, existingReport.metaDescription || ""),
+        normalizeText(body.heroDescription, existingReport.heroDescription || ""),
+        normalizeText(body.whyThisReport, existingReport.whyThisReport || ""),
 
-        body.sampleTableTitle || "",
-        body.sampleTableNote || "",
-        body.sampleImage || "",
+        normalizeText(body.sampleTableTitle, existingReport.sampleTableTitle || ""),
+        normalizeText(body.sampleTableNote, existingReport.sampleTableNote || ""),
+        sampleImage ? String(sampleImage).trim() : null,
 
-        toJson(body.tags || [], []),
-        toJson(body.highlights || [], []),
-        toJson(body.sections || [], []),
-        toJson(body.buyers || [], []),
-        toJson(body.deliverables || [], []),
-        toJson(body.faqs || [], []),
+        toJson(body.tags ?? existingReport.tags ?? [], []),
+        toJson(body.highlights ?? existingReport.highlights ?? [], []),
+        toJson(body.sections ?? existingReport.sections ?? [], []),
+        toJson(body.buyers ?? existingReport.buyers ?? [], []),
+        toJson(body.deliverables ?? existingReport.deliverables ?? [], []),
+        toJson(body.faqs ?? existingReport.faqs ?? [], []),
 
-        body.isFeatured ? 1 : 0,
-        body.isActive === false ? 0 : 1,
-        Number(body.sortOrder || 0),
-        params.id,
+        body.isFeatured !== undefined
+          ? body.isFeatured ? 1 : 0
+          : existingReport.isFeatured ? 1 : 0,
+
+        body.isActive !== undefined
+          ? body.isActive ? 1 : 0
+          : existingReport.isActive ? 1 : 0,
+
+        body.sortOrder !== undefined
+          ? Number(body.sortOrder || 0)
+          : Number(existingReport.sortOrder || 0),
+
+        id,
       ]
     );
+
+    const updatedReport = await getReportById(id);
 
     return NextResponse.json({
       success: true,
       message: "Report updated successfully",
+      data: updatedReport,
     });
   } catch (error) {
     console.error("PUT report error:", error);
@@ -107,8 +161,25 @@ export async function PUT(req, { params }) {
 
 export async function DELETE(req, { params }) {
   try {
-    const db = db();
-    await db.query(`DELETE FROM reports WHERE id = ?`, [params.id]);
+    const id = params?.id;
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, message: "Report id is required" },
+        { status: 400 }
+      );
+    }
+
+    const existingReport = await getReportById(id);
+
+    if (!existingReport) {
+      return NextResponse.json(
+        { success: false, message: "Report not found" },
+        { status: 404 }
+      );
+    }
+
+    await db.query(`DELETE FROM reports WHERE id = ?`, [id]);
 
     return NextResponse.json({
       success: true,

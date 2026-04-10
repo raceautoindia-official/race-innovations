@@ -19,6 +19,14 @@ export default async function ReportDetailPage({ params }) {
   const report = await getReportBySlug(params.slug);
   if (!report) notFound();
 
+  const imageSrc =
+    report.sampleImage ||
+    report.sample_image ||
+    report.image ||
+    report.coverImage ||
+    report.cover_image ||
+    "";
+
   return (
     <>
       <Navbar />
@@ -458,66 +466,111 @@ export default async function ReportDetailPage({ params }) {
                       backgroundColor: "#ffffff",
                       border: "1px solid #d9deea",
                       borderRadius: "14px",
-                      padding: "20px",
+                      overflow: "hidden",
                       boxShadow: "0 10px 26px rgba(16, 33, 63, 0.04)",
                     }}
                   >
-                    <h3 className="fw-bold mb-3" style={{ color: "#1f2f63" }}>
-                      {report.title}
-                    </h3>
-
-                    <div
-                      style={{
-                        color: "#7a869b",
-                        fontSize: "0.82rem",
-                        textTransform: "uppercase",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      Starting From
-                    </div>
-
-                    {!!(report.currency || report.price) && (
+                    {imageSrc ? (
+                      <img
+                        src={imageSrc}
+                        alt={report.title || "Report image"}
+                        style={{
+                          width: "100%",
+                          height: "320px",
+                          objectFit: "cover",
+                          display: "block",
+                          backgroundColor: "#eef2f8",
+                        }}
+                      />
+                    ) : (
                       <div
-                        className="fw-bold mb-3"
-                        style={{ color: "#1f2f63", fontSize: "2.3rem" }}
+                        style={{
+                          height: "320px",
+                          background:
+                            "linear-gradient(180deg, #eef2fb 0%, #edf2fb 100%)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "24px",
+                          textAlign: "center",
+                        }}
                       >
-                        {report.currency || ""} {report.price || ""}
+                        <div>
+                          <div
+                            style={{
+                              width: "90px",
+                              height: "6px",
+                              borderRadius: "999px",
+                              backgroundColor: "rgba(51,70,199,0.35)",
+                              margin: "0 auto 20px auto",
+                            }}
+                          />
+                          <div
+                            style={{
+                              color: "#1f2f63",
+                              fontSize: "1.1rem",
+                              fontWeight: 700,
+                              lineHeight: "1.5",
+                            }}
+                          >
+                            {report.previewTitle || report.title}
+                          </div>
+                        </div>
                       </div>
                     )}
 
-                    <div className="mb-3">
-                      {[
-                        ["Format", report.formatText || "-"],
-                        ["License", report.licenseText || "-"],
-                        ["Delivery", report.deliveryText || "-"],
-                      ].map((row, idx) => (
-                        <div
-                          key={idx}
-                          className="d-flex justify-content-between align-items-center mb-1"
-                        >
-                          <span>{row[0]}</span>
-                          <span className="fw-semibold" style={{ color: "#1f2f63" }}>
-                            {row[1]}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                    <div style={{ padding: "20px" }}>
+                      <h3 className="fw-bold mb-3" style={{ color: "#1f2f63" }}>
+                        {report.title}
+                      </h3>
 
-                    <div className="d-grid gap-2">
-                      <BuyNowModal report={report} />
-                      <button
-                        className="btn"
-                        style={{ backgroundColor: "#22345f", color: "#fff" }}
+                      <div
+                        style={{
+                          color: "#7a869b",
+                          fontSize: "0.82rem",
+                          textTransform: "uppercase",
+                          marginBottom: "4px",
+                        }}
                       >
-                       Buy Now
-                      </button>
-                      {/* <button className="btn btn-outline-secondary">
-                        Request Customization
-                      </button>
-                      <button className="btn btn-outline-secondary">
-                        Talk to Analyst
-                      </button> */}
+                        Starting From
+                      </div>
+
+                      {!!(report.currency || report.price) && (
+                        <div
+                          className="fw-bold mb-3"
+                          style={{ color: "#1f2f63", fontSize: "2.3rem" }}
+                        >
+                          {report.currency || ""} {report.price || ""}
+                        </div>
+                      )}
+
+                      <div className="mb-3">
+                        {[
+                          ["Format", report.formatText || "-"],
+                          ["License", report.licenseText || "-"],
+                          ["Delivery", report.deliveryText || "-"],
+                        ].map((row, idx) => (
+                          <div
+                            key={idx}
+                            className="d-flex justify-content-between align-items-center mb-1"
+                          >
+                            <span>{row[0]}</span>
+                            <span className="fw-semibold" style={{ color: "#1f2f63" }}>
+                              {row[1]}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="d-grid gap-2">
+                        <BuyNowModal report={report} />
+                        <button
+                          className="btn"
+                          style={{ backgroundColor: "#22345f", color: "#fff" }}
+                        >
+                          Buy Now
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
