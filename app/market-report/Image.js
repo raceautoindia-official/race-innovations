@@ -343,53 +343,106 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <section
+ <section
         style={{
           borderTop: "1px solid #dde3f0",
           borderBottom: "1px solid #dde3f0",
+          background:
+            "linear-gradient(135deg, #f8fbff 0%, #eef4ff 45%, #f9f5ff 100%)",
         }}
       >
         <div className="container-fluid px-4 px-md-5 px-lg-5">
           <div
             className="text-center"
             style={{
-              paddingTop: "32px",
-              paddingBottom: "28px",
-              borderBottom: "1px solid #dde3f0",
+              paddingTop: "38px",
+              paddingBottom: "34px",
+              borderBottom: "1px solid rgba(47, 69, 191, 0.12)",
             }}
           >
             <div
               style={{
-                color: "#6a7690",
-                fontSize: "14px",
-                fontWeight: 700,
-                letterSpacing: "2px",
+                color: "#223e6c",
+                fontSize: "18px",
+                fontWeight: 800,
+                letterSpacing: "2.4px",
                 textTransform: "uppercase",
-                marginBottom: "22px",
+                marginBottom: "24px",
               }}
             >
-              Trusted by leading organizations
+              TRUSTED BY LEADING ORGANIZATIONS
             </div>
 
             <div className="row justify-content-center g-3">
-              {trustedItems.map((item, index) => (
-                <div key={index} className="col-6 col-md-auto">
-                  <div
-                    style={{
-                      color: "#7b869d",
-                      fontSize: "17px",
-                      fontWeight: 500,
-                      padding: "8px 18px",
-                      borderRadius: "999px",
-                      backgroundColor: "#ffffff",
-                      border: "1px solid #e3e8f4",
-                    }}
-                  >
-                    {item}
+              {trustedItems.map((item, index) => {
+                const stylesList = [
+                  {
+                    background: "linear-gradient(135deg, #eef4ff 0%, #dce8ff 100%)",
+                    color: "#2346a0",
+                    border: "1px solid #c9d8ff",
+                    boxShadow: "0 10px 24px rgba(35, 70, 160, 0.10)",
+                  },
+                  {
+                    background: "linear-gradient(135deg, #eefcf4 0%, #ddf7e8 100%)",
+                    color: "#177245",
+                    border: "1px solid #c7ecd6",
+                    boxShadow: "0 10px 24px rgba(23, 114, 69, 0.10)",
+                  },
+                  {
+                    background: "linear-gradient(135deg, #fff5ea 0%, #ffe7cc 100%)",
+                    color: "#b05a00",
+                    border: "1px solid #ffd6a8",
+                    boxShadow: "0 10px 24px rgba(176, 90, 0, 0.10)",
+                  },
+                  {
+                    background: "linear-gradient(135deg, #f5efff 0%, #e8dbff 100%)",
+                    color: "#6b39b2",
+                    border: "1px solid #d9c2ff",
+                    boxShadow: "0 10px 24px rgba(107, 57, 178, 0.10)",
+                  },
+                  {
+                    background: "linear-gradient(135deg, #eefbff 0%, #d7f1fb 100%)",
+                    color: "#0f6e8c",
+                    border: "1px solid #bae7f7",
+                    boxShadow: "0 10px 24px rgba(15, 110, 140, 0.10)",
+                  },
+                  {
+                    background: "linear-gradient(135deg, #fff0f5 0%, #ffdbe8 100%)",
+                    color: "#b03060",
+                    border: "1px solid #ffc4d9",
+                    boxShadow: "0 10px 24px rgba(176, 48, 96, 0.10)",
+                  },
+                ];
+
+                const itemStyle = stylesList[index % stylesList.length];
+
+                return (
+                  <div key={index} className="col-6 col-md-auto">
+                    <div
+                      style={{
+                        ...itemStyle,
+                        fontSize: "18px",
+                        fontWeight: 700,
+                        padding: "14px 24px",
+                        borderRadius: "999px",
+                        transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                        cursor: "default",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-3px)";
+                        e.currentTarget.style.boxShadow =
+                          "0 16px 32px rgba(47, 69, 191, 0.16)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = itemStyle.boxShadow;
+                      }}
+                    >
+                      {item}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -401,7 +454,7 @@ export default function HomePage() {
                     style={{
                       color: "#2f45bf",
                       fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
-                      fontWeight: 700,
+                      fontWeight: 800,
                       lineHeight: "1",
                       marginBottom: "10px",
                     }}
@@ -411,9 +464,9 @@ export default function HomePage() {
 
                   <div
                     style={{
-                      color: "#5f6b85",
+                      color: "#41506b",
                       fontSize: "18px",
-                      fontWeight: 500,
+                      fontWeight: 700,
                     }}
                   >
                     {stat.label}
@@ -424,7 +477,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       <section
         id="reports"
         style={{
@@ -920,57 +972,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section
-        id="contact"
-        style={{
-          paddingTop: "64px",
-          paddingBottom: "64px",
-          backgroundColor: "#f8faff",
-          borderTop: "1px solid #e3e8f4",
-        }}
-      >
-        <div className="container-fluid px-4 px-md-5 px-lg-5 text-center">
-          <h2
-            style={{
-              fontSize: "clamp(2rem, 3vw, 2.8rem)",
-              fontWeight: 700,
-              color: "#111111",
-              marginBottom: "16px",
-            }}
-          >
-            Need a custom report package?
-          </h2>
-          <p
-            style={{
-              color: "#66738c",
-              fontSize: "18px",
-              maxWidth: "760px",
-              margin: "0 auto 28px auto",
-              lineHeight: "1.6",
-            }}
-          >
-            Speak with our team for tailored automotive intelligence, country
-            coverage, segment studies, and enterprise subscriptions.
-          </p>
-
-          <button
-            type="button"
-            onClick={openEnquiryModal}
-            className="btn px-4 py-3"
-            style={{
-              backgroundColor: "#2f45bf",
-              color: "#ffffff",
-              borderRadius: "20px",
-              fontWeight: 700,
-              minWidth: "200px",
-              border: "none",
-              boxShadow: "0 8px 20px rgba(47, 69, 191, 0.18)",
-            }}
-          >
-            Contact Sales
-          </button>
-        </div>
-      </section>
+     
 
       {isEnquiryOpen && (
         <div

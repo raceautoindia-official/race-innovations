@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import styles from "@/app/page.module.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
@@ -12,6 +13,8 @@ import { MdAnalytics, MdDisplaySettings } from "react-icons/md";
 import { HiPhoneOutgoing } from "react-icons/hi";
 
 const Navbar = () => {
+  const pathname = usePathname();
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       import("bootstrap/dist/js/bootstrap.bundle.min.js")
@@ -20,12 +23,35 @@ const Navbar = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const offcanvasEl = document.getElementById("mobileNav");
+
+    if (offcanvasEl && window.bootstrap?.Offcanvas) {
+      let offcanvasInstance = window.bootstrap.Offcanvas.getInstance(offcanvasEl);
+      if (!offcanvasInstance) {
+        offcanvasInstance = new window.bootstrap.Offcanvas(offcanvasEl);
+      }
+      offcanvasInstance.hide();
+    }
+
+    document.body.classList.remove("offcanvas-backdrop", "modal-open");
+    document.body.style.overflow = "";
+    document.body.style.paddingRight = "";
+
+    document
+      .querySelectorAll(".offcanvas-backdrop")
+      .forEach((el) => el.remove());
+  }, [pathname]);
+
   const iconSize = 30;
   const iconColor = "#293BB1";
 
   const handleOffcanvasHide = () => {
     if (typeof window !== "undefined") {
       const offcanvasEl = document.getElementById("mobileNav");
+
       if (offcanvasEl) {
         let offcanvasInstance = window.bootstrap?.Offcanvas?.getInstance(offcanvasEl);
         if (!offcanvasInstance && window.bootstrap?.Offcanvas) {
@@ -33,11 +59,52 @@ const Navbar = () => {
         }
         offcanvasInstance?.hide?.();
       }
+
+      setTimeout(() => {
+        document.body.classList.remove("modal-open");
+        document.body.style.overflow = "";
+        document.body.style.paddingRight = "";
+        document
+          .querySelectorAll(".offcanvas-backdrop")
+          .forEach((el) => el.remove());
+      }, 300);
+    }
+  };
+
+  const handleDesktopDropdownEnter = (e) => {
+    if (typeof window !== "undefined" && window.innerWidth >= 992) {
+      const dropdown = e.currentTarget;
+      const menu = dropdown.querySelector(".dropdown-menu");
+      const toggle = dropdown.querySelector(".dropdown-toggle");
+
+      dropdown.classList.add("show");
+      menu?.classList.add("show");
+      toggle?.setAttribute("aria-expanded", "true");
+    }
+  };
+
+  const handleDesktopDropdownLeave = (e) => {
+    if (typeof window !== "undefined" && window.innerWidth >= 992) {
+      const dropdown = e.currentTarget;
+      const menu = dropdown.querySelector(".dropdown-menu");
+      const toggle = dropdown.querySelector(".dropdown-toggle");
+
+      dropdown.classList.remove("show");
+      menu?.classList.remove("show");
+      toggle?.setAttribute("aria-expanded", "false");
     }
   };
 
   return (
     <>
+      <style jsx global>{`
+        @media (min-width: 992px) {
+          .desktop_nav .dropdown-menu {
+            margin-top: 0;
+          }
+        }
+      `}</style>
+
       <nav
         className="navbar navbar-expand-lg bg-white position-fixed"
         style={{ zIndex: 1000, width: "100%", marginBottom: "40px" }}
@@ -47,7 +114,6 @@ const Navbar = () => {
             <Image src="/images/logo_v2.png" alt="Logo" width={180} height={34} />
           </Link>
 
-          {/* Mobile "Corporate Profile" */}
           <a
             className={`nav-link menus d-lg-none ${styles.navbarCustom}`}
             href="/corporate-profile"
@@ -68,17 +134,18 @@ const Navbar = () => {
             Corporate Profile
           </a>
 
-          {/* Desktop navbar */}
           <div className="collapse navbar-collapse desktop_nav d-none d-lg-flex" id="navbarNav">
             <ul className="navbar-nav me-auto" style={{ fontSize: "18px", fontWeight: "700" }}>
-              {/* About */}
-              <li className="nav-item dropdown ms-5">
+              <li
+                className="nav-item dropdown ms-5"
+                onMouseEnter={handleDesktopDropdownEnter}
+                onMouseLeave={handleDesktopDropdownLeave}
+              >
                 <Link
                   href="/about_us"
                   className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                   id="aboutDropdown"
                   role="button"
-                  data-bs-toggle="dropdown"
                   style={{ color: "#293BB1" }}
                 >
                   About Us
@@ -97,14 +164,16 @@ const Navbar = () => {
                 </ul>
               </li>
 
-              {/* Products */}
-              <li className="nav-item dropdown ms-5">
+              <li
+                className="nav-item dropdown ms-5"
+                onMouseEnter={handleDesktopDropdownEnter}
+                onMouseLeave={handleDesktopDropdownLeave}
+              >
                 <Link
                   href="#"
                   className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                   id="productsDropdown"
                   role="button"
-                  data-bs-toggle="dropdown"
                   style={{ color: "#293BB1" }}
                 >
                   Products
@@ -138,14 +207,16 @@ const Navbar = () => {
                 </ul>
               </li>
 
-              {/* Reports */}
-              <li className="nav-item dropdown ms-5">
+              <li
+                className="nav-item dropdown ms-5"
+                onMouseEnter={handleDesktopDropdownEnter}
+                onMouseLeave={handleDesktopDropdownLeave}
+              >
                 <Link
                   href="#"
                   className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                   id="reportsDropdown"
                   role="button"
-                  data-bs-toggle="dropdown"
                   style={{ color: "#293BB1" }}
                 >
                   Reports
@@ -166,11 +237,8 @@ const Navbar = () => {
                       Strategic Report
                     </Link>
                   </li>
-
                 </ul>
               </li>
-
-              {/* ✅ Investors + Funding like your screenshot (as dropdown under one menu) */}
 
               <Link
                 href="/about-us/investors"
@@ -179,35 +247,34 @@ const Navbar = () => {
               >
                 Investors
               </Link>
-              {/* <ul className="dropdown-menu" aria-labelledby="investDropdown">
-                  <li>
-                    <Link className="dropdown-item" href="/about-us/investors">
-                      Investors
-                    </Link>
-                  </li>
-                  <li>
-                    <Link className="dropdown-item" href="/partner">
-                      Funding
-                    </Link>
-                  </li>
-                </ul> */}
 
-
-              {/* IT Services */}
               <li className="nav-item ms-5">
-                <Link className={`nav-link menus shining ${styles.navbarCustom}`} href="/it" style={{ color: "red" }}>
+                <Link
+                  className={`nav-link menus shining ${styles.navbarCustom}`}
+                  href="/it"
+                  style={{ color: "red" }}
+                >
                   IT Services
                 </Link>
               </li>
 
-              {/* ODC Logistics */}
               <li className="nav-item ms-5">
-                <Link className={`nav-link menus ${styles.navbarCustom}`} href="/logistics" style={{ color: "#293BB1" }}>
+                <Link
+                  className={`nav-link menus ${styles.navbarCustom}`}
+                  href="/logistics"
+                  style={{ color: "#293BB1" }}
+                >
                   ODC Logistics
                 </Link>
               </li>
+
               <li className="nav-item ms-5">
-                <Link className={`nav-link menus ${styles.navbarCustom}`} href="/web-blog" onClick={handleOffcanvasHide} style={{ color: "#293BB1" }}>
+                <Link
+                  className={`nav-link menus ${styles.navbarCustom}`}
+                  href="/web-blog"
+                  onClick={handleOffcanvasHide}
+                  style={{ color: "#293BB1" }}
+                >
                   Blogs
                 </Link>
               </li>
@@ -246,14 +313,29 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* mobile navbar */}
-          <div className="offcanvas offcanvas-start d-lg-none" tabIndex="-1" id="mobileNav" aria-labelledby="mobileNavLabel">
+          <div
+            className="offcanvas offcanvas-start d-lg-none"
+            tabIndex="-1"
+            id="mobileNav"
+            aria-labelledby="mobileNavLabel"
+          >
             <div className="offcanvas-header">
               <h5 className="offcanvas-title" id="mobileNavLabel">
-                <Image src="/images/l.png" alt="Logo" width={100} height={100} style={{ objectFit: "contain" }} />
+                <Image
+                  src="/images/l.png"
+                  alt="Logo"
+                  width={100}
+                  height={100}
+                  style={{ objectFit: "contain" }}
+                />
               </h5>
 
-              <button type="button" className="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="offcanvas"
+                aria-label="Close"
+              ></button>
             </div>
 
             <div className="offcanvas-body">
@@ -272,12 +354,20 @@ const Navbar = () => {
                   </Link>
                   <ul className="dropdown-menu" aria-labelledby="aboutDropdownMobile">
                     <li>
-                      <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/about-us/vision-mission">
+                      <Link
+                        className="dropdown-item"
+                        onClick={handleOffcanvasHide}
+                        href="/about-us/vision-mission"
+                      >
                         Vision & Mission
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/about-us/management-team">
+                      <Link
+                        className="dropdown-item"
+                        onClick={handleOffcanvasHide}
+                        href="/about-us/management-team"
+                      >
                         Management Team
                       </Link>
                     </li>
@@ -287,7 +377,6 @@ const Navbar = () => {
                 <li className="nav-item dropdown ms-5">
                   <Link
                     href="#"
-                    onClick={handleOffcanvasHide}
                     className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                     id="productsDropdownMobile"
                     role="button"
@@ -303,7 +392,11 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/intellect">
+                      <Link
+                        className="dropdown-item"
+                        onClick={handleOffcanvasHide}
+                        href="/intellect"
+                      >
                         Intellect
                       </Link>
                     </li>
@@ -313,12 +406,20 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/intellect/lbi">
+                      <Link
+                        className="dropdown-item"
+                        onClick={handleOffcanvasHide}
+                        href="/intellect/lbi"
+                      >
                         LBI Route Survey
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/accounting-and-legal">
+                      <Link
+                        className="dropdown-item"
+                        onClick={handleOffcanvasHide}
+                        href="/accounting-and-legal"
+                      >
                         Accounting & Legal
                       </Link>
                     </li>
@@ -328,7 +429,6 @@ const Navbar = () => {
                 <li className="nav-item dropdown ms-5">
                   <Link
                     href="#"
-                    onClick={handleOffcanvasHide}
                     className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                     id="reportsDropdownMobile"
                     role="button"
@@ -339,7 +439,11 @@ const Navbar = () => {
                   </Link>
                   <ul className="dropdown-menu" aria-labelledby="reportsDropdownMobile">
                     <li>
-                      <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/market-report">
+                      <Link
+                        className="dropdown-item"
+                        onClick={handleOffcanvasHide}
+                        href="/market-report"
+                      >
                         Market Report
                       </Link>
                     </li>
@@ -349,23 +453,29 @@ const Navbar = () => {
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/strategic-report">
+                      <Link
+                        className="dropdown-item"
+                        onClick={handleOffcanvasHide}
+                        href="/strategic-report"
+                      >
                         Strategic Report
                       </Link>
                     </li>
                     <li>
-                      <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/flash-reports">
+                      <Link
+                        className="dropdown-item"
+                        onClick={handleOffcanvasHide}
+                        href="/flash-reports"
+                      >
                         Flash Report
                       </Link>
                     </li>
                   </ul>
                 </li>
 
-                {/* ✅ Mobile Investors dropdown with Funding inside */}
                 <li className="nav-item dropdown ms-5">
                   <Link
                     href="#"
-                    onClick={handleOffcanvasHide}
                     className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                     id="investDropdownMobile"
                     role="button"
@@ -376,37 +486,57 @@ const Navbar = () => {
                   </Link>
                   <ul className="dropdown-menu" aria-labelledby="investDropdownMobile">
                     <li>
-                      <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/about-us/investors">
+                      <Link
+                        className="dropdown-item"
+                        onClick={handleOffcanvasHide}
+                        href="/about-us/investors"
+                      >
                         Investors
                       </Link>
                     </li>
-                    {/* <li>
-                      <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/partner">
-                        Funding
-                      </Link>
-                    </li> */}
                   </ul>
                 </li>
 
                 <li className="nav-item ms-5">
-                  <Link className={`nav-link menus shining ${styles.navbarCustom}`} href="/it" onClick={handleOffcanvasHide} style={{ color: "red" }}>
+                  <Link
+                    className={`nav-link menus shining ${styles.navbarCustom}`}
+                    href="/it"
+                    onClick={handleOffcanvasHide}
+                    style={{ color: "red" }}
+                  >
                     IT Services
                   </Link>
                 </li>
 
                 <li className="nav-item ms-5">
-                  <Link className={`nav-link menus ${styles.navbarCustom}`} href="/logistics" onClick={handleOffcanvasHide} style={{ color: "#293BB1" }}>
+                  <Link
+                    className={`nav-link menus ${styles.navbarCustom}`}
+                    href="/logistics"
+                    onClick={handleOffcanvasHide}
+                    style={{ color: "#293BB1" }}
+                  >
                     ODC Logistics
                   </Link>
                 </li>
+
                 <li className="nav-item ms-5">
-                  <Link className={`nav-link menus ${styles.navbarCustom}`} href="/web-blog" onClick={handleOffcanvasHide} style={{ color: "#293BB1" }}>
+                  <Link
+                    className={`nav-link menus ${styles.navbarCustom}`}
+                    href="/web-blog"
+                    onClick={handleOffcanvasHide}
+                    style={{ color: "#293BB1" }}
+                  >
                     Blogs
                   </Link>
                 </li>
 
                 <li className="nav-item ms-5">
-                  <Link className={`nav-link menus ${styles.navbarCustom}`} onClick={handleOffcanvasHide} href="/contact" style={{ color: "#293BB1" }}>
+                  <Link
+                    className={`nav-link menus ${styles.navbarCustom}`}
+                    onClick={handleOffcanvasHide}
+                    href="/contact"
+                    style={{ color: "#293BB1" }}
+                  >
                     Contact
                   </Link>
                 </li>
@@ -432,7 +562,6 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* bottom mobile bar */}
           <div className={styles.mobile_navbar}>
             <div className={styles.navigation}>
               <Link href="https://raceautoanalytics.com/" style={{ textDecoration: "none" }}>

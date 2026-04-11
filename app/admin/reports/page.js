@@ -2,6 +2,45 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
+const CATEGORY_OPTIONS = [
+  "Market Forecast Reports",
+  "Flash Reports",
+  "EV Intelligence",
+  "Country Reports",
+  "OEM Benchmarking",
+  "Custom Research",
+  "Aftermarket Reports",
+  "Commercial Vehicle Reports",
+  "Passenger Vehicle Reports",
+  "Two Wheeler Reports",
+  "Three Wheeler Reports",
+  "Tractor Reports",
+  "Construction Equipment Reports",
+];
+
+const COUNTRY_OPTIONS = [
+  "India",
+  "South Africa",
+  "Australia",
+  "Brazil",
+  "Germany",
+  "Japan",
+  "Sweden",
+  "Vietnam",
+  "Chile",
+  "Pakistan",
+  "Colombia",
+  "Peru",
+  "Indonesia",
+  "Thailand",
+  "Malaysia",
+  "Philippines",
+  "Mexico",
+  "USA",
+  "UK",
+  "Canada",
+];
+
 const emptyForm = {
   id: null,
   slug: "",
@@ -10,6 +49,10 @@ const emptyForm = {
   company: "RACE Innovations",
   description: "",
   region: "",
+  country: "",
+  manualCountry: "",
+  category: "",
+  manualCategory: "",
   period: "",
   badge: "NEW",
   accent: "#2f45bf",
@@ -32,6 +75,7 @@ const emptyForm = {
   sampleTableTitle: "",
   sampleTableNote: "",
   sampleImage: "",
+  samplePdf: "",
 
   tagsText: "",
   highlightsText: "",
@@ -69,6 +113,7 @@ export default function AdminReportsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
   const [message, setMessage] = useState("");
 
   async function loadReports() {
@@ -101,6 +146,12 @@ export default function AdminReportsPage() {
   }
 
   function fillForm(report) {
+    const reportCategory = report.category || "";
+    const reportCountry = report.country || "";
+
+    const isPresetCategory = CATEGORY_OPTIONS.includes(reportCategory);
+    const isPresetCountry = COUNTRY_OPTIONS.includes(reportCountry);
+
     setForm({
       id: report.id,
       slug: report.slug || "",
@@ -109,6 +160,10 @@ export default function AdminReportsPage() {
       company: report.company || "RACE Innovations",
       description: report.description || "",
       region: report.region || "",
+      country: isPresetCountry ? reportCountry : "",
+      manualCountry: isPresetCountry ? "" : reportCountry,
+      category: isPresetCategory ? reportCategory : "",
+      manualCategory: isPresetCategory ? "" : reportCategory,
       period: report.period || "",
       badge: report.badge || "NEW",
       accent: report.accent || "#2f45bf",
@@ -131,6 +186,7 @@ export default function AdminReportsPage() {
       sampleTableTitle: report.sampleTableTitle || "",
       sampleTableNote: report.sampleTableNote || "",
       sampleImage: report.sampleImage || "",
+      samplePdf: report.samplePdf || report.sample_pdf || "",
 
       tagsText: (report.tags || []).join("\n"),
       highlightsText: (report.highlights || []).join("\n"),
@@ -183,12 +239,53 @@ export default function AdminReportsPage() {
     }
   }
 
+  async function handleSamplePdfUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      setMessage("Please upload PDF only");
+      return;
+    }
+
+    try {
+      setUploadingPdf(true);
+      setMessage("");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json?.url) {
+        throw new Error(json?.error || "PDF upload failed");
+      }
+
+      setForm((prev) => ({
+        ...prev,
+        samplePdf: json.url,
+      }));
+    } catch (error) {
+      setMessage(error.message || "Failed to upload PDF");
+    } finally {
+      setUploadingPdf(false);
+    }
+  }
+
   async function handleSubmit(e) {
     e.preventDefault();
     setSaving(true);
     setMessage("");
 
     try {
+      const finalCategory = (form.manualCategory || "").trim() || form.category || "";
+      const finalCountry = (form.manualCountry || "").trim() || form.country || "";
+
       const payload = {
         slug: form.slug,
         title: form.title,
@@ -196,6 +293,8 @@ export default function AdminReportsPage() {
         company: form.company,
         description: form.description,
         region: form.region,
+        country: finalCountry,
+        category: finalCategory,
         period: form.period,
         badge: form.badge,
         accent: form.accent,
@@ -218,6 +317,7 @@ export default function AdminReportsPage() {
         sampleTableTitle: form.sampleTableTitle,
         sampleTableNote: form.sampleTableNote,
         sampleImage: form.sampleImage,
+        samplePdf: form.samplePdf,
 
         tags: textToArray(form.tagsText),
         highlights: textToArray(form.highlightsText),
@@ -246,9 +346,7 @@ export default function AdminReportsPage() {
         throw new Error(json.message || "Failed to save report");
       }
 
-      setMessage(
-        isEdit ? "Report updated successfully" : "Report created successfully"
-      );
+      setMessage(isEdit ? "Report updated successfully" : "Report created successfully");
       await loadReports();
 
       if (!isEdit) {
@@ -308,8 +406,18 @@ export default function AdminReportsPage() {
                       style={{ background: "#fff" }}
                     >
                       <div className="fw-bold">{report.title}</div>
-                      <div className="text-muted small mb-2">{report.slug}</div>
-                      <div className="d-flex gap-2">
+                      <div className="text-muted small">{report.slug}</div>
+                      {report.category ? (
+                        <div className="small mt-1">
+                          <span className="badge bg-light text-dark border me-1">
+                            {report.category}
+                          </span>
+                        </div>
+                      ) : null}
+                      {report.country ? (
+                        <div className="text-muted small mt-1">{report.country}</div>
+                      ) : null}
+                      <div className="d-flex gap-2 mt-2">
                         <button
                           type="button"
                           className="btn btn-sm btn-outline-primary"
@@ -336,9 +444,7 @@ export default function AdminReportsPage() {
         <div className="col-12 col-lg-8">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h1 className="h3 mb-3">
-                {isEdit ? "Edit Report" : "Create Report"}
-              </h1>
+              <h1 className="h3 mb-3">{isEdit ? "Edit Report" : "Create Report"}</h1>
 
               {message && <div className="alert alert-info py-2">{message}</div>}
 
@@ -393,6 +499,62 @@ export default function AdminReportsPage() {
                       onChange={handleChange}
                       className="form-control"
                       rows={3}
+                    />
+                  </div>
+
+                  <div className="col-md-4">
+                    <label className="form-label">Category</label>
+                    <select
+                      name="category"
+                      value={form.category}
+                      onChange={handleChange}
+                      className="form-select"
+                    >
+                      <option value="">Select category</option>
+                      {CATEGORY_OPTIONS.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="col-md-8">
+                    <label className="form-label">Manual Category</label>
+                    <input
+                      name="manualCategory"
+                      value={form.manualCategory}
+                      onChange={handleChange}
+                      className="form-control"
+                      placeholder="Type custom category if not in dropdown"
+                    />
+                  </div>
+
+                  <div className="col-md-4">
+                    <label className="form-label">Country</label>
+                    <select
+                      name="country"
+                      value={form.country}
+                      onChange={handleChange}
+                      className="form-select"
+                    >
+                      <option value="">Select country</option>
+                      {COUNTRY_OPTIONS.map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="col-md-8">
+                    <label className="form-label">Manual Country</label>
+                    <input
+                      name="manualCountry"
+                      value={form.manualCountry}
+                      onChange={handleChange}
+                      className="form-control"
+                      placeholder="Type custom country if not in dropdown"
                     />
                   </div>
 
@@ -644,10 +806,26 @@ export default function AdminReportsPage() {
                       className="form-control"
                     />
                     {uploadingImage && (
-                      <div className="form-text text-primary">
-                        Uploading image...
-                      </div>
+                      <div className="form-text text-primary">Uploading image...</div>
                     )}
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">Sample PDF</label>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={handleSamplePdfUpload}
+                      className="form-control"
+                    />
+                    {uploadingPdf && (
+                      <div className="form-text text-primary">Uploading PDF...</div>
+                    )}
+                    {form.samplePdf ? (
+                      <div className="form-text text-success text-break">
+                        PDF uploaded: {form.samplePdf}
+                      </div>
+                    ) : null}
                   </div>
 
                   <div className="col-md-6">
@@ -681,9 +859,7 @@ export default function AdminReportsPage() {
                           }}
                         />
                       ) : (
-                        <span className="text-muted small">
-                          No image selected
-                        </span>
+                        <span className="text-muted small">No image selected</span>
                       )}
                     </div>
                   </div>
@@ -708,10 +884,7 @@ export default function AdminReportsPage() {
                         className="form-check-input"
                         id="isFeatured"
                       />
-                      <label
-                        className="form-check-label"
-                        htmlFor="isFeatured"
-                      >
+                      <label className="form-check-label" htmlFor="isFeatured">
                         Featured
                       </label>
                     </div>
@@ -737,13 +910,9 @@ export default function AdminReportsPage() {
                     <button
                       type="submit"
                       className="btn btn-primary"
-                      disabled={saving || uploadingImage}
+                      disabled={saving || uploadingImage || uploadingPdf}
                     >
-                      {saving
-                        ? "Saving..."
-                        : isEdit
-                        ? "Update Report"
-                        : "Create Report"}
+                      {saving ? "Saving..." : isEdit ? "Update Report" : "Create Report"}
                     </button>
                     <button
                       type="button"

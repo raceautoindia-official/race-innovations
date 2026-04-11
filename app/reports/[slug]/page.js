@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getReportBySlug } from "@/lib/report-service";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
-import BuyNowModal from "@/app/components/BuyNowModal";
+import ReportDetailClientActions from "@/app/components/ReportDetailClientActions";
 
 export async function generateMetadata({ params }) {
   const report = await getReportBySlug(params.slug);
@@ -26,6 +26,11 @@ export default async function ReportDetailPage({ params }) {
     report.coverImage ||
     report.cover_image ||
     "";
+
+  const normalizedReport = {
+    ...report,
+    samplePdf: report.samplePdf || report.sample_pdf || "",
+  };
 
   return (
     <>
@@ -562,15 +567,7 @@ export default async function ReportDetailPage({ params }) {
                         ))}
                       </div>
 
-                      <div className="d-grid gap-2">
-                        <BuyNowModal report={report} />
-                        <button
-                          className="btn"
-                          style={{ backgroundColor: "#22345f", color: "#fff" }}
-                        >
-                          Buy Now
-                        </button>
-                      </div>
+                      <ReportDetailClientActions report={normalizedReport} />
                     </div>
                   </div>
                 </div>

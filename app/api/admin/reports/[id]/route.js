@@ -80,12 +80,19 @@ export async function PUT(req, { params }) {
           ? body.sample_image
           : existingReport.sampleImage;
 
+    const samplePdf =
+      body.samplePdf !== undefined
+        ? body.samplePdf
+        : body.sample_pdf !== undefined
+          ? body.sample_pdf
+          : existingReport.samplePdf || existingReport.sample_pdf || "";
+
     await db.query(
       `UPDATE reports SET
-        slug = ?, title = ?, preview_title = ?, company = ?, description = ?, region = ?, period = ?, badge = ?, accent = ?,
+        slug = ?, title = ?, preview_title = ?, company = ?, description = ?, region = ?, category = ?, country = ?, period = ?, badge = ?, accent = ?,
         price = ?, currency = ?, format_text = ?, license_text = ?, delivery_text = ?, pages = ?, geography = ?, forecast_text = ?, publisher = ?,
         meta_title = ?, meta_description = ?, hero_description = ?, why_this_report = ?,
-        sample_table_title = ?, sample_table_note = ?, sample_image = ?,
+        sample_table_title = ?, sample_table_note = ?, sample_image = ?, sample_pdf = ?,
         tags_json = ?, highlights_json = ?, sections_json = ?, buyers_json = ?, deliverables_json = ?, faqs_json = ?,
         is_featured = ?, is_active = ?, sort_order = ?,
         updated_at = NOW()
@@ -97,6 +104,8 @@ export async function PUT(req, { params }) {
         normalizeText(body.company, existingReport.company || "RACE Innovations"),
         normalizeText(body.description, existingReport.description || ""),
         normalizeText(body.region, existingReport.region || ""),
+        normalizeText(body.category, existingReport.category || ""),
+        normalizeText(body.country, existingReport.country || ""),
         normalizeText(body.period, existingReport.period || ""),
         normalizeText(body.badge, existingReport.badge || "NEW"),
         normalizeText(body.accent, existingReport.accent || "#2f45bf"),
@@ -119,6 +128,7 @@ export async function PUT(req, { params }) {
         normalizeText(body.sampleTableTitle, existingReport.sampleTableTitle || ""),
         normalizeText(body.sampleTableNote, existingReport.sampleTableNote || ""),
         sampleImage ? String(sampleImage).trim() : null,
+        samplePdf ? String(samplePdf).trim() : null,
 
         toJson(body.tags ?? existingReport.tags ?? [], []),
         toJson(body.highlights ?? existingReport.highlights ?? [], []),
