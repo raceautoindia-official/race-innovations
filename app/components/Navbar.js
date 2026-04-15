@@ -142,7 +142,7 @@ const Navbar = () => {
                 onMouseLeave={handleDesktopDropdownLeave}
               >
                 <Link
-                  href="/about_us"
+                  href="/about-us/vision-mission"
                   className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                   id="aboutDropdown"
                   role="button"
