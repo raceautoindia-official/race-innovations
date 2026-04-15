@@ -342,7 +342,7 @@ const Navbar = () => {
               <ul className="navbar-nav me-auto" style={{ fontSize: "18px", fontWeight: "700" }}>
                 <li className="nav-item dropdown ms-5">
                   <Link
-                    href="/about_us"
+                    href="/about-us/vision-mission"
                     onClick={handleOffcanvasHide}
                     className={`nav-link dropdown-toggle me-4 menus ${styles.navbarCustom}`}
                     id="aboutDropdownMobile"
