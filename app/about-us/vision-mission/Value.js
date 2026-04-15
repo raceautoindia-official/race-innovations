@@ -50,17 +50,17 @@ function Value() {
             >
               {[
                 {
-                  img: "/images/195.webp",
+                  img: "/images/195.png",
                   title: "Pursuit of Excellence",
                   text: "Continually strive to exceed the expectations of our people and our clients.",
                 },
                 {
-                  img: "/images/196.webp",
+                  img: "/images/196.png",
                   title: "Confidentiality",
                   text: "We take utmost responsibility in protecting customers' confidential information, strategy, futuristic plans, and values.",
                 },
                 {
-                  img: "/images/197.webp",
+                  img: "/images/197.png",
                   title: "Integrity",
                   text: "Our energy and enthusiasm are contagious. We are inspired to make a lasting impact.",
                 },
@@ -103,12 +103,12 @@ function Value() {
             >
               {[
                 {
-                  img: "/images/198.webp",
+                  img: "/images/198.png",
                   title: "Passion",
                   text: "Our energy and enthusiasm are contagious. We are inspired to make a lasting impact.",
                 },
                 {
-                  img: "/images/199.webp",
+                  img: "/images/199.png",
                   title: "Collaboration",
                   text: "Ability to work within the team, partner with clients' team for mutual success.",
                 },
