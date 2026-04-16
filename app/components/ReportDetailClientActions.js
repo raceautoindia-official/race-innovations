@@ -148,13 +148,12 @@ export default function ReportDetailClientActions({ report }) {
         throw new Error(data?.message || "Error submitting enquiry");
       }
 
-      if (!samplePdfUrl || !String(samplePdfUrl).trim()) {
-        throw new Error("Sample PDF not available for this report.");
-      }
-
       setEnquiryStatus({
         type: "success",
-        message: data?.message || "Enquiry submitted successfully",
+        message:
+          samplePdfUrl && String(samplePdfUrl).trim()
+            ? data?.message || "Enquiry submitted successfully"
+            : "Request submitted successfully. Our team will contact you shortly.",
       });
 
       setEnquiryForm({
@@ -171,11 +170,18 @@ export default function ReportDetailClientActions({ report }) {
           : "",
       });
 
-      setTimeout(() => {
-        setIsEnquiryOpen(false);
-        setEnquiryStatus({ type: "", message: "" });
-        openSamplePopup();
-      }, 350);
+      if (samplePdfUrl && String(samplePdfUrl).trim()) {
+        setTimeout(() => {
+          setIsEnquiryOpen(false);
+          setEnquiryStatus({ type: "", message: "" });
+          openSamplePopup();
+        }, 350);
+      } else {
+        setTimeout(() => {
+          setIsEnquiryOpen(false);
+          setEnquiryStatus({ type: "", message: "" });
+        }, 1200);
+      }
     } catch (error) {
       setEnquiryStatus({
         type: "error",

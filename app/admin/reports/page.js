@@ -121,8 +121,9 @@ export default function AdminReportsPage() {
       setLoading(true);
       const res = await fetch("/api/admin/reports", { cache: "no-store" });
       const json = await res.json();
+
       if (json.success) {
-        setReports(json.data || []);
+        setReports(Array.isArray(json.data) ? json.data : []);
       }
     } catch (error) {
       setMessage("Failed to load reports");
@@ -136,6 +137,19 @@ export default function AdminReportsPage() {
   }, []);
 
   const isEdit = useMemo(() => !!form.id, [form.id]);
+
+  const sortedReports = useMemo(() => {
+    return [...reports].sort((a, b) => {
+      const aSort = Number(a?.sortOrder ?? a?.sort_order ?? 0);
+      const bSort = Number(b?.sortOrder ?? b?.sort_order ?? 0);
+
+      if (aSort !== bSort) {
+        return aSort - bSort;
+      }
+
+      return String(a?.title || "").localeCompare(String(b?.title || ""));
+    });
+  }, [reports]);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
@@ -197,7 +211,7 @@ export default function AdminReportsPage() {
 
       isFeatured: !!report.isFeatured,
       isActive: !!report.isActive,
-      sortOrder: report.sortOrder || 0,
+      sortOrder: report.sortOrder ?? report.sort_order ?? 0,
     });
   }
 
@@ -399,7 +413,7 @@ export default function AdminReportsPage() {
                 <div>Loading...</div>
               ) : (
                 <div className="d-flex flex-column gap-2">
-                  {reports.map((report) => (
+                  {sortedReports.map((report) => (
                     <div
                       key={report.id}
                       className="border rounded p-3"
@@ -407,6 +421,13 @@ export default function AdminReportsPage() {
                     >
                       <div className="fw-bold">{report.title}</div>
                       <div className="text-muted small">{report.slug}</div>
+
+                      <div className="small mt-1">
+                        <span className="badge bg-light text-dark border me-1">
+                          Sort: {Number(report?.sortOrder ?? report?.sort_order ?? 0)}
+                        </span>
+                      </div>
+
                       {report.category ? (
                         <div className="small mt-1">
                           <span className="badge bg-light text-dark border me-1">
@@ -414,9 +435,11 @@ export default function AdminReportsPage() {
                           </span>
                         </div>
                       ) : null}
+
                       {report.country ? (
                         <div className="text-muted small mt-1">{report.country}</div>
                       ) : null}
+
                       <div className="d-flex gap-2 mt-2">
                         <button
                           type="button"
@@ -868,6 +891,7 @@ export default function AdminReportsPage() {
                     <label className="form-label">Sort Order</label>
                     <input
                       name="sortOrder"
+                      type="number"
                       value={form.sortOrder}
                       onChange={handleChange}
                       className="form-control"

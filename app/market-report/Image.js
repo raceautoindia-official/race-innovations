@@ -102,11 +102,12 @@ export default function HomePage() {
             period: item.period || "",
             badge: item.badge || "General",
             accent: item.accent || "#2f45bf",
+            sortOrder: Number(item.sortOrder ?? item.sort_order ?? 0),
             tags: Array.isArray(item.tags)
               ? item.tags
               : Array.isArray(item.tags_json)
-              ? item.tags_json
-              : [],
+                ? item.tags_json
+                : [],
             sampleImage:
               item.sampleImage ||
               item.sample_image ||
@@ -114,7 +115,13 @@ export default function HomePage() {
               item.coverImage ||
               item.cover_image ||
               "",
-          }));
+          }))
+          .sort((a, b) => {
+            if (a.sortOrder !== b.sortOrder) {
+              return a.sortOrder - b.sortOrder;
+            }
+            return String(a.title || "").localeCompare(String(b.title || ""));
+          });
 
         if (active) {
           setReports(normalized);
