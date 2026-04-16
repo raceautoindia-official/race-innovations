@@ -27,6 +27,9 @@ export default function HomePage() {
   const [selectedRegion, setSelectedRegion] = useState("All");
   const [searchText, setSearchText] = useState("");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const reportsPerPage = 6;
+
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
   const [submittingEnquiry, setSubmittingEnquiry] = useState(false);
   const [enquiryStatus, setEnquiryStatus] = useState({
@@ -102,8 +105,8 @@ export default function HomePage() {
             tags: Array.isArray(item.tags)
               ? item.tags
               : Array.isArray(item.tags_json)
-                ? item.tags_json
-                : [],
+              ? item.tags_json
+              : [],
             sampleImage:
               item.sampleImage ||
               item.sample_image ||
@@ -175,6 +178,17 @@ export default function HomePage() {
       return matchCategory && matchRegion && matchSearch;
     });
   }, [reports, selectedCategory, selectedRegion, searchText]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedRegion, searchText]);
+
+  const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
+
+  const paginatedReports = useMemo(() => {
+    const startIndex = (currentPage - 1) * reportsPerPage;
+    return filteredReports.slice(startIndex, startIndex + reportsPerPage);
+  }, [filteredReports, currentPage]);
 
   function openEnquiryModal() {
     setEnquiryStatus({ type: "", message: "" });
@@ -343,7 +357,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
- <section
+
+      <section
         style={{
           borderTop: "1px solid #dde3f0",
           borderBottom: "1px solid #dde3f0",
@@ -377,37 +392,43 @@ export default function HomePage() {
               {trustedItems.map((item, index) => {
                 const stylesList = [
                   {
-                    background: "linear-gradient(135deg, #eef4ff 0%, #dce8ff 100%)",
+                    background:
+                      "linear-gradient(135deg, #eef4ff 0%, #dce8ff 100%)",
                     color: "#2346a0",
                     border: "1px solid #c9d8ff",
                     boxShadow: "0 10px 24px rgba(35, 70, 160, 0.10)",
                   },
                   {
-                    background: "linear-gradient(135deg, #eefcf4 0%, #ddf7e8 100%)",
+                    background:
+                      "linear-gradient(135deg, #eefcf4 0%, #ddf7e8 100%)",
                     color: "#177245",
                     border: "1px solid #c7ecd6",
                     boxShadow: "0 10px 24px rgba(23, 114, 69, 0.10)",
                   },
                   {
-                    background: "linear-gradient(135deg, #fff5ea 0%, #ffe7cc 100%)",
+                    background:
+                      "linear-gradient(135deg, #fff5ea 0%, #ffe7cc 100%)",
                     color: "#b05a00",
                     border: "1px solid #ffd6a8",
                     boxShadow: "0 10px 24px rgba(176, 90, 0, 0.10)",
                   },
                   {
-                    background: "linear-gradient(135deg, #f5efff 0%, #e8dbff 100%)",
+                    background:
+                      "linear-gradient(135deg, #f5efff 0%, #e8dbff 100%)",
                     color: "#6b39b2",
                     border: "1px solid #d9c2ff",
                     boxShadow: "0 10px 24px rgba(107, 57, 178, 0.10)",
                   },
                   {
-                    background: "linear-gradient(135deg, #eefbff 0%, #d7f1fb 100%)",
+                    background:
+                      "linear-gradient(135deg, #eefbff 0%, #d7f1fb 100%)",
                     color: "#0f6e8c",
                     border: "1px solid #bae7f7",
                     boxShadow: "0 10px 24px rgba(15, 110, 140, 0.10)",
                   },
                   {
-                    background: "linear-gradient(135deg, #fff0f5 0%, #ffdbe8 100%)",
+                    background:
+                      "linear-gradient(135deg, #fff0f5 0%, #ffdbe8 100%)",
                     color: "#b03060",
                     border: "1px solid #ffc4d9",
                     boxShadow: "0 10px 24px rgba(176, 48, 96, 0.10)",
@@ -477,6 +498,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
       <section
         id="reports"
         style={{
@@ -655,6 +677,7 @@ export default function HomePage() {
                         setSelectedCategory("All");
                         setSelectedRegion("All");
                         setSearchText("");
+                        setCurrentPage(1);
                       }}
                       style={{
                         backgroundColor: "#ffffff",
@@ -693,7 +716,7 @@ export default function HomePage() {
             </div>
           ) : loadingReports ? (
             <div className="row g-4 justify-content-center">
-              {Array.from({ length: 4 }).map((_, index) => (
+              {Array.from({ length: 6 }).map((_, index) => (
                 <div key={index} className="col-12 col-md-6 col-xl-4">
                   <div
                     style={{
@@ -753,187 +776,265 @@ export default function HomePage() {
               ))}
             </div>
           ) : filteredReports.length > 0 ? (
-            <div className="row g-4 justify-content-center">
-              {filteredReports.map((report) => (
-                <div key={report.id} className="col-12 col-md-6 col-xl-4">
-                  <div
-                    style={{
-                      borderRadius: "22px",
-                      overflow: "hidden",
-                      border: "1px solid #dfe6f2",
-                      backgroundColor: "#ffffff",
-                      boxShadow: "0 10px 26px rgba(20, 30, 70, 0.05)",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
+            <>
+              <div className="row g-4 justify-content-center">
+                {paginatedReports.map((report) => (
+                  <div key={report.id} className="col-12 col-md-6 col-xl-4">
                     <div
                       style={{
-                        position: "relative",
-                        background:
-                          "linear-gradient(180deg, #eef2fb 0%, #edf2fb 100%)",
-                        height: "170px",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        textAlign: "center",
+                        borderRadius: "22px",
                         overflow: "hidden",
-                      }}
-                    >
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: "12px",
-                          right: "12px",
-                          backgroundColor: "#2f45bf",
-                          color: "#ffffff",
-                          borderRadius: "12px",
-                          padding: "6px 12px",
-                          fontSize: "11px",
-                          fontWeight: 800,
-                          letterSpacing: "0.5px",
-                          textTransform: "uppercase",
-                          zIndex: 2,
-                        }}
-                      >
-                        {report.badge || "New"}
-                      </span>
-
-                      {report.sampleImage ? (
-                        <img
-                          src={report.sampleImage}
-                          alt={report.title || "Report image"}
-                          style={{
-                            width: "100%",
-                            height: "170px",
-                            objectFit: "cover",
-                            display: "block",
-                          }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                      ) : (
-                        <div style={{ maxWidth: "90%", padding: "20px 16px" }}>
-                          <div
-                            style={{
-                              width: "82px",
-                              height: "5px",
-                              borderRadius: "999px",
-                              backgroundColor: "rgba(47,69,191,0.45)",
-                              margin: "0 auto 18px auto",
-                            }}
-                          />
-                          <div
-                            style={{
-                              fontSize: "17px",
-                              lineHeight: "1.35",
-                              fontWeight: 700,
-                              color: "#0e2b5c",
-                              marginBottom: "8px",
-                            }}
-                          >
-                            {report.previewTitle || report.title}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: "14px",
-                              color: "#637391",
-                              fontWeight: 600,
-                            }}
-                          >
-                            {report.company || "RACE Innovations"}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div
-                      style={{
-                        padding: "18px",
+                        border: "1px solid #dfe6f2",
+                        backgroundColor: "#ffffff",
+                        boxShadow: "0 10px 26px rgba(20, 30, 70, 0.05)",
+                        height: "100%",
                         display: "flex",
                         flexDirection: "column",
-                        flex: 1,
                       }}
                     >
-                      <h3
-                        style={{
-                          fontSize: "17px",
-                          lineHeight: "1.3",
-                          fontWeight: 800,
-                          color: "#091f4d",
-                          marginBottom: "10px",
-                        }}
-                      >
-                        {report.title}
-                      </h3>
-
-                      <p
-                        style={{
-                          color: "#5f7295",
-                          fontSize: "14px",
-                          lineHeight: "1.65",
-                          marginBottom: "14px",
-                          minHeight: "72px",
-                        }}
-                      >
-                        {report.description || report.summary}
-                      </p>
-
                       <div
-                        className="d-flex flex-wrap align-items-center gap-3 mb-3"
                         style={{
-                          color: "#5b6f93",
-                          fontSize: "13px",
-                          fontWeight: 500,
+                          position: "relative",
+                          background:
+                            "linear-gradient(180deg, #eef2fb 0%, #edf2fb 100%)",
+                          height: "170px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          textAlign: "center",
+                          overflow: "hidden",
                         }}
                       >
-                        <span>◉ {report.geography || "Country not specified"}</span>
-                        <span>◷ {report.period || "Period not specified"}</span>
-                      </div>
-
-                      {report.tags?.length > 0 && (
-                        <div className="d-flex flex-wrap gap-2 mb-3">
-                          {report.tags.slice(0, 4).map((tag, idx) => (
-                            <span
-                              key={idx}
-                              style={{
-                                display: "inline-block",
-                                padding: "6px 10px",
-                                borderRadius: "9px",
-                                backgroundColor: "#eef2f7",
-                                color: "#223e6c",
-                                fontSize: "11px",
-                                fontWeight: 800,
-                                letterSpacing: "0.3px",
-                                textTransform: "uppercase",
-                              }}
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      <div style={{ marginTop: "auto" }}>
-                        <a
-                          href={report.slug ? `/reports/${report.slug}` : "#"}
+                        <span
                           style={{
-                            color: "#2f45bf",
+                            position: "absolute",
+                            top: "12px",
+                            right: "12px",
+                            backgroundColor: "#2f45bf",
+                            color: "#ffffff",
+                            borderRadius: "12px",
+                            padding: "6px 12px",
+                            fontSize: "11px",
                             fontWeight: 800,
-                            fontSize: "15px",
-                            textDecoration: "none",
+                            letterSpacing: "0.5px",
+                            textTransform: "uppercase",
+                            zIndex: 2,
                           }}
                         >
-                          View Report →
-                        </a>
+                          {report.badge || "New"}
+                        </span>
+
+                        {report.sampleImage ? (
+                          <img
+                            src={report.sampleImage}
+                            alt={report.title || "Report image"}
+                            style={{
+                              width: "100%",
+                              height: "170px",
+                              objectFit: "cover",
+                              display: "block",
+                            }}
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <div style={{ maxWidth: "90%", padding: "20px 16px" }}>
+                            <div
+                              style={{
+                                width: "82px",
+                                height: "5px",
+                                borderRadius: "999px",
+                                backgroundColor: "rgba(47,69,191,0.45)",
+                                margin: "0 auto 18px auto",
+                              }}
+                            />
+                            <div
+                              style={{
+                                fontSize: "17px",
+                                lineHeight: "1.35",
+                                fontWeight: 700,
+                                color: "#0e2b5c",
+                                marginBottom: "8px",
+                              }}
+                            >
+                              {report.previewTitle || report.title}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: "14px",
+                                color: "#637391",
+                                fontWeight: 600,
+                              }}
+                            >
+                              {report.company || "RACE Innovations"}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div
+                        style={{
+                          padding: "18px",
+                          display: "flex",
+                          flexDirection: "column",
+                          flex: 1,
+                        }}
+                      >
+                        <h3
+                          style={{
+                            fontSize: "17px",
+                            lineHeight: "1.3",
+                            fontWeight: 800,
+                            color: "#091f4d",
+                            marginBottom: "10px",
+                          }}
+                        >
+                          {report.title}
+                        </h3>
+
+                        <p
+                          style={{
+                            color: "#5f7295",
+                            fontSize: "14px",
+                            lineHeight: "1.65",
+                            marginBottom: "14px",
+                            minHeight: "72px",
+                          }}
+                        >
+                          {report.description || report.summary}
+                        </p>
+
+                        <div
+                          className="d-flex flex-wrap align-items-center gap-3 mb-3"
+                          style={{
+                            color: "#5b6f93",
+                            fontSize: "13px",
+                            fontWeight: 500,
+                          }}
+                        >
+                          <span>◉ {report.geography || "Country not specified"}</span>
+                          <span>◷ {report.period || "Period not specified"}</span>
+                        </div>
+
+                        {report.tags?.length > 0 && (
+                          <div className="d-flex flex-wrap gap-2 mb-3">
+                            {report.tags.slice(0, 4).map((tag, idx) => (
+                              <span
+                                key={idx}
+                                style={{
+                                  display: "inline-block",
+                                  padding: "6px 10px",
+                                  borderRadius: "9px",
+                                  backgroundColor: "#eef2f7",
+                                  color: "#223e6c",
+                                  fontSize: "11px",
+                                  fontWeight: 800,
+                                  letterSpacing: "0.3px",
+                                  textTransform: "uppercase",
+                                }}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        <div style={{ marginTop: "auto" }}>
+                          <a
+                            href={report.slug ? `/reports/${report.slug}` : "#"}
+                            style={{
+                              color: "#2f45bf",
+                              fontWeight: 800,
+                              fontSize: "15px",
+                              textDecoration: "none",
+                            }}
+                          >
+                            View Report →
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </div>
+                ))}
+              </div>
+
+              {totalPages > 1 && (
+                <div className="row justify-content-center mt-5">
+                  <div className="col-auto">
+                    <div className="d-flex align-items-center flex-wrap justify-content-center gap-2">
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
+                        disabled={currentPage === 1}
+                        style={{
+                          backgroundColor:
+                            currentPage === 1 ? "#f1f5f9" : "#ffffff",
+                          color: currentPage === 1 ? "#94a3b8" : "#2f45bf",
+                          border: "1px solid #d7dfef",
+                          borderRadius: "12px",
+                          fontWeight: 700,
+                          padding: "10px 16px",
+                          minWidth: "90px",
+                        }}
+                      >
+                        Prev
+                      </button>
+
+                      {Array.from({ length: totalPages }, (_, index) => {
+                        const page = index + 1;
+                        const isActive = currentPage === page;
+
+                        return (
+                          <button
+                            key={page}
+                            type="button"
+                            className="btn"
+                            onClick={() => setCurrentPage(page)}
+                            style={{
+                              backgroundColor: isActive ? "#2f45bf" : "#ffffff",
+                              color: isActive ? "#ffffff" : "#2f45bf",
+                              border: "1px solid rgba(47, 69, 191, 0.22)",
+                              borderRadius: "12px",
+                              fontWeight: 700,
+                              padding: "10px 14px",
+                              minWidth: "44px",
+                            }}
+                          >
+                            {page}
+                          </button>
+                        );
+                      })}
+
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                        }
+                        disabled={currentPage === totalPages}
+                        style={{
+                          backgroundColor:
+                            currentPage === totalPages ? "#f1f5f9" : "#ffffff",
+                          color:
+                            currentPage === totalPages ? "#94a3b8" : "#2f45bf",
+                          border: "1px solid #d7dfef",
+                          borderRadius: "12px",
+                          fontWeight: 700,
+                          padding: "10px 16px",
+                          minWidth: "90px",
+                        }}
+                      >
+                        Next
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           ) : (
             <div className="row justify-content-center">
               <div className="col-12 col-xl-8">
@@ -971,8 +1072,6 @@ export default function HomePage() {
           )}
         </div>
       </section>
-
-     
 
       {isEnquiryOpen && (
         <div

@@ -1,449 +1,439 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
+import Script from "next/script";
 
-const initialForm = {
-  name: "",
-  company_name: "",
-  email: "",
-  designation: "",
-  phone: "",
-  location: "",
-  area_of_interest: "",
-  preferred_contact: "Email",
-  message: "",
-};
+function getReportPrice(report) {
+  const raw =
+    report?.price ??
+    report?.amount ??
+    report?.sale_price ??
+    report?.report_price ??
+    0;
 
-export default function BuyNowModal({ report }) {
-  const [open, setOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [successMsg, setSuccessMsg] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-  const [form, setForm] = useState(() => ({
-    ...initialForm,
-    area_of_interest: report?.title || "",
-    message: report?.title
-      ? `I am interested in purchasing the report: ${report.title}`
-      : "",
-  }));
+  const numeric = Number(String(raw).replace(/[^0-9.]/g, ""));
+  return Number.isFinite(numeric) ? numeric : 0;
+}
 
-  const modalTitle = useMemo(
-    () => `Buy Report${report?.title ? ` - ${report.title}` : ""}`,
-    [report]
-  );
+export default function BuyNowModal({ report, isOpen, onClose }) {
+  const [loading, setLoading] = useState(false);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [status, setStatus] = useState({ type: "", message: "" });
 
-  const handleOpen = () => {
-    setSuccessMsg("");
-    setErrorMsg("");
-    setOpen(true);
-  };
+  const [form, setForm] = useState({
+    customer_name: "",
+    customer_email: "",
+    customer_phone: "",
+    customer_company: "",
+  });
 
-  const handleClose = () => {
-    if (submitting) return;
-    setOpen(false);
-  };
+  const amount = useMemo(() => getReportPrice(report), [report]);
 
-  const handleChange = (e) => {
+  if (!isOpen) return null;
+
+  function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
       [name]: value,
     }));
-  };
+  }
 
-  const validate = () => {
-    if (!form.name.trim()) return "Name is required";
-    if (!form.company_name.trim()) return "Company name is required";
-    if (!form.email.trim()) return "Email is required";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      return "Enter a valid email address";
-    }
-    if (!form.phone.trim()) return "Phone number is required";
-    if (!form.area_of_interest.trim()) return "Area of interest is required";
-    if (!form.preferred_contact.trim()) return "Preferred contact is required";
-    if (!form.message.trim()) return "Message is required";
-    return "";
-  };
+  function closeModal() {
+    if (loading) return;
+    setStatus({ type: "", message: "" });
+    onClose?.();
+  }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSuccessMsg("");
-    setErrorMsg("");
-
-    const validationError = validate();
-    if (validationError) {
-      setErrorMsg(validationError);
-      return;
-    }
-
+  async function markFailed(orderId, statusValue = "failed") {
     try {
-      setSubmitting(true);
-
-      const res = await fetch("/api/enquiry", {
+      await fetch("/api/payment/fail", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...form,
-          area_of_interest:
-            form.area_of_interest || report?.title || "Buy Report Enquiry",
+          razorpay_order_id: orderId,
+          status: statusValue,
+        }),
+      });
+    } catch (error) {
+      console.error("Mark failed error:", error);
+    }
+  }
+
+  async function handlePayment() {
+    try {
+      setStatus({ type: "", message: "" });
+
+      if (!scriptLoaded || typeof window === "undefined" || !window.Razorpay) {
+        setStatus({
+          type: "error",
+          message: "Payment gateway failed to load. Please refresh and try again.",
+        });
+        return;
+      }
+
+      if (!amount || amount <= 0) {
+        setStatus({
+          type: "error",
+          message: "Invalid report price.",
+        });
+        return;
+      }
+
+      if (!form.customer_name || !form.customer_email || !form.customer_phone) {
+        setStatus({
+          type: "error",
+          message: "Name, email, and phone are required.",
+        });
+        return;
+      }
+
+      setLoading(true);
+
+      const orderRes = await fetch("/api/payment/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          report_id: report?.id || report?.title || "",
+          report_title: report?.title || "Report Purchase",
+          amount,
+          customer_name: form.customer_name,
+          customer_email: form.customer_email,
+          customer_phone: form.customer_phone,
+          customer_company: form.customer_company,
         }),
       });
 
-      const data = await res.json();
+      const orderData = await orderRes.json().catch(() => ({}));
 
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || "Failed to submit enquiry");
+      if (!orderRes.ok || !orderData?.success || !orderData?.order?.id) {
+        throw new Error(orderData?.message || "Unable to create payment order.");
       }
 
-      setSuccessMsg("Enquiry submitted successfully");
+      const order = orderData.order;
+      const key = orderData.key;
 
-      setForm({
-        ...initialForm,
-        area_of_interest: report?.title || "",
-        message: report?.title
-          ? `I am interested in purchasing the report: ${report.title}`
-          : "",
+      const options = {
+        key,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Race Auto India",
+        description: report?.title || "Report Purchase",
+        order_id: order.id,
+        prefill: {
+          name: form.customer_name,
+          email: form.customer_email,
+          contact: form.customer_phone,
+        },
+        notes: {
+          report_id: String(report?.id || ""),
+          report_title: String(report?.title || ""),
+          company: String(form.customer_company || ""),
+        },
+        theme: {
+          color: "#3b4cca",
+        },
+        handler: async function (response) {
+          try {
+            const verifyRes = await fetch("/api/payment/verify", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response?.razorpay_order_id,
+                razorpay_payment_id: response?.razorpay_payment_id,
+                razorpay_signature: response?.razorpay_signature,
+              }),
+            });
+
+            const verifyData = await verifyRes.json().catch(() => ({}));
+
+            if (!verifyRes.ok || !verifyData?.success) {
+              throw new Error(
+                verifyData?.message || "Payment verification failed."
+              );
+            }
+
+            setStatus({
+              type: "success",
+              message: "Payment successful. Your purchase has been completed.",
+            });
+
+            setTimeout(() => {
+              onClose?.();
+            }, 1200);
+          } catch (error) {
+            setStatus({
+              type: "error",
+              message: error?.message || "Payment verification failed.",
+            });
+          } finally {
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: async function () {
+            await markFailed(order.id, "cancelled");
+            setLoading(false);
+          },
+        },
+      };
+
+      const razorpayInstance = new window.Razorpay(options);
+
+      razorpayInstance.on("payment.failed", async function (response) {
+        await markFailed(order.id, "failed");
+        setStatus({
+          type: "error",
+          message:
+            response?.error?.description || "Payment failed. Please try again.",
+        });
+        setLoading(false);
       });
 
-      setTimeout(() => {
-        setOpen(false);
-        setSuccessMsg("");
-      }, 1500);
+      razorpayInstance.open();
     } catch (error) {
-      setErrorMsg(error.message || "Something went wrong");
-    } finally {
-      setSubmitting(false);
+      console.error("Payment error:", error);
+      setStatus({
+        type: "error",
+        message: error?.message || "Unable to start payment.",
+      });
+      setLoading(false);
     }
-  };
+  }
 
   return (
     <>
-      <button
-        type="button"
-        className="btn"
-        onClick={handleOpen}
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        onLoad={() => setScriptLoaded(true)}
+        onError={() => {
+          setScriptLoaded(false);
+          setStatus({
+            type: "error",
+            message: "Failed to load Razorpay checkout script.",
+          });
+        }}
+      />
+
+      <div
+        onClick={closeModal}
         style={{
-          backgroundColor: "#3346c7",
-          color: "#fff",
-          fontWeight: 600,
-          borderRadius: "10px",
-          padding: "12px 16px",
-          border: "none",
-          width: "100%",
+          position: "fixed",
+          inset: 0,
+          backgroundColor: "rgba(15, 23, 42, 0.58)",
+          zIndex: 10000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "20px",
         }}
       >
-       Request Sample
-      </button>
+        <div
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            width: "100%",
+            maxWidth: "620px",
+            backgroundColor: "#ffffff",
+            borderRadius: "24px",
+            padding: "28px",
+            boxShadow: "0 24px 70px rgba(15, 23, 42, 0.18)",
+            maxHeight: "92vh",
+            overflowY: "auto",
+          }}
+        >
+          <div className="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h3
+                style={{
+                  margin: 0,
+                  color: "#111827",
+                  fontSize: "28px",
+                  fontWeight: 800,
+                }}
+              >
+                Buy Report
+              </h3>
+              <p
+                style={{
+                  margin: "8px 0 0 0",
+                  color: "#6b7280",
+                  fontSize: "15px",
+                }}
+              >
+                Complete payment to purchase this report.
+              </p>
+            </div>
 
-      {open && (
-        <>
-          <div
-            onClick={handleClose}
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(8, 15, 35, 0.55)",
-              zIndex: 9998,
-            }}
-          />
+            <button
+              type="button"
+              onClick={closeModal}
+              disabled={loading}
+              style={{
+                border: "none",
+                background: "transparent",
+                fontSize: "30px",
+                lineHeight: 1,
+                color: "#6b7280",
+                cursor: "pointer",
+              }}
+            >
+              ×
+            </button>
+          </div>
 
           <div
             style={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 9999,
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "center",
-              padding: "110px 20px 30px",
-              overflowY: "auto",
+              border: "1px solid #e5e7eb",
+              borderRadius: "18px",
+              padding: "18px",
+              marginBottom: "18px",
+              background: "#f8fafc",
             }}
           >
             <div
               style={{
-                width: "100%",
-                maxWidth: "940px",
-                maxHeight: "calc(100vh - 140px)",
-                overflowY: "auto",
-                background: "#ffffff",
-                borderRadius: "18px",
-                boxShadow: "0 24px 70px rgba(12, 27, 62, 0.22)",
-                border: "1px solid #d9deea",
-                margin: "0 auto",
+                fontSize: "14px",
+                color: "#64748b",
+                marginBottom: "8px",
+                fontWeight: 700,
               }}
             >
-              <div
-                className="d-flex justify-content-between align-items-center"
-                style={{
-                  padding: "22px 24px",
-                  borderBottom: "1px solid #e7ebf3",
-                  position: "sticky",
-                  top: 0,
-                  background: "#fff",
-                  zIndex: 2,
-                  borderTopLeftRadius: "18px",
-                  borderTopRightRadius: "18px",
-                }}
-              >
-                <div>
-                  <h3
-                    className="mb-1 fw-bold"
-                    style={{
-                      color: "#1f2f63",
-                      fontSize: "1.45rem",
-                      lineHeight: "1.3",
-                    }}
-                  >
-                    {modalTitle}
-                  </h3>
-                  <div style={{ color: "#6b7890", fontSize: "0.98rem" }}>
-                    Fill in your details and we will contact you shortly.
-                  </div>
-                </div>
+              Selected Report
+            </div>
 
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  disabled={submitting}
-                  style={{
-                    border: "none",
-                    background: "transparent",
-                    fontSize: "1.8rem",
-                    lineHeight: 1,
-                    color: "#6b7890",
-                    cursor: "pointer",
-                    padding: 0,
-                    marginLeft: "12px",
-                  }}
-                >
-                  ×
-                </button>
-              </div>
+            <div
+              style={{
+                fontSize: "18px",
+                fontWeight: 800,
+                color: "#0f172a",
+                lineHeight: 1.4,
+              }}
+            >
+              {report?.title || "Report"}
+            </div>
 
-              <form onSubmit={handleSubmit} style={{ padding: "24px" }}>
-                <div className="row g-3">
-                  <div className="col-12 col-md-6">
-                    <label className="form-label fw-semibold">Name *</label>
-                    <input
-                      type="text"
-                      name="name"
-                      className="form-control"
-                      value={form.name}
-                      onChange={handleChange}
-                      placeholder="Enter your name"
-                      style={{
-                        minHeight: "48px",
-                        borderRadius: "10px",
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-12 col-md-6">
-                    <label className="form-label fw-semibold">
-                      Company Name *
-                    </label>
-                    <input
-                      type="text"
-                      name="company_name"
-                      className="form-control"
-                      value={form.company_name}
-                      onChange={handleChange}
-                      placeholder="Enter your company name"
-                      style={{
-                        minHeight: "48px",
-                        borderRadius: "10px",
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-12 col-md-6">
-                    <label className="form-label fw-semibold">Email *</label>
-                    <input
-                      type="email"
-                      name="email"
-                      className="form-control"
-                      value={form.email}
-                      onChange={handleChange}
-                      placeholder="Enter your email"
-                      style={{
-                        minHeight: "48px",
-                        borderRadius: "10px",
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-12 col-md-6">
-                    <label className="form-label fw-semibold">Phone *</label>
-                    <input
-                      type="text"
-                      name="phone"
-                      className="form-control"
-                      value={form.phone}
-                      onChange={handleChange}
-                      placeholder="Enter your phone number"
-                      style={{
-                        minHeight: "48px",
-                        borderRadius: "10px",
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-12 col-md-6">
-                    <label className="form-label fw-semibold">Designation</label>
-                    <input
-                      type="text"
-                      name="designation"
-                      className="form-control"
-                      value={form.designation}
-                      onChange={handleChange}
-                      placeholder="Enter your designation"
-                      style={{
-                        minHeight: "48px",
-                        borderRadius: "10px",
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-12 col-md-6">
-                    <label className="form-label fw-semibold">Location</label>
-                    <input
-                      type="text"
-                      name="location"
-                      className="form-control"
-                      value={form.location}
-                      onChange={handleChange}
-                      placeholder="Enter your location"
-                      style={{
-                        minHeight: "48px",
-                        borderRadius: "10px",
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-12 col-md-6">
-                    <label className="form-label fw-semibold">
-                      Area of Interest *
-                    </label>
-                    <input
-                      type="text"
-                      name="area_of_interest"
-                      className="form-control"
-                      value={form.area_of_interest}
-                      onChange={handleChange}
-                      placeholder="Area of interest"
-                      style={{
-                        minHeight: "48px",
-                        borderRadius: "10px",
-                      }}
-                    />
-                  </div>
-
-                  <div className="col-12 col-md-6">
-                    <label className="form-label fw-semibold">
-                      Preferred Contact *
-                    </label>
-                    <select
-                      name="preferred_contact"
-                      className="form-select"
-                      value={form.preferred_contact}
-                      onChange={handleChange}
-                      style={{
-                        minHeight: "48px",
-                        borderRadius: "10px",
-                      }}
-                    >
-                      <option value="Email">Email</option>
-                      <option value="Phone">Phone</option>
-                      <option value="WhatsApp">WhatsApp</option>
-                    </select>
-                  </div>
-
-                  <div className="col-12">
-                    <label className="form-label fw-semibold">Message *</label>
-                    <textarea
-                      name="message"
-                      className="form-control"
-                      rows={5}
-                      value={form.message}
-                      onChange={handleChange}
-                      placeholder="Write your requirement"
-                      style={{
-                        borderRadius: "10px",
-                        resize: "vertical",
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {errorMsg && (
-                  <div
-                    style={{
-                      marginTop: "16px",
-                      padding: "12px 14px",
-                      borderRadius: "10px",
-                      background: "#fff1f1",
-                      color: "#b42318",
-                      border: "1px solid #f5c2c7",
-                    }}
-                  >
-                    {errorMsg}
-                  </div>
-                )}
-
-                {successMsg && (
-                  <div
-                    style={{
-                      marginTop: "16px",
-                      padding: "12px 14px",
-                      borderRadius: "10px",
-                      background: "#eefbf3",
-                      color: "#067647",
-                      border: "1px solid #b7ebc6",
-                    }}
-                  >
-                    {successMsg}
-                  </div>
-                )}
-
-                <div className="d-flex gap-2 justify-content-end mt-4 flex-wrap">
-                  <button
-                    type="button"
-                    className="btn btn-outline-secondary"
-                    onClick={handleClose}
-                    disabled={submitting}
-                    style={{
-                      minWidth: "120px",
-                      borderRadius: "10px",
-                      padding: "10px 16px",
-                    }}
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    className="btn"
-                    disabled={submitting}
-                    style={{
-                      backgroundColor: "#3346c7",
-                      color: "#fff",
-                      minWidth: "170px",
-                      fontWeight: 600,
-                      borderRadius: "10px",
-                      padding: "10px 16px",
-                      border: "none",
-                    }}
-                  >
-                    {submitting ? "Submitting..." : "Submit Enquiry"}
-                  </button>
-                </div>
-              </form>
+            <div
+              style={{
+                marginTop: "12px",
+                fontSize: "26px",
+                fontWeight: 900,
+                color: "#2f45bf",
+              }}
+            >
+              ₹{amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </div>
           </div>
-        </>
-      )}
+
+          {status.message ? (
+            <div
+              style={{
+                marginBottom: "16px",
+                padding: "12px 14px",
+                borderRadius: "12px",
+                fontSize: "14px",
+                fontWeight: 700,
+                color: status.type === "success" ? "#166534" : "#b91c1c",
+                backgroundColor:
+                  status.type === "success" ? "#dcfce7" : "#fee2e2",
+                border:
+                  status.type === "success"
+                    ? "1px solid #bbf7d0"
+                    : "1px solid #fecaca",
+              }}
+            >
+              {status.message}
+            </div>
+          ) : null}
+
+          <div className="row g-3">
+            <div className="col-12 col-md-6">
+              <label className="form-label fw-bold">Name *</label>
+              <input
+                type="text"
+                className="form-control"
+                name="customer_name"
+                value={form.customer_name}
+                onChange={handleChange}
+                disabled={loading}
+                required
+              />
+            </div>
+
+            <div className="col-12 col-md-6">
+              <label className="form-label fw-bold">Company Name</label>
+              <input
+                type="text"
+                className="form-control"
+                name="customer_company"
+                value={form.customer_company}
+                onChange={handleChange}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="col-12 col-md-6">
+              <label className="form-label fw-bold">Email *</label>
+              <input
+                type="email"
+                className="form-control"
+                name="customer_email"
+                value={form.customer_email}
+                onChange={handleChange}
+                disabled={loading}
+                required
+              />
+            </div>
+
+            <div className="col-12 col-md-6">
+              <label className="form-label fw-bold">Phone *</label>
+              <input
+                type="text"
+                className="form-control"
+                name="customer_phone"
+                value={form.customer_phone}
+                onChange={handleChange}
+                disabled={loading}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="d-flex justify-content-end gap-2 mt-4">
+            <button
+              type="button"
+              onClick={closeModal}
+              disabled={loading}
+              className="btn btn-outline-secondary"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={handlePayment}
+              disabled={loading}
+              className="btn"
+              style={{
+                backgroundColor: "#3b4cca",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "14px",
+                fontWeight: 800,
+                minWidth: "150px",
+                opacity: loading ? 0.85 : 1,
+              }}
+            >
+              {loading ? "Processing..." : "Proceed to Pay"}
+            </button>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
