@@ -6,17 +6,30 @@ import Footer from "@/app/components/Footer";
 import ReportDetailClientActions from "@/app/components/ReportDetailClientActions";
 
 export async function generateMetadata({ params }) {
-  const report = await getReportBySlug(params.slug);
+  const slug = decodeURIComponent(params.slug || "");
+  const report = await getReportBySlug(slug);
   if (!report) return {};
 
   return {
     title: report.metaTitle || report.title,
     description: report.metaDescription || report.description,
+    keywords: [
+      "AUTOMOTIVE INDUSTRY REPORTS",
+      "AUTOMOTIVE INDUSTRY FORECAST",
+      "MARKET REPORTS",
+      "LATEST EDITION",
+      "AUTOMOBILE INDUSTRY",
+      "AUTOMOTIVE MARKET",
+      "AUTOMOTIVE TRENDS",
+      "AUTOMOTIVE INDUSTRY TRENDS",
+    ],
   };
 }
 
 export default async function ReportDetailPage({ params }) {
-  const report = await getReportBySlug(params.slug);
+  const slug = decodeURIComponent(params.slug || "");
+  const report = await getReportBySlug(slug);
+
   if (!report) notFound();
 
   const imageSrc =

@@ -28,6 +28,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
   });
 
   const amount = useMemo(() => getReportPrice(report), [report]);
+  const displayCurrency = "USD";
 
   if (!isOpen) return null;
 
@@ -101,6 +102,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
           report_id: report?.id || report?.title || "",
           report_title: report?.title || "Report Purchase",
           amount,
+          currency: "USD",
           customer_name: form.customer_name,
           customer_email: form.customer_email,
           customer_phone: form.customer_phone,
@@ -120,7 +122,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
       const options = {
         key,
         amount: order.amount,
-        currency: order.currency,
+        currency: order.currency || "USD",
         name: "Race Auto India",
         description: report?.title || "Report Purchase",
         order_id: order.id,
@@ -326,7 +328,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
                 color: "#2f45bf",
               }}
             >
-              ₹{amount.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+              ${amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
             </div>
           </div>
 

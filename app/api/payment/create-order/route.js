@@ -65,9 +65,11 @@ export async function POST(req) {
       );
     }
 
+    const currency = "USD";
+
     const order = await razorpay.orders.create({
       amount: Math.round(parsedAmount * 100),
-      currency: "INR",
+      currency,
       receipt: `report_${Date.now()}`,
       notes: {
         report_id: String(report_id || ""),
@@ -95,7 +97,7 @@ export async function POST(req) {
         String(report_id || ""),
         String(report_title || ""),
         parsedAmount,
-        "INR",
+        currency,
         String(customer_name || ""),
         String(customer_email || ""),
         String(customer_phone || ""),
