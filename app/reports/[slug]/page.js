@@ -41,17 +41,6 @@ export default async function ReportDetailPage({ params }) {
       >
         <section style={{ paddingTop: "42px", paddingBottom: "56px" }}>
           <div className="container-fluid px-4 px-md-5 px-lg-5">
-            <div
-              className="mb-4"
-              style={{ color: "#6b7890", fontSize: "1rem", fontWeight: 500 }}
-            >
-              <span>Home</span>
-              <span className="mx-3">›</span>
-              <span>Reports</span>
-              <span className="mx-3">›</span>
-              <span style={{ color: "#44536f" }}>{report.title}</span>
-            </div>
-
             <div className="mb-4">
               <a
                 href="/market-report"
@@ -64,26 +53,6 @@ export default async function ReportDetailPage({ params }) {
 
             <div className="row g-5 align-items-start">
               <div className="col-12 col-xl-8">
-                {!!report.tags?.length && (
-                  <div className="d-flex flex-wrap gap-2 mb-4">
-                    {report.tags.map((tag, index) => (
-                      <span
-                        key={index}
-                        style={{
-                          backgroundColor: "#eef2ff",
-                          color: "#3346c7",
-                          borderRadius: "8px",
-                          padding: "8px 14px",
-                          fontSize: "0.88rem",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
                 <h1
                   className="fw-bold mb-4"
                   style={{
@@ -417,7 +386,7 @@ export default async function ReportDetailPage({ params }) {
                 )}
 
                 {!!report.faqs?.length && (
-                  <section>
+                  <section className="mb-5">
                     <h2
                       className="fw-bold text-center mb-5"
                       style={{ color: "#1f2f63" }}
@@ -458,6 +427,31 @@ export default async function ReportDetailPage({ params }) {
                             {item.answer}
                           </div>
                         </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {!!report.tags?.length && (
+                  <section className="mt-5 pt-3">
+                    <h2 className="fw-bold mb-3" style={{ color: "#1f2f63" }}>
+                      Tags
+                    </h2>
+                    <div className="d-flex flex-wrap gap-2">
+                      {report.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          style={{
+                            backgroundColor: "#eef2ff",
+                            color: "#3346c7",
+                            borderRadius: "8px",
+                            padding: "8px 14px",
+                            fontSize: "0.88rem",
+                            fontWeight: 700,
+                          }}
+                        >
+                          {tag}
+                        </span>
                       ))}
                     </div>
                   </section>

@@ -2,6 +2,53 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 
+const CATEGORY_OPTIONS = [
+  "Market Forecast Reports",
+  "Flash Reports",
+  "EV Intelligence",
+  "Country Reports",
+  "OEM Benchmarking",
+  "Custom Research",
+  "Aftermarket Reports",
+  "Commercial Vehicle Reports",
+  "Passenger Vehicle Reports",
+  "Two Wheeler Reports",
+  "Three Wheeler Reports",
+  "Tractor Reports",
+  "Construction Equipment Reports",
+];
+
+const COUNTRY_OPTIONS = [
+  "India",
+  "South Africa",
+  "Australia",
+  "Brazil",
+  "Germany",
+  "Japan",
+  "Sweden",
+  "Vietnam",
+  "Chile",
+  "Pakistan",
+  "Colombia",
+  "Peru",
+  "Indonesia",
+  "Thailand",
+  "Malaysia",
+  "Philippines",
+  "Mexico",
+  "USA",
+  "UK",
+  "Canada",
+];
+
+function cleanValue(value) {
+  return String(value ?? "").trim();
+}
+
+function uniqueClean(values) {
+  return Array.from(new Set(values.map((v) => cleanValue(v)).filter(Boolean)));
+}
+
 export default function HomePage() {
   const trustedItems = [
     "Global OEMs",
@@ -20,11 +67,13 @@ export default function HomePage() {
   ];
 
   const [reports, setReports] = useState([]);
+  const [rawCategoryValues, setRawCategoryValues] = useState([]);
+  const [rawCountryValues, setRawCountryValues] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [reportsError, setReportsError] = useState("");
 
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [selectedRegion, setSelectedRegion] = useState("All");
+  const [selectedCountry, setSelectedCountry] = useState("All");
   const [searchText, setSearchText] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,6 +119,14 @@ export default function HomePage() {
         const json = await res.json();
         const rawReports = Array.isArray(json?.data) ? json.data : [];
 
+        const allCategoriesFromDb = uniqueClean(
+          rawReports.map((item) => item?.category || "")
+        );
+
+        const allCountriesFromDb = uniqueClean(
+          rawReports.map((item) => item?.country || "")
+        );
+
         const normalized = rawReports
           .filter((item) => {
             return (
@@ -81,41 +138,48 @@ export default function HomePage() {
               item?.is_active === "1"
             );
           })
-          .map((item, index) => ({
-            id: item.id ?? index + 1,
-            slug: item.slug || "",
-            title: item.title || "Untitled Report",
-            previewTitle: item.previewTitle || item.preview_title || "",
-            company: item.company || "",
-            description: item.description || "",
-            summary:
-              item.previewTitle ||
-              item.preview_title ||
-              item.heroDescription ||
-              item.hero_description ||
-              item.metaDescription ||
-              item.meta_description ||
-              item.description ||
-              "No summary available for this report.",
-            region: item.region || "Other",
-            geography: item.geography || "",
-            period: item.period || "",
-            badge: item.badge || "General",
-            accent: item.accent || "#2f45bf",
-            sortOrder: Number(item.sortOrder ?? item.sort_order ?? 0),
-            tags: Array.isArray(item.tags)
-              ? item.tags
-              : Array.isArray(item.tags_json)
+          .map((item, index) => {
+            const category = cleanValue(item.category || item.badge || "General");
+            const country = cleanValue(item.country || item.geography || "");
+
+            return {
+              id: item.id ?? index + 1,
+              slug: item.slug || "",
+              title: item.title || "Untitled Report",
+              previewTitle: item.previewTitle || item.preview_title || "",
+              company: item.company || "",
+              description: item.description || "",
+              summary:
+                item.previewTitle ||
+                item.preview_title ||
+                item.heroDescription ||
+                item.hero_description ||
+                item.metaDescription ||
+                item.meta_description ||
+                item.description ||
+                "No summary available for this report.",
+              region: item.region || "Other",
+              country,
+              category,
+              geography: country,
+              badge: category,
+              period: item.period || "",
+              accent: item.accent || "#2f45bf",
+              sortOrder: Number(item.sortOrder ?? item.sort_order ?? 0),
+              tags: Array.isArray(item.tags)
+                ? item.tags
+                : Array.isArray(item.tags_json)
                 ? item.tags_json
                 : [],
-            sampleImage:
-              item.sampleImage ||
-              item.sample_image ||
-              item.image ||
-              item.coverImage ||
-              item.cover_image ||
-              "",
-          }))
+              sampleImage:
+                item.sampleImage ||
+                item.sample_image ||
+                item.image ||
+                item.coverImage ||
+                item.cover_image ||
+                "",
+            };
+          })
           .sort((a, b) => {
             if (a.sortOrder !== b.sortOrder) {
               return a.sortOrder - b.sortOrder;
@@ -124,12 +188,16 @@ export default function HomePage() {
           });
 
         if (active) {
+          setRawCategoryValues(allCategoriesFromDb);
+          setRawCountryValues(allCountriesFromDb);
           setReports(normalized);
         }
       } catch (error) {
         console.error("Error loading reports:", error);
         if (active) {
           setReports([]);
+          setRawCategoryValues([]);
+          setRawCountryValues([]);
           setReportsError(error?.message || "Unable to load reports right now.");
         }
       } finally {
@@ -147,48 +215,50 @@ export default function HomePage() {
   }, []);
 
   const categories = useMemo(() => {
-    const values = reports
-      .map((r) => String(r.badge || "").trim())
-      .filter(Boolean);
+    return ["All", ...uniqueClean([...CATEGORY_OPTIONS, ...rawCategoryValues])];
+  }, [rawCategoryValues]);
 
-    return ["All", ...Array.from(new Set(values))];
-  }, [reports]);
-
-  const regions = useMemo(() => {
-    const values = reports
-      .map((r) => String(r.region || "").trim())
-      .filter(Boolean);
-
-    return ["All", ...Array.from(new Set(values))];
-  }, [reports]);
+  const countries = useMemo(() => {
+    return ["All", ...uniqueClean([...COUNTRY_OPTIONS, ...rawCountryValues])];
+  }, [rawCountryValues]);
 
   const filteredReports = useMemo(() => {
     const q = searchText.trim().toLowerCase();
 
     return reports.filter((report) => {
       const matchCategory =
-        selectedCategory === "All" || report.badge === selectedCategory;
+        selectedCategory === "All" || report.category === selectedCategory;
 
-      const matchRegion =
-        selectedRegion === "All" || report.region === selectedRegion;
+      const matchCountry =
+        selectedCountry === "All" || report.country === selectedCountry;
 
       const matchSearch =
         !q ||
         String(report.title || "").toLowerCase().includes(q) ||
         String(report.previewTitle || "").toLowerCase().includes(q) ||
         String(report.company || "").toLowerCase().includes(q) ||
-        String(report.geography || "").toLowerCase().includes(q) ||
+        String(report.country || "").toLowerCase().includes(q) ||
         String(report.region || "").toLowerCase().includes(q) ||
-        String(report.badge || "").toLowerCase().includes(q) ||
+        String(report.category || "").toLowerCase().includes(q) ||
         String(report.description || "").toLowerCase().includes(q);
 
-      return matchCategory && matchRegion && matchSearch;
+      return matchCategory && matchCountry && matchSearch;
     });
-  }, [reports, selectedCategory, selectedRegion, searchText]);
+  }, [reports, selectedCategory, selectedCountry, searchText]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, selectedRegion, searchText]);
+  }, [selectedCategory, selectedCountry, searchText]);
+
+  useEffect(() => {
+    const section = document.getElementById("reports");
+    if (section) {
+      const y = section.getBoundingClientRect().top + window.pageYOffset - 90;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [currentPage]);
 
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
 
@@ -456,15 +526,6 @@ export default function HomePage() {
                         transition: "transform 0.25s ease, box-shadow 0.25s ease",
                         cursor: "default",
                       }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = "translateY(-3px)";
-                        e.currentTarget.style.boxShadow =
-                          "0 16px 32px rgba(47, 69, 191, 0.16)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = "translateY(0)";
-                        e.currentTarget.style.boxShadow = itemStyle.boxShadow;
-                      }}
                     >
                       {item}
                     </div>
@@ -539,7 +600,7 @@ export default function HomePage() {
                   marginBottom: "12px",
                 }}
               >
-                Search Reports by Category, Country &amp; Region
+                Search Reports by Category and Country
               </h2>
 
               <p
@@ -551,8 +612,8 @@ export default function HomePage() {
                   lineHeight: "1.6",
                 }}
               >
-                Dynamically loaded reports with live category filter, region
-                filter, and country search.
+                Preset and manually added categories and countries are both
+                available in the filters.
               </p>
             </div>
           </div>
@@ -610,12 +671,12 @@ export default function HomePage() {
                       color: "#41506b",
                     }}
                   >
-                    Region
+                    Country
                   </label>
                   <select
                     className="form-select"
-                    value={selectedRegion}
-                    onChange={(e) => setSelectedRegion(e.target.value)}
+                    value={selectedCountry}
+                    onChange={(e) => setSelectedCountry(e.target.value)}
                     style={{
                       height: "48px",
                       borderRadius: "14px",
@@ -625,9 +686,9 @@ export default function HomePage() {
                       boxShadow: "none",
                     }}
                   >
-                    {regions.map((region) => (
-                      <option key={region} value={region}>
-                        {region}
+                    {countries.map((country) => (
+                      <option key={country} value={country}>
+                        {country}
                       </option>
                     ))}
                   </select>
@@ -642,12 +703,12 @@ export default function HomePage() {
                       color: "#41506b",
                     }}
                   >
-                    Country / Search
+                    Search
                   </label>
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Search by country, title, region, category..."
+                    placeholder="Search by title, country, category..."
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     style={{
@@ -682,7 +743,7 @@ export default function HomePage() {
                       className="btn"
                       onClick={() => {
                         setSelectedCategory("All");
-                        setSelectedRegion("All");
+                        setSelectedCountry("All");
                         setSearchText("");
                         setCurrentPage(1);
                       }}
@@ -735,10 +796,7 @@ export default function HomePage() {
                     }}
                   >
                     <div
-                      style={{
-                        height: "170px",
-                        backgroundColor: "#eef2fb",
-                      }}
+                      style={{ height: "170px", backgroundColor: "#eef2fb" }}
                     />
                     <div style={{ padding: "18px" }}>
                       <div
@@ -828,7 +886,7 @@ export default function HomePage() {
                             zIndex: 2,
                           }}
                         >
-                          {report.badge || "New"}
+                          {report.category || "New"}
                         </span>
 
                         {report.sampleImage ? (
@@ -920,25 +978,32 @@ export default function HomePage() {
                             fontWeight: 500,
                           }}
                         >
-                          <span>◉ {report.geography || "Country not specified"}</span>
+                          <span>◉ {report.country || "Country not specified"}</span>
                           <span>◷ {report.period || "Period not specified"}</span>
                         </div>
 
                         {report.tags?.length > 0 && (
-                          <div className="d-flex flex-wrap gap-2 mb-3">
+                          <div
+                            className="d-flex flex-wrap gap-1 mb-3"
+                            style={{ maxWidth: "100%" }}
+                          >
                             {report.tags.slice(0, 4).map((tag, idx) => (
                               <span
                                 key={idx}
                                 style={{
-                                  display: "inline-block",
-                                  padding: "6px 10px",
-                                  borderRadius: "9px",
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                  padding: "2px 7px",
+                                  borderRadius: "999px",
                                   backgroundColor: "#eef2f7",
                                   color: "#223e6c",
-                                  fontSize: "11px",
-                                  fontWeight: 800,
-                                  letterSpacing: "0.3px",
+                                  fontSize: "9px",
+                                  fontWeight: 700,
+                                  letterSpacing: "0px",
                                   textTransform: "uppercase",
+                                  lineHeight: "1",
+                                  whiteSpace: "nowrap",
                                 }}
                               >
                                 {tag}
@@ -1020,7 +1085,9 @@ export default function HomePage() {
                         type="button"
                         className="btn"
                         onClick={() =>
-                          setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                          setCurrentPage((prev) =>
+                            Math.min(prev + 1, totalPages)
+                          )
                         }
                         disabled={currentPage === totalPages}
                         style={{
@@ -1071,7 +1138,7 @@ export default function HomePage() {
                       marginBottom: 0,
                     }}
                   >
-                    Try changing the category, region, or search text.
+                    Try changing the category, country, or search text.
                   </p>
                 </div>
               </div>

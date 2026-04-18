@@ -14,6 +14,68 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 
 const NAVBAR_OFFSET = 92;
 
+function BookPage({ pageNumber, isCover = false }) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        background: isCover
+          ? "linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%)"
+          : "#ffffff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "1px solid #d9e2f1",
+        boxShadow: isCover
+          ? "inset 0 0 0 1px rgba(59,76,202,0.05)"
+          : "inset 0 0 20px rgba(15,23,42,0.03)",
+        overflow: "hidden",
+        position: "relative",
+      }}
+    >
+      {!isCover && (
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            bottom: 0,
+            width: "10px",
+            left: 0,
+            background:
+              "linear-gradient(90deg, rgba(15,23,42,0.08), rgba(15,23,42,0.01), transparent)",
+            pointerEvents: "none",
+          }}
+        />
+      )}
+
+      <Page
+        pageNumber={pageNumber}
+        width={470}
+        renderTextLayer={false}
+        renderAnnotationLayer={false}
+        loading=""
+      />
+
+      <div
+        style={{
+          position: "absolute",
+          bottom: "12px",
+          right: "16px",
+          fontSize: "12px",
+          color: "#64748b",
+          fontWeight: 600,
+          background: "rgba(255,255,255,0.9)",
+          padding: "4px 8px",
+          borderRadius: "999px",
+        }}
+      >
+        {pageNumber}
+      </div>
+    </div>
+  );
+}
+
 export default function ReportDetailClientActions({ report }) {
   const [isEnquiryOpen, setIsEnquiryOpen] = useState(false);
   const [isSampleOpen, setIsSampleOpen] = useState(false);
@@ -22,6 +84,7 @@ export default function ReportDetailClientActions({ report }) {
   const [numPages, setNumPages] = useState(0);
   const [pdfError, setPdfError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
 
   const flipBookRef = useRef(null);
 
@@ -62,6 +125,16 @@ export default function ReportDetailClientActions({ report }) {
       document.body.style.overflow = "";
     };
   }, [isEnquiryOpen, isSampleOpen, isBuyNowOpen]);
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 992);
+    }
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   function openEnquiryModal() {
     setEnquiryStatus({ type: "", message: "" });
@@ -475,7 +548,7 @@ export default function ReportDetailClientActions({ report }) {
             position: "fixed",
             inset: 0,
             background:
-              "linear-gradient(180deg, rgba(15,23,42,0.76) 0%, rgba(15,23,42,0.82) 100%)",
+              "radial-gradient(circle at top, rgba(51,65,85,0.75) 0%, rgba(15,23,42,0.92) 70%)",
             zIndex: 10000,
             display: "flex",
             alignItems: "flex-start",
@@ -487,9 +560,10 @@ export default function ReportDetailClientActions({ report }) {
             onClick={(e) => e.stopPropagation()}
             style={{
               width: "100%",
-              maxWidth: "1320px",
+              maxWidth: "1460px",
               height: `calc(100vh - ${NAVBAR_OFFSET + 20}px)`,
-              backgroundColor: "#ffffff",
+              background:
+                "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
               borderRadius: "28px",
               boxShadow: "0 30px 90px rgba(15, 23, 42, 0.35)",
               overflow: "hidden",
@@ -505,7 +579,7 @@ export default function ReportDetailClientActions({ report }) {
                 gap: "16px",
                 padding: "20px 28px",
                 borderBottom: "1px solid #e2e8f0",
-                background: "#ffffff",
+                background: "linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)",
               }}
             >
               <div style={{ minWidth: 0 }}>
@@ -529,7 +603,7 @@ export default function ReportDetailClientActions({ report }) {
                     lineHeight: 1.4,
                   }}
                 >
-                  Flip through the sample pages
+                  Premium sample preview with realistic double-page flip
                 </p>
               </div>
 
@@ -561,7 +635,7 @@ export default function ReportDetailClientActions({ report }) {
 
                     <div
                       style={{
-                        minWidth: "72px",
+                        minWidth: "90px",
                         textAlign: "center",
                         fontWeight: 700,
                         color: "#334155",
@@ -617,11 +691,12 @@ export default function ReportDetailClientActions({ report }) {
             <div
               style={{
                 flex: 1,
-                background: "linear-gradient(180deg, #eef2ff 0%, #f8fafc 100%)",
+                background:
+                  "radial-gradient(circle at center, #eef2ff 0%, #e2e8f0 45%, #cbd5e1 100%)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                padding: "28px",
+                padding: isMobile ? "18px" : "28px",
                 overflow: "auto",
               }}
             >
@@ -680,56 +755,54 @@ export default function ReportDetailClientActions({ report }) {
                     error={<div>Failed to load sample PDF.</div>}
                   >
                     {numPages > 0 ? (
-                      <HTMLFlipBook
-                        ref={flipBookRef}
-                        width={520}
-                        height={700}
-                        minWidth={260}
-                        maxWidth={560}
-                        minHeight={340}
-                        maxHeight={760}
-                        size="stretch"
-                        showCover={true}
-                        drawShadow={true}
-                        flippingTime={700}
-                        usePortrait={true}
-                        startPage={0}
-                        autoSize={true}
-                        mobileScrollSupport={true}
-                        maxShadowOpacity={0.45}
-                        clickEventForward={true}
-                        useMouseEvents={true}
-                        swipeDistance={30}
-                        showPageCorners={true}
-                        disableFlipByClick={false}
-                        onFlip={handleFlip}
+                      <div
                         style={{
-                          margin: "0 auto",
-                          boxShadow: "0 20px 60px rgba(15, 23, 42, 0.14)",
-                          borderRadius: "12px",
+                          padding: isMobile ? "8px" : "18px",
+                          borderRadius: "28px",
+                          background:
+                            "linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.25) 100%)",
+                          boxShadow:
+                            "0 20px 50px rgba(15, 23, 42, 0.16), inset 0 0 0 1px rgba(255,255,255,0.35)",
+                          backdropFilter: "blur(8px)",
                         }}
                       >
-                        {flipbookPages.map((pageNum) => (
-                          <div
-                            key={pageNum}
-                            style={{
-                              backgroundColor: "#ffffff",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              border: "1px solid #dbe3f1",
-                              overflow: "hidden",
-                            }}
-                          >
-                            <Page
+                        <HTMLFlipBook
+                          ref={flipBookRef}
+                          width={isMobile ? 320 : 480}
+                          height={isMobile ? 440 : 680}
+                          minWidth={260}
+                          maxWidth={520}
+                          minHeight={360}
+                          maxHeight={760}
+                          size="stretch"
+                          showCover={true}
+                          drawShadow={true}
+                          flippingTime={900}
+                          usePortrait={isMobile}
+                          startPage={0}
+                          autoSize={true}
+                          mobileScrollSupport={true}
+                          maxShadowOpacity={0.5}
+                          clickEventForward={true}
+                          useMouseEvents={true}
+                          swipeDistance={30}
+                          showPageCorners={true}
+                          disableFlipByClick={false}
+                          onFlip={handleFlip}
+                          style={{
+                            margin: "0 auto",
+                            borderRadius: "18px",
+                          }}
+                        >
+                          {flipbookPages.map((pageNum, index) => (
+                            <BookPage
+                              key={pageNum}
                               pageNumber={pageNum}
-                              width={520}
-                              renderTextLayer={false}
-                              renderAnnotationLayer={false}
+                              isCover={index === 0}
                             />
-                          </div>
-                        ))}
-                      </HTMLFlipBook>
+                          ))}
+                        </HTMLFlipBook>
+                      </div>
                     ) : (
                       <div
                         style={{

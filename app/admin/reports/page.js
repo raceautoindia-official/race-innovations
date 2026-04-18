@@ -58,10 +58,10 @@ const emptyForm = {
   accent: "#2f45bf",
 
   price: "",
-  currency: "INR",
+  currency: "USD",
   formatText: "PDF + Excel",
   licenseText: "Single User",
-  deliveryText: "Within 24 hours",
+  deliveryText: "3 - 4 Weeks",
   pages: "",
   geography: "",
   forecastText: "",
@@ -107,6 +107,15 @@ function textToArray(value) {
     .filter(Boolean);
 }
 
+function normalizeCompare(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function findPresetMatch(options, value) {
+  const target = normalizeCompare(value);
+  return options.find((item) => normalizeCompare(item) === target) || "";
+}
+
 export default function AdminReportsPage() {
   const [reports, setReports] = useState([]);
   const [form, setForm] = useState(emptyForm);
@@ -116,6 +125,9 @@ export default function AdminReportsPage() {
   const [uploadingPdf, setUploadingPdf] = useState(false);
   const [message, setMessage] = useState("");
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const REPORTS_PER_PAGE = 4;
+
   async function loadReports() {
     try {
       setLoading(true);
@@ -123,9 +135,13 @@ export default function AdminReportsPage() {
       const json = await res.json();
 
       if (json.success) {
-        setReports(Array.isArray(json.data) ? json.data : []);
+        const data = Array.isArray(json.data) ? json.data : [];
+        setReports(data);
+        setCurrentPage(1);
+      } else {
+        setMessage(json.message || "Failed to load reports");
       }
-    } catch (error) {
+    } catch {
       setMessage("Failed to load reports");
     } finally {
       setLoading(false);
@@ -143,74 +159,125 @@ export default function AdminReportsPage() {
       const aSort = Number(a?.sortOrder ?? a?.sort_order ?? 0);
       const bSort = Number(b?.sortOrder ?? b?.sort_order ?? 0);
 
-      if (aSort !== bSort) {
-        return aSort - bSort;
-      }
-
+      if (aSort !== bSort) return aSort - bSort;
       return String(a?.title || "").localeCompare(String(b?.title || ""));
     });
   }, [reports]);
 
+  const totalPages = Math.max(
+    1,
+    Math.ceil(sortedReports.length / REPORTS_PER_PAGE)
+  );
+
+  const paginatedReports = useMemo(() => {
+    const startIndex = (currentPage - 1) * REPORTS_PER_PAGE;
+    return sortedReports.slice(startIndex, startIndex + REPORTS_PER_PAGE);
+  }, [sortedReports, currentPage]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+
+    setForm((prev) => {
+      const next = {
+        ...prev,
+        [name]: type === "checkbox" ? checked : value,
+      };
+
+      if (name === "category" && value) {
+        next.manualCategory = "";
+      }
+
+      if (name === "country" && value) {
+        next.manualCountry = "";
+      }
+
+      return next;
+    });
   }
 
   function fillForm(report) {
-    const reportCategory = report.category || "";
-    const reportCountry = report.country || "";
+    const rawCategory = String(
+      report.category ??
+        report.badge ??
+        ""
+    ).trim();
 
-    const isPresetCategory = CATEGORY_OPTIONS.includes(reportCategory);
-    const isPresetCountry = COUNTRY_OPTIONS.includes(reportCountry);
+    const rawCountry = String(
+      report.country ??
+        report.geography ??
+        ""
+    ).trim();
+
+    const matchedCategory = findPresetMatch(CATEGORY_OPTIONS, rawCategory);
+    const matchedCountry = findPresetMatch(COUNTRY_OPTIONS, rawCountry);
 
     setForm({
-      id: report.id,
+      id: report.id ?? null,
       slug: report.slug || "",
       title: report.title || "",
-      previewTitle: report.previewTitle || "",
+      previewTitle: report.previewTitle || report.preview_title || "",
       company: report.company || "RACE Innovations",
       description: report.description || "",
       region: report.region || "",
-      country: isPresetCountry ? reportCountry : "",
-      manualCountry: isPresetCountry ? "" : reportCountry,
-      category: isPresetCategory ? reportCategory : "",
-      manualCategory: isPresetCategory ? "" : reportCategory,
+
+      category: matchedCategory,
+      manualCategory: matchedCategory ? "" : rawCategory,
+
+      country: matchedCountry,
+      manualCountry: matchedCountry ? "" : rawCountry,
+
       period: report.period || "",
       badge: report.badge || "NEW",
       accent: report.accent || "#2f45bf",
 
       price: report.price || "",
-      currency: report.currency || "INR",
-      formatText: report.formatText || "PDF + Excel",
-      licenseText: report.licenseText || "Single User",
-      deliveryText: report.deliveryText || "Within 24 hours",
+      currency: report.currency || "USD",
+      formatText: report.formatText || report.format_text || "PDF + Excel",
+      licenseText: report.licenseText || report.license_text || "Single User",
+      deliveryText: report.deliveryText || report.delivery_text || "3 - 4 Weeks",
       pages: report.pages || "",
-      geography: report.geography || "",
-      forecastText: report.forecastText || "",
+      geography: report.geography || rawCountry || "",
+      forecastText: report.forecastText || report.forecast_text || "",
       publisher: report.publisher || "RACE Innovations",
 
-      metaTitle: report.metaTitle || "",
-      metaDescription: report.metaDescription || "",
-      heroDescription: report.heroDescription || "",
-      whyThisReport: report.whyThisReport || "",
+      metaTitle: report.metaTitle || report.meta_title || "",
+      metaDescription: report.metaDescription || report.meta_description || "",
+      heroDescription: report.heroDescription || report.hero_description || "",
+      whyThisReport: report.whyThisReport || report.why_this_report || "",
 
-      sampleTableTitle: report.sampleTableTitle || "",
-      sampleTableNote: report.sampleTableNote || "",
-      sampleImage: report.sampleImage || "",
+      sampleTableTitle:
+        report.sampleTableTitle || report.sample_table_title || "",
+      sampleTableNote: report.sampleTableNote || report.sample_table_note || "",
+      sampleImage: report.sampleImage || report.sample_image || "",
       samplePdf: report.samplePdf || report.sample_pdf || "",
 
-      tagsText: (report.tags || []).join("\n"),
-      highlightsText: (report.highlights || []).join("\n"),
-      sectionsText: (report.sections || []).join("\n"),
-      buyersText: (report.buyers || []).join("\n"),
+      tagsText: Array.isArray(report.tags) ? report.tags.join("\n") : "",
+      highlightsText: Array.isArray(report.highlights)
+        ? report.highlights.join("\n")
+        : "",
+      sectionsText: Array.isArray(report.sections)
+        ? report.sections.join("\n")
+        : "",
+      buyersText: Array.isArray(report.buyers)
+        ? report.buyers.join("\n")
+        : "",
       deliverablesText: JSON.stringify(report.deliverables || [], null, 2),
       faqsText: JSON.stringify(report.faqs || [], null, 2),
 
-      isFeatured: !!report.isFeatured,
-      isActive: !!report.isActive,
+      isFeatured:
+        report.isFeatured === true ||
+        report.isFeatured === 1 ||
+        report.is_featured === 1,
+      isActive:
+        report.isActive === true ||
+        report.isActive === 1 ||
+        report.is_active === 1,
       sortOrder: report.sortOrder ?? report.sort_order ?? 0,
     });
   }
@@ -297,29 +364,61 @@ export default function AdminReportsPage() {
     setMessage("");
 
     try {
-      const finalCategory = (form.manualCategory || "").trim() || form.category || "";
-      const finalCountry = (form.manualCountry || "").trim() || form.country || "";
+      const finalCategory =
+        String(form.manualCategory || "").trim() ||
+        String(form.category || "").trim();
+
+      const finalCountry =
+        String(form.manualCountry || "").trim() ||
+        String(form.country || "").trim();
+
+      if (!form.title.trim()) {
+        throw new Error("Title is required");
+      }
+
+      if (!finalCategory) {
+        throw new Error("Please select or enter a category");
+      }
+
+      if (!finalCountry) {
+        throw new Error("Please select or enter a country");
+      }
+
+      let parsedDeliverables = [];
+      let parsedFaqs = [];
+
+      try {
+        parsedDeliverables = JSON.parse(form.deliverablesText || "[]");
+      } catch {
+        throw new Error("Deliverables JSON is invalid");
+      }
+
+      try {
+        parsedFaqs = JSON.parse(form.faqsText || "[]");
+      } catch {
+        throw new Error("FAQs JSON is invalid");
+      }
 
       const payload = {
-        slug: form.slug,
-        title: form.title,
-        previewTitle: form.previewTitle,
-        company: form.company,
+        slug: form.slug.trim(),
+        title: form.title.trim(),
+        previewTitle: form.previewTitle.trim(),
+        company: form.company.trim(),
         description: form.description,
-        region: form.region,
+        region: form.region.trim(),
         country: finalCountry,
         category: finalCategory,
-        period: form.period,
-        badge: form.badge,
-        accent: form.accent,
+        period: form.period.trim(),
+        badge: form.badge.trim(),
+        accent: form.accent.trim(),
 
         price: form.price || null,
-        currency: form.currency || "INR",
+        currency: form.currency || "USD",
         formatText: form.formatText,
         licenseText: form.licenseText,
         deliveryText: form.deliveryText,
         pages: form.pages || null,
-        geography: form.geography,
+        geography: form.geography.trim() || finalCountry,
         forecastText: form.forecastText,
         publisher: form.publisher,
 
@@ -337,8 +436,8 @@ export default function AdminReportsPage() {
         highlights: textToArray(form.highlightsText),
         sections: textToArray(form.sectionsText),
         buyers: textToArray(form.buyersText),
-        deliverables: JSON.parse(form.deliverablesText || "[]"),
-        faqs: JSON.parse(form.faqsText || "[]"),
+        deliverables: parsedDeliverables,
+        faqs: parsedFaqs,
 
         isFeatured: form.isFeatured,
         isActive: form.isActive,
@@ -360,7 +459,10 @@ export default function AdminReportsPage() {
         throw new Error(json.message || "Failed to save report");
       }
 
-      setMessage(isEdit ? "Report updated successfully" : "Report created successfully");
+      setMessage(
+        isEdit ? "Report updated successfully" : "Report created successfully"
+      );
+
       await loadReports();
 
       if (!isEdit) {
@@ -382,6 +484,7 @@ export default function AdminReportsPage() {
         method: "DELETE",
       });
       const json = await res.json();
+
       if (!json.success) {
         throw new Error(json.message || "Delete failed");
       }
@@ -412,53 +515,107 @@ export default function AdminReportsPage() {
               {loading ? (
                 <div>Loading...</div>
               ) : (
-                <div className="d-flex flex-column gap-2">
-                  {sortedReports.map((report) => (
-                    <div
-                      key={report.id}
-                      className="border rounded p-3"
-                      style={{ background: "#fff" }}
-                    >
-                      <div className="fw-bold">{report.title}</div>
-                      <div className="text-muted small">{report.slug}</div>
+                <>
+                  <div className="d-flex flex-column gap-3">
+                    {paginatedReports.length > 0 ? (
+                      paginatedReports.map((report) => (
+                        <div
+                          key={report.id}
+                          className="border rounded p-3"
+                          style={{ background: "#fff" }}
+                        >
+                          <div className="fw-bold">{report.title}</div>
+                          <div className="text-muted small">{report.slug}</div>
 
-                      <div className="small mt-1">
-                        <span className="badge bg-light text-dark border me-1">
-                          Sort: {Number(report?.sortOrder ?? report?.sort_order ?? 0)}
-                        </span>
+                          <div className="small mt-1">
+                            <span className="badge bg-light text-dark border me-1">
+                              Sort:{" "}
+                              {Number(
+                                report?.sortOrder ?? report?.sort_order ?? 0
+                              )}
+                            </span>
+                          </div>
+
+                          {report.category ? (
+                            <div className="small mt-1">
+                              <span className="badge bg-light text-dark border me-1">
+                                {report.category}
+                              </span>
+                            </div>
+                          ) : null}
+
+                          {report.country ? (
+                            <div className="text-muted small mt-1">
+                              {report.country}
+                            </div>
+                          ) : null}
+
+                          <div className="d-flex gap-2 mt-2">
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-primary"
+                              onClick={() => fillForm(report)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-danger"
+                              onClick={() => handleDelete(report.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-muted small">No reports found.</div>
+                    )}
+                  </div>
+
+                  {sortedReports.length > 0 && (
+                    <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                      <div className="small text-muted">
+                        Showing {(currentPage - 1) * REPORTS_PER_PAGE + 1} to{" "}
+                        {Math.min(
+                          currentPage * REPORTS_PER_PAGE,
+                          sortedReports.length
+                        )}{" "}
+                        of {sortedReports.length} reports
                       </div>
 
-                      {report.category ? (
-                        <div className="small mt-1">
-                          <span className="badge bg-light text-dark border me-1">
-                            {report.category}
-                          </span>
-                        </div>
-                      ) : null}
-
-                      {report.country ? (
-                        <div className="text-muted small mt-1">{report.country}</div>
-                      ) : null}
-
-                      <div className="d-flex gap-2 mt-2">
+                      <div className="d-flex gap-2">
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline-primary"
-                          onClick={() => fillForm(report)}
+                          className="btn btn-sm btn-outline-secondary"
+                          disabled={currentPage === 1}
+                          onClick={() =>
+                            setCurrentPage((prev) => Math.max(prev - 1, 1))
+                          }
                         >
-                          Edit
+                          Prev
                         </button>
+
+                        <span className="btn btn-sm btn-light border disabled">
+                          {currentPage} / {totalPages}
+                        </span>
+
                         <button
                           type="button"
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => handleDelete(report.id)}
+                          className="btn btn-sm btn-outline-secondary"
+                          disabled={currentPage === totalPages}
+                          onClick={() =>
+                            setCurrentPage((prev) =>
+                              Math.min(prev + 1, totalPages)
+                            )
+                          }
                         >
-                          Delete
+                          Next
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -467,7 +624,9 @@ export default function AdminReportsPage() {
         <div className="col-12 col-lg-8">
           <div className="card border-0 shadow-sm">
             <div className="card-body">
-              <h1 className="h3 mb-3">{isEdit ? "Edit Report" : "Create Report"}</h1>
+              <h1 className="h3 mb-3">
+                {isEdit ? "Edit Report" : "Create Report"}
+              </h1>
 
               {message && <div className="alert alert-info py-2">{message}</div>}
 
