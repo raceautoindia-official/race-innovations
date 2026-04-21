@@ -1,40 +1,48 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
 import db from "../lib/db";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 3600;
+type ReportRow = {
+  slug: string | null;
+  updated_at?: string | Date | null;
+};
 
-function isValidDate(date?: string | null): boolean {
-  if (!date) return false;
-  return !isNaN(Date.parse(date));
+const BASE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ||
+  "https://raceinnovations.in";
+
+function absUrl(path: string) {
+  return `${BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
-function getValidDate(date?: string | null): Date {
-  return isValidDate(date) ? new Date(date as string) : new Date();
+function safeSlug(slug: string | null | undefined) {
+  if (!slug) return "";
+  return encodeURIComponent(String(slug).trim());
 }
 
-function safeSlug(slug?: string | null): string {
-  return encodeURIComponent(String(slug || "").trim());
-}
-
-function absUrl(path: string): string {
-  const baseUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:4000";
-
-  return `${baseUrl}${path}`;
+function getValidDate(value: string | Date | null | undefined) {
+  if (!value) return new Date();
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? new Date() : date;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [reports]: any = await db.execute(`
-    SELECT 
-      title_slug,
-      updated_at
-    FROM reports
-    WHERE title_slug IS NOT NULL
-      AND title_slug != ''
-  `);
+  let reports: ReportRow[] = [];
+
+  try {
+    const [rows] = await db.query(
+      `
+      SELECT slug, updated_at
+      FROM reports
+      WHERE slug IS NOT NULL
+        AND slug <> ''
+      ORDER BY updated_at DESC
+      `
+    );
+
+    reports = rows as ReportRow[];
+  } catch (error) {
+    console.error("Sitemap reports fetch failed:", error);
+  }
 
   return [
     {
@@ -49,11 +57,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "daily",
       priority: 0.9,
     },
-    ...reports.map((report: any) => ({
-      url: absUrl(`/market-report/${safeSlug(report.title_slug)}`),
-      lastModified: getValidDate(report.updated_at),
-      changeFrequency: "weekly",
-      priority: 0.8,
-    })),
+    ...reports.map(
+      (report): MetadataRoute.Sitemap[number] => ({
+        url: absUrl(`/market-report/${safeSlug(report.slug)}`),
+        lastModified: getValidDate(report.updated_at),
+        changeFrequency: "weekly",
+        priority: 0.8,
+      })
+    ),
   ];
 }
