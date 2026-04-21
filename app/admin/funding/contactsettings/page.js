@@ -1,4 +1,5 @@
-import SettingsPage from "./Home.js";
+import SettingsPage from "./Home";
+
 
 
 export default function Page() {

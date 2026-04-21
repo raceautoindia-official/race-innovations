@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Social from './Social';
-import Sidebar from '@/app/components/Sidebar';
+import Sidebar from "../../../components/Sidebar";
 
 
 function MediaPage() {

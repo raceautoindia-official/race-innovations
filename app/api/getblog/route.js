@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db"; // your DB connection
+import db from "../../../lib/db"; // your DB connection
 
 export async function GET(req, { params }) {
   const { id } = params;

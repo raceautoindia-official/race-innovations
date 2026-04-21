@@ -1,5 +1,6 @@
+import SettingsPage from "../contactsettings/Home";
 
-import SettingsPage from "./Home.js";
+
 
 
 export default function Page() {

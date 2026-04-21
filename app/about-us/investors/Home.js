@@ -3,7 +3,7 @@ import Footer from "../../components/Footer";
 import React from 'react';
 import Investors from "./Investor";
 import Corporate from "./Corporate";
-import Why from "@/app/product/Why";
+import Why from "../../../app/product/Why";
 
 function InvestorsPage() {
   return (

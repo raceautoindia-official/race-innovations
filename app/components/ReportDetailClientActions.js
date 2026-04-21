@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import BuyNowModal from "@/app/components/BuyNowModal";
+import BuyNowModal from "../components/BuyNowModal";
 import HTMLFlipBook from "react-pageflip";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";

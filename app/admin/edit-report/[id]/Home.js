@@ -1,9 +1,10 @@
 
 import React from 'react';
 
-import Sidebar from '@/app/components/Sidebar';
-import Editreport from './Editreport';
 
+
+import Editreport from './Editreport';
+import Sidebar from "../../../components/Sidebar";
 
 
 function ReportsPage() {
@@ -11,7 +12,7 @@ function ReportsPage() {
     <>
     <div className="row">
       
-    
+    <Sidebar/>
   <Editreport/>
   </div>
     </>

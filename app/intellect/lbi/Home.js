@@ -4,7 +4,7 @@ import React from "react";
 import Banner from "./Banner";
 import Video from "./Video";
 import Features from "./Features";
-import Why from "@/app/product/Why";
+import Why from "../../product/Why";
 
 function Lbi() {
   return (

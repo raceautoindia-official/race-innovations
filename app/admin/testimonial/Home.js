@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Testi from './Testi';
-import Sidebar from '@/app/components/Sidebar';
+import Sidebar from "../../components/Sidebar";
 
 
 function Testimonial() {

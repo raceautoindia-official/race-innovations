@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
-import { sendBulkEmails } from "@/lib/awsclient";
+import db from "../../../lib/db";
+import { sendBulkEmails } from "../../../lib/awsclient";
 
 export async function POST(req) {
   try {

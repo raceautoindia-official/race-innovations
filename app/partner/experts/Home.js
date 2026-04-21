@@ -1,8 +1,8 @@
 
 import React from 'react';
 import Form from "./Form";
-import Footer from "@/app/components/Footer";
-import Navbar from '@/app/components/Navbar';
+import Footer from "../../components/Footer";
+import Navbar from '../../components/Navbar';
 
 
 

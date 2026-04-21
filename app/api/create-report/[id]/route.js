@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
-import { s3Client } from "@/lib/s3Client";
+import db from "../../../../lib/db";
+import { s3Client } from "../../../../lib/s3Client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";

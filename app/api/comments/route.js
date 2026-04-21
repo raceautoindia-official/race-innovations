@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
+import db from "../../../lib/db";
 
 function json(data, status = 200) {
   return NextResponse.json(data, { status });

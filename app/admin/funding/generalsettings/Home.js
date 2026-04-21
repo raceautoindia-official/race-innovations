@@ -1,7 +1,9 @@
 
 import React from 'react';
 import Ban from './Ban';
-import Sidebar from '@/app/components/Sidebar';
+import Sidebar from "../../components/Sidebar";
+
+
 
 function GeneralPage() {
   return (

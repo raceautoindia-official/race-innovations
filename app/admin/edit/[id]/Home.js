@@ -1,8 +1,10 @@
 
 import React from 'react';
 
-import Sidebar from '@/app/components/Sidebar';
+
 import Edittest from './Edittest';
+import Sidebar from "../../../components/Sidebar";
+
 
 
 function Edit() {

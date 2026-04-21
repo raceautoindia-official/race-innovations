@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { slugify } from "@/lib/report-utils";
-import db from "@/lib/db";
+import { slugify } from "../../../lib/report-utils";
+import db from "../../../lib/db";
 
 export async function GET(req) {
   try {

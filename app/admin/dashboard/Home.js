@@ -1,7 +1,9 @@
 
 import React from 'react';
-import Sidebar from '@/app/components/Sidebar';
+
 import Dashboard from './Dashboard';
+import Sidebar from '../../../app/components/Sidebar';
+
 
 
 function DashboardPage() {

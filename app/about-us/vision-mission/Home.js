@@ -8,7 +8,7 @@ import Principles from "./Principles";
 import Philosophy from "./Philosophy";
 import Approch from "./Approch";
 import Gem from "./Gem";
-import Why from "@/app/product/Why";
+import Why from "../../../app/product/Why";
 
 
 

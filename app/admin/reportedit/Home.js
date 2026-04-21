@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Reportedit from './Reportedit';
-import Sidebar from '@/app/components/Sidebar';
+import Sidebar from "../../components/Sidebar";
 
 
 function ReporteditPage() {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getFeaturedReports } from "@/lib/report-service";
+import { getFeaturedReports } from "../../../../../lib/report-service";
 
 export async function GET(req) {
   try {

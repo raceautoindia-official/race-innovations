@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
-import { getAllReports } from "@/lib/report-service";
-import { slugify } from "@/lib/report-utils";
-import db from "@/lib/db";
+import { getAllReports } from "../../../../lib/report-service";
+import { slugify } from "../../../../lib/report-utils";
+import db from "../../../../lib/db";
 
 function toJson(value, fallback) {
   try {

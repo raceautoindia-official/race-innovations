@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Video from './Video';
-import Sidebar from '@/app/components/Sidebar';
+import Sidebar from "../../../components/Sidebar";
 
 
 function VideoPage() {

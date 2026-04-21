@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-import Sidebar from '@/app/components/Sidebar';
+import Sidebar from "../../components/Sidebar";
 import Pdf from './Pdf';
 
 
@@ -9,7 +9,7 @@ import Pdf from './Pdf';
 function Partners() {
   return (
     <>
-    
+    <Sidebar/>
   <Pdf/>
     </>
   );

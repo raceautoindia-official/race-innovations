@@ -1,7 +1,8 @@
 
 import React from 'react';
 
-import Sidebar from '@/app/components/Sidebar';
+import Sidebar from '../../../app/components/Sidebar';
+
 import Edittest from './Edittest';
 
 

@@ -1,7 +1,7 @@
 "use client";
 
 
-import ExactEditor from "@/app/components/ExactEditor";
+import ExactEditor from "../../../components/ExactEditor";
 import { useEffect, useRef, useState } from "react";
 
 

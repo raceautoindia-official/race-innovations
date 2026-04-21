@@ -1,7 +1,8 @@
 
 import React from 'react';
 import General from './General';
-import Sidebar from '@/app/components/Sidebar';
+import Sidebar from "../../../components/Sidebar";
+
 
 function SettingsPage() {
   return (

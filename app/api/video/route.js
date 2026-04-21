@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db"; // Ensure correct path to your DB connection file
+import db from "../../../lib/db"; // Ensure correct path to your DB connection file
 
 export async function POST(req) {
     try {

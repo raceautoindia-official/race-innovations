@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Slide from './Slide';
-import Sidebar from '@/app/components/Sidebar';
+import Sidebar from "../../components/Sidebar";
 
 
 function Slider() {

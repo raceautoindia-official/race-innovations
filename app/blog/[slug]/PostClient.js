@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
-import Navbar from "@/app/components/Navbar";
+import Navbar from "../../components/Navbar";
 
 /** ✅ Robust image resolver */
 function resolveImg(src) {

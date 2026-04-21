@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import db from "@/lib/db";
+import db from "../../../../lib/db";
 import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
-import { s3Client } from "@/lib/s3Client";
+import { s3Client } from "../../../../lib/s3Client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 export async function PUT(req) {
     try {

@@ -4,7 +4,7 @@ import React from 'react';
 import Mission from './Mission';
 import Manage from './Manage';
 import Message from "./Message";
-import Why from "@/app/product/Why";
+import Why from "../../../app/product/Why";
 
 
 function About() {

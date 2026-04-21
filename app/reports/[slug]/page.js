@@ -1,9 +1,9 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { getReportBySlug } from "@/lib/report-service";
-import Navbar from "@/app/components/Navbar";
-import Footer from "@/app/components/Footer";
-import ReportDetailClientActions from "@/app/components/ReportDetailClientActions";
+import { getReportBySlug } from "../../../lib/report-service";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
+import ReportDetailClientActions from "../../components/ReportDetailClientActions";
 
 export async function generateMetadata({ params }) {
   const slug = decodeURIComponent(params.slug || "");

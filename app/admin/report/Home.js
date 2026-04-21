@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Report from './Report';
-import Sidebar from '@/app/components/Sidebar';
+import Sidebar from "../../components/Sidebar";
 
 
 

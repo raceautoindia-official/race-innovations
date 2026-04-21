@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import styles from "@/app/page.module.css";
+import styles from "../../app/page.module.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { FaInstagram, FaFacebook, FaLinkedin, FaYoutube } from "react-icons/fa";
