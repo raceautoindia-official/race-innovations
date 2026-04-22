@@ -52,16 +52,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: absUrl("/market-report"),
+      url: absUrl("/reports"),
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
     },
     ...reports.map(
       (report): MetadataRoute.Sitemap[number] => ({
-        url: absUrl(`/market-report/${safeSlug(report.slug)}`),
+        url: absUrl(`/reports/${safeSlug(report.slug)}`),
         lastModified: getValidDate(report.updated_at),
-        changeFrequency: "weekly",
+        changeFrequency: "daily",
         priority: 0.8,
       })
     ),
