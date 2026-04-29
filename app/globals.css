@@ -124,6 +124,93 @@ body.reader-open header[role="banner"] {
     }
 }
 
+.admin-pagination-wrap {
+    width: 100%;
+    margin-top: 16px;
+}
+
+.admin-pagination-info {
+    font-size: 15px;
+    color: #26324d;
+    margin-bottom: 14px;
+}
+
+.admin-number-pagination {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+}
+
+.admin-number-pagination::-webkit-scrollbar {
+    display: none;
+}
+
+.admin-number-page-btn {
+    min-width: 54px;
+    height: 54px;
+    border: 1px solid #cdd7ff;
+    border-radius: 14px;
+    background: #ffffff;
+    color: #263fbd;
+    font-size: 18px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s ease;
+    flex: 0 0 auto;
+    cursor: pointer;
+}
+
+.admin-number-page-btn:hover {
+    background: #eef3ff;
+    border-color: #3046c7;
+    transform: translateY(-1px);
+}
+
+.admin-number-page-btn.active {
+    background: #3046c7;
+    border-color: #3046c7;
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(48, 70, 199, 0.22);
+}
+
+.admin-pagination-ellipsis {
+    min-width: 36px;
+    height: 54px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #697594;
+    font-size: 18px;
+    font-weight: 800;
+    flex: 0 0 auto;
+}
+
+@media (max-width: 576px) {
+    .admin-number-pagination {
+        gap: 9px;
+    }
+
+    .admin-number-page-btn {
+        min-width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        font-size: 16px;
+    }
+
+    .admin-pagination-ellipsis {
+        min-width: 26px;
+        height: 44px;
+        font-size: 16px;
+    }
+}
+
 .shining {
     position: relative;
     display: inline-block;

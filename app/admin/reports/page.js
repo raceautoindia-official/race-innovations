@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Pagination from "../../components/common/Pagination";
 
 const CATEGORY_OPTIONS = [
   "Market Forecast Reports",
@@ -115,6 +114,29 @@ function normalizeCompare(value) {
 function findPresetMatch(options, value) {
   const target = normalizeCompare(value);
   return options.find((item) => normalizeCompare(item) === target) || "";
+}
+
+function getAdminPageItems(currentPage, totalPages) {
+  if (totalPages <= 1) return [1];
+  if (totalPages === 2) return [1, 2];
+
+  const items = [1, 2];
+
+  if (currentPage > 3) {
+    items.push("left-ellipsis");
+  }
+
+  if (currentPage > 2 && currentPage < totalPages) {
+    items.push(currentPage);
+  }
+
+  if (currentPage < totalPages - 1) {
+    items.push("right-ellipsis");
+  }
+
+  items.push(totalPages);
+
+  return [...new Set(items)];
 }
 
 export default function AdminReportsPage() {
@@ -575,8 +597,8 @@ export default function AdminReportsPage() {
                   </div>
 
                   {sortedReports.length > 0 && (
-                    <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-3">
-                      <div className="small text-muted">
+                    <div className="admin-pagination-wrap">
+                      <div className="admin-pagination-info">
                         Showing {(currentPage - 1) * REPORTS_PER_PAGE + 1} to{" "}
                         {Math.min(
                           currentPage * REPORTS_PER_PAGE,
@@ -585,11 +607,35 @@ export default function AdminReportsPage() {
                         of {sortedReports.length} reports
                       </div>
 
-                      <Pagination
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={(p) => setCurrentPage(p)}
-                      />
+                      <div className="admin-number-pagination">
+                        {getAdminPageItems(currentPage, totalPages).map(
+                          (item, index) => {
+                            if (typeof item === "string") {
+                              return (
+                                <span
+                                  key={`${item}-${index}`}
+                                  className="admin-pagination-ellipsis"
+                                >
+                                  ...
+                                </span>
+                              );
+                            }
+
+                            return (
+                              <button
+                                key={item}
+                                type="button"
+                                className={`admin-number-page-btn${
+                                  currentPage === item ? " active" : ""
+                                }`}
+                                onClick={() => setCurrentPage(item)}
+                              >
+                                {item}
+                              </button>
+                            );
+                          }
+                        )}
+                      </div>
                     </div>
                   )}
                 </>
