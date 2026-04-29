@@ -1,6 +1,11 @@
 import db from "../../../../lib/db";
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
+import {
+  isValidIndianMobile,
+  normalizeIndianMobile,
+  INVALID_MOBILE_MESSAGE,
+} from "../../../../lib/validation/phone";
 
 export const runtime = "nodejs";
 
@@ -55,6 +60,15 @@ export async function POST(req) {
       );
     }
 
+    if (!isValidIndianMobile(customer_phone)) {
+      return NextResponse.json(
+        { success: false, message: INVALID_MOBILE_MESSAGE },
+        { status: 400 }
+      );
+    }
+
+    const normalizedPhone = normalizeIndianMobile(customer_phone);
+
     if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
       return NextResponse.json(
         {
@@ -100,7 +114,7 @@ export async function POST(req) {
         currency,
         String(customer_name || ""),
         String(customer_email || ""),
-        String(customer_phone || ""),
+        normalizedPhone,
         String(order.id),
         "created",
         "razorpay",

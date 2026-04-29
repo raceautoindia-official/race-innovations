@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
 import db from "../lib/db";
 
-type ReportRow = {
+export const dynamic = "force-dynamic";
+export const revalidate = 86400;
+
+type SlugRow = {
   slug: string | null;
   updated_at?: string | Date | null;
 };
@@ -26,7 +29,8 @@ function getValidDate(value: string | Date | null | undefined) {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  let reports: ReportRow[] = [];
+  let reports: SlugRow[] = [];
+  let blogs: SlugRow[] = [];
 
   try {
     const [rows] = await db.query(
@@ -39,31 +43,65 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       `
     );
 
-    reports = rows as ReportRow[];
+    reports = rows as SlugRow[];
   } catch (error) {
     console.error("Sitemap reports fetch failed:", error);
   }
 
-  return [
+  try {
+    const [rows] = await db.query(
+      `
+      SELECT slug, updated_at
+      FROM blogs
+      WHERE slug IS NOT NULL
+        AND slug <> ''
+      ORDER BY updated_at DESC
+      `
+    );
+
+    blogs = rows as SlugRow[];
+  } catch (error) {
+    console.error("Sitemap blogs fetch failed:", error);
+  }
+
+  const staticEntries: MetadataRoute.Sitemap = [
     {
       url: absUrl("/"),
       lastModified: new Date(),
-      changeFrequency: "daily",
+      changeFrequency: "daily" as const,
       priority: 1,
     },
     {
       url: absUrl("/reports"),
       lastModified: new Date(),
-      changeFrequency: "daily",
+      changeFrequency: "daily" as const,
       priority: 0.9,
     },
-    ...reports.map(
-      (report): MetadataRoute.Sitemap[number] => ({
-        url: absUrl(`/reports/${safeSlug(report.slug)}`),
-        lastModified: getValidDate(report.updated_at),
-        changeFrequency: "daily",
-        priority: 0.8,
-      })
-    ),
+    {
+      url: absUrl("/web-blog"),
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.9,
+    },
   ];
+
+  const reportEntries: MetadataRoute.Sitemap = reports
+    .filter((r) => r.slug && String(r.slug).trim() !== "")
+    .map((report) => ({
+      url: absUrl(`/reports/${safeSlug(report.slug)}`),
+      lastModified: getValidDate(report.updated_at),
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    }));
+
+  const blogEntries: MetadataRoute.Sitemap = blogs
+    .filter((b) => b.slug && String(b.slug).trim() !== "")
+    .map((blog) => ({
+      url: absUrl(`/web-blog/${safeSlug(blog.slug)}`),
+      lastModified: getValidDate(blog.updated_at),
+      changeFrequency: "daily" as const,
+      priority: 0.7,
+    }));
+
+  return [...staticEntries, ...reportEntries, ...blogEntries];
 }

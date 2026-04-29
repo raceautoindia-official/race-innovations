@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Pagination from "../components/common/Pagination";
 
 const CATEGORY_OPTIONS = [
   "Market Forecast Reports",
@@ -1032,80 +1033,12 @@ export default function HomePage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="row justify-content-center mt-5">
-                  <div className="col-auto">
-                    <div className="d-flex align-items-center flex-wrap justify-content-center gap-2">
-                      <button
-                        type="button"
-                        className="btn"
-                        onClick={() =>
-                          setCurrentPage((prev) => Math.max(prev - 1, 1))
-                        }
-                        disabled={currentPage === 1}
-                        style={{
-                          backgroundColor:
-                            currentPage === 1 ? "#f1f5f9" : "#ffffff",
-                          color: currentPage === 1 ? "#94a3b8" : "#2f45bf",
-                          border: "1px solid #d7dfef",
-                          borderRadius: "12px",
-                          fontWeight: 700,
-                          padding: "10px 16px",
-                          minWidth: "90px",
-                        }}
-                      >
-                        Prev
-                      </button>
-
-                      {Array.from({ length: totalPages }, (_, index) => {
-                        const page = index + 1;
-                        const isActive = currentPage === page;
-
-                        return (
-                          <button
-                            key={page}
-                            type="button"
-                            className="btn"
-                            onClick={() => setCurrentPage(page)}
-                            style={{
-                              backgroundColor: isActive ? "#2f45bf" : "#ffffff",
-                              color: isActive ? "#ffffff" : "#2f45bf",
-                              border: "1px solid rgba(47, 69, 191, 0.22)",
-                              borderRadius: "12px",
-                              fontWeight: 700,
-                              padding: "10px 14px",
-                              minWidth: "44px",
-                            }}
-                          >
-                            {page}
-                          </button>
-                        );
-                      })}
-
-                      <button
-                        type="button"
-                        className="btn"
-                        onClick={() =>
-                          setCurrentPage((prev) =>
-                            Math.min(prev + 1, totalPages)
-                          )
-                        }
-                        disabled={currentPage === totalPages}
-                        style={{
-                          backgroundColor:
-                            currentPage === totalPages ? "#f1f5f9" : "#ffffff",
-                          color:
-                            currentPage === totalPages ? "#94a3b8" : "#2f45bf",
-                          border: "1px solid #d7dfef",
-                          borderRadius: "12px",
-                          fontWeight: 700,
-                          padding: "10px 16px",
-                          minWidth: "90px",
-                        }}
-                      >
-                        Next
-                      </button>
-                    </div>
-                  </div>
+                <div className="mt-5">
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(p) => setCurrentPage(p)}
+                  />
                 </div>
               )}
             </>

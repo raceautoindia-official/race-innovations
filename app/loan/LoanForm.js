@@ -2,6 +2,11 @@
 import React from "react";
 import { useState } from "react";
 import { toast } from "react-toastify";
+import {
+  isValidIndianMobile,
+  normalizeIndianMobile,
+  INVALID_MOBILE_MESSAGE,
+} from "../../lib/validation/phone";
 
 function LoanForm() {
   const [name, setName] = useState("");
@@ -34,11 +39,18 @@ function LoanForm() {
   const handleUpload = async (e) => {
     e.preventDefault();
 
+    if (!isValidIndianMobile(mobile_no)) {
+      toast.error(INVALID_MOBILE_MESSAGE);
+      return;
+    }
+
+    const normalizedMobile = normalizeIndianMobile(mobile_no);
+
     const formData = new FormData();
     formData.append("name", name);
     formData.append("city", city);
     formData.append("email", email);
-    formData.append("mobile_no", mobile_no);
+    formData.append("mobile_no", normalizedMobile);
     formData.append("date_of_birth", date_of_birth);
     formData.append("age", age);
     formData.append("employer_name", employer_name);
@@ -134,7 +146,11 @@ if (res.ok) {
               value={mobile_no}
               onChange={(e) => setMobileNo(e.target.value)}
               className="form-control p-2"
-              placeholder="Enter your mobile number" style={{ backgroundColor: "#ecf5fe" }} 
+              placeholder="Enter your mobile number"
+              style={{ backgroundColor: "#ecf5fe" }}
+              pattern="^(\+?91[\s-]?)?[6-9]\d{9}$"
+              title={INVALID_MOBILE_MESSAGE}
+              inputMode="tel"
               required
             />
           </div>

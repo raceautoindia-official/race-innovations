@@ -41,7 +41,15 @@ function Form() {
                 <label className="form-label">
                   Mobile No <span style={{ color: "red" }}>*</span>
                 </label>
-                <input type="tel" className="form-control p-2" placeholder="Enter your mobile number" required />
+                <input
+                  type="tel"
+                  className="form-control p-2"
+                  placeholder="Enter your mobile number"
+                  pattern="^(\+?91[\s-]?)?[6-9]\d{9}$"
+                  title="Please enter a valid 10-digit mobile number."
+                  inputMode="tel"
+                  required
+                />
               </div>
               <div className="col-12 col-md-6 mt-4">
                 <label className="form-label">

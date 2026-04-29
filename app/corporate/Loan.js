@@ -1,6 +1,11 @@
 "use client";
 import React from "react";
 import { useState } from "react";
+import {
+  isValidIndianMobile,
+  normalizeIndianMobile,
+  INVALID_MOBILE_MESSAGE,
+} from "../../lib/validation/phone";
 
 function LoanForm() {
   const [promotorName, setPromotorName] = useState("");
@@ -36,11 +41,19 @@ function LoanForm() {
 
   const handleUpload = async (e) => {
     e.preventDefault();
+
+    if (!isValidIndianMobile(mobileNo)) {
+      alert(INVALID_MOBILE_MESSAGE);
+      return;
+    }
+
+    const normalizedMobile = normalizeIndianMobile(mobileNo);
+
     const formData = new FormData();
     formData.append("promotorName", promotorName);
     formData.append("companyName", companyName);
     formData.append("email", email);
-    formData.append("mobileNo", mobileNo);
+    formData.append("mobileNo", normalizedMobile);
     formData.append("dateOfBirth", dateOfBirth);
     formData.append("city", city);
     formData.append("address", address);
@@ -168,6 +181,9 @@ function LoanForm() {
                 className="form-control p-2 border rounded shadow-sm"
                 placeholder="Enter Mobile Number"
                 style={{ backgroundColor: "#ecf5fe" }}
+                pattern="^(\+?91[\s-]?)?[6-9]\d{9}$"
+                title={INVALID_MOBILE_MESSAGE}
+                inputMode="tel"
                 required
               />
             </div>

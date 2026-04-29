@@ -56,7 +56,15 @@ function Form() {
               <input type="text" className="form-control" placeholder="Last Name" />
             </div>
             <div className="mb-3">
-              <input type="tel" className="form-control" placeholder="Phone Number" />
+              <input
+                type="tel"
+                className="form-control"
+                placeholder="Phone Number"
+                pattern="^(\+?91[\s-]?)?[6-9]\d{9}$"
+                title="Please enter a valid 10-digit mobile number."
+                inputMode="tel"
+                required
+              />
             </div>
             <div className="mb-3">
               <input type="text" className="form-control" placeholder="Location" />

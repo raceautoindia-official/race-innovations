@@ -1,13 +1,45 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import HTMLFlipBook from "react-pageflip";
-import { Document, Page, pdfjs } from "react-pdf";
+import { Document, Page as ReactPdfPage, pdfjs } from "react-pdf";
+import useFlipbookPageSize from "../../lib/hooks/useFlipbookPageSize";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
+const FlipPage = React.forwardRef(function FlipPage(
+  { pageNumber, pageWidth, pageHeight },
+  ref
+) {
+  return (
+    <div
+      ref={ref}
+      className="flipbook-page"
+      style={{
+        width: pageWidth,
+        height: pageHeight,
+        background: "#ffffff",
+        overflow: "hidden",
+        boxShadow: "0 18px 55px rgba(0,0,0,0.45)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <ReactPdfPage
+        pageNumber={pageNumber}
+        width={pageWidth}
+        renderTextLayer={false}
+        renderAnnotationLayer={false}
+        loading={null}
+      />
+    </div>
+  );
+});
+
 export default function SampleFlipbookPage() {
   const [numPages, setNumPages] = useState(0);
+  const { pageWidth, pageHeight, isMobile } = useFlipbookPageSize();
 
   const searchParams =
     typeof window !== "undefined"
@@ -17,75 +49,86 @@ export default function SampleFlipbookPage() {
   const pdfUrl = searchParams?.get("pdf") || "";
   const title = searchParams?.get("title") || "Sample Report";
 
-  const pages = useMemo(() => {
-    return Array.from({ length: numPages }, (_, i) => i + 1);
-  }, [numPages]);
+  const pages = useMemo(
+    () => Array.from({ length: numPages }, (_, i) => i + 1),
+    [numPages]
+  );
 
-  function onDocumentLoadSuccess({ numPages }) {
-    setNumPages(numPages);
+  function onDocumentLoadSuccess({ numPages: total }) {
+    setNumPages(total);
   }
 
   return (
     <main
       style={{
-        minHeight: "100vh",
-        background: "#f6f8fc",
-        padding: "24px 16px 40px",
+        minHeight: "100dvh",
+        background:
+          "radial-gradient(circle at center, #17202c 0%, #070b12 70%)",
+        padding: isMobile ? "14px 12px 105px" : "24px 110px 125px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
       }}
     >
       <div
         style={{
-          maxWidth: "1200px",
-          margin: "0 auto",
+          width: "100%",
+          maxWidth: "1280px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: "12px",
+          flexWrap: "wrap",
+          marginBottom: "20px",
         }}
       >
-        <div
-          style={{
-            marginBottom: "20px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: "12px",
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: "28px",
-                fontWeight: 800,
-                color: "#0f172a",
-              }}
-            >
-              {title}
-            </h1>
-            <p
-              style={{
-                margin: "6px 0 0 0",
-                color: "#64748b",
-                fontSize: "14px",
-              }}
-            >
-              Flip through the sample report pages
-            </p>
-          </div>
-
-          <a
-            href="/"
+        <div>
+          <h1
             style={{
-              textDecoration: "none",
-              background: "#2f45bf",
-              color: "#fff",
-              padding: "10px 16px",
-              borderRadius: "12px",
-              fontWeight: 700,
+              margin: 0,
+              fontSize: "22px",
+              fontWeight: 800,
+              color: "#f8fafc",
             }}
           >
-            Back
-          </a>
+            {title}
+          </h1>
+          <p
+            style={{
+              margin: "6px 0 0 0",
+              color: "#94a3b8",
+              fontSize: "13px",
+            }}
+          >
+            Flip through the sample report pages
+          </p>
         </div>
 
+        <a
+          href="/"
+          style={{
+            textDecoration: "none",
+            background: "#2f45bf",
+            color: "#fff",
+            padding: "10px 16px",
+            borderRadius: "12px",
+            fontWeight: 700,
+          }}
+        >
+          Back
+        </a>
+      </div>
+
+      <div
+        style={{
+          flex: 1,
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
         {!pdfUrl ? (
           <div
             style={{
@@ -99,55 +142,51 @@ export default function SampleFlipbookPage() {
             No sample PDF found.
           </div>
         ) : (
-          <div
-            style={{
-              background: "#e8edf8",
-              borderRadius: "24px",
-              padding: "24px",
-              display: "flex",
-              justifyContent: "center",
-              overflow: "auto",
-            }}
+          <Document
+            file={pdfUrl}
+            onLoadSuccess={onDocumentLoadSuccess}
+            loading={
+              <div style={{ color: "#cbd5e1", padding: "24px" }}>
+                Loading PDF...
+              </div>
+            }
           >
-            <Document file={pdfUrl} onLoadSuccess={onDocumentLoadSuccess} loading="Loading PDF...">
-              {numPages > 0 ? (
-                <HTMLFlipBook
-                  width={420}
-                  height={594}
-                  size="stretch"
-                  minWidth={280}
-                  maxWidth={520}
-                  minHeight={420}
-                  maxHeight={720}
-                  maxShadowOpacity={0.5}
-                  showCover={true}
-                  mobileScrollSupport={true}
-                >
-                  {pages.map((pageNo) => (
-                    <div
-                      key={pageNo}
-                      style={{
-                        background: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        border: "1px solid #dbe3f1",
-                      }}
-                    >
-                      <Page
-                        pageNumber={pageNo}
-                        width={420}
-                        renderTextLayer={false}
-                        renderAnnotationLayer={false}
-                      />
-                    </div>
-                  ))}
-                </HTMLFlipBook>
-              ) : (
-                <div style={{ padding: "40px", color: "#334155" }}>Loading pages...</div>
-              )}
-            </Document>
-          </div>
+            {numPages > 0 ? (
+              <HTMLFlipBook
+                key={`${pageWidth}x${pageHeight}-${isMobile ? "p" : "l"}`}
+                width={pageWidth}
+                height={pageHeight}
+                size="fixed"
+                minWidth={pageWidth}
+                maxWidth={pageWidth}
+                minHeight={pageHeight}
+                maxHeight={pageHeight}
+                showCover={false}
+                usePortrait={isMobile}
+                mobileScrollSupport={true}
+                drawShadow={true}
+                flippingTime={700}
+                swipeDistance={30}
+                showPageCorners={!isMobile}
+                maxShadowOpacity={0.5}
+                className="premium-flipbook"
+                style={{ margin: "0 auto" }}
+              >
+                {pages.map((pageNo) => (
+                  <FlipPage
+                    key={pageNo}
+                    pageNumber={pageNo}
+                    pageWidth={pageWidth}
+                    pageHeight={pageHeight}
+                  />
+                ))}
+              </HTMLFlipBook>
+            ) : (
+              <div style={{ padding: "40px", color: "#cbd5e1" }}>
+                Loading pages...
+              </div>
+            )}
+          </Document>
         )}
       </div>
     </main>

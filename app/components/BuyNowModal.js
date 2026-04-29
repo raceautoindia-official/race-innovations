@@ -2,6 +2,11 @@
 
 import React, { useMemo, useState } from "react";
 import Script from "next/script";
+import {
+  isValidIndianMobile,
+  normalizeIndianMobile,
+  INVALID_MOBILE_MESSAGE,
+} from "../../lib/validation/phone";
 
 function getReportPrice(report) {
   const raw =
@@ -91,6 +96,16 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
         return;
       }
 
+      if (!isValidIndianMobile(form.customer_phone)) {
+        setStatus({
+          type: "error",
+          message: INVALID_MOBILE_MESSAGE,
+        });
+        return;
+      }
+
+      const normalizedPhone = normalizeIndianMobile(form.customer_phone);
+
       setLoading(true);
 
       const orderRes = await fetch("/api/payment/create-order", {
@@ -105,7 +120,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
           currency: "USD",
           customer_name: form.customer_name,
           customer_email: form.customer_email,
-          customer_phone: form.customer_phone,
+          customer_phone: normalizedPhone,
           customer_company: form.customer_company,
         }),
       });
@@ -129,7 +144,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
         prefill: {
           name: form.customer_name,
           email: form.customer_email,
-          contact: form.customer_phone,
+          contact: normalizedPhone,
         },
         notes: {
           report_id: String(report?.id || ""),
@@ -395,12 +410,15 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
             <div className="col-12 col-md-6">
               <label className="form-label fw-bold">Phone *</label>
               <input
-                type="text"
+                type="tel"
                 className="form-control"
                 name="customer_phone"
                 value={form.customer_phone}
                 onChange={handleChange}
                 disabled={loading}
+                pattern="^(\+?91[\s-]?)?[6-9]\d{9}$"
+                title={INVALID_MOBILE_MESSAGE}
+                inputMode="tel"
                 required
               />
             </div>

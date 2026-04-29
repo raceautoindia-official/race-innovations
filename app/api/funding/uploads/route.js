@@ -4,6 +4,11 @@ import { v4 as uuidv4 } from "uuid";
 import db from "../../../../lib/db";
 import s3Client from "../../../../lib/s3Client";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  isValidIndianMobile,
+  normalizeIndianMobile,
+  INVALID_MOBILE_MESSAGE,
+} from "../../../../lib/validation/phone";
 
 /**
  * Upload multiple files to S3
@@ -46,7 +51,14 @@ export async function POST(req) {
       const name = formData.get("name");
       const city = formData.get("city");
       const email = formData.get("email");
-      const mobile_no = formData.get("mobile_no");
+      const mobile_no_raw = formData.get("mobile_no");
+      if (!isValidIndianMobile(mobile_no_raw)) {
+        return NextResponse.json(
+          { success: false, message: INVALID_MOBILE_MESSAGE },
+          { status: 400 }
+        );
+      }
+      const mobile_no = normalizeIndianMobile(mobile_no_raw);
       const date_of_birth = formData.get("date_of_birth");
       const age = formData.get("age");
       const employer_name = formData.get("employer_name");

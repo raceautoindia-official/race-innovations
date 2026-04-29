@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Pagination from "../../components/common/Pagination";
 
 const CATEGORY_OPTIONS = [
   "Market Forecast Reports",
@@ -574,7 +575,7 @@ export default function AdminReportsPage() {
                   </div>
 
                   {sortedReports.length > 0 && (
-                    <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-2">
+                    <div className="d-flex justify-content-between align-items-center mt-3 flex-wrap gap-3">
                       <div className="small text-muted">
                         Showing {(currentPage - 1) * REPORTS_PER_PAGE + 1} to{" "}
                         {Math.min(
@@ -584,35 +585,11 @@ export default function AdminReportsPage() {
                         of {sortedReports.length} reports
                       </div>
 
-                      <div className="d-flex gap-2">
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-secondary"
-                          disabled={currentPage === 1}
-                          onClick={() =>
-                            setCurrentPage((prev) => Math.max(prev - 1, 1))
-                          }
-                        >
-                          Prev
-                        </button>
-
-                        <span className="btn btn-sm btn-light border disabled">
-                          {currentPage} / {totalPages}
-                        </span>
-
-                        <button
-                          type="button"
-                          className="btn btn-sm btn-outline-secondary"
-                          disabled={currentPage === totalPages}
-                          onClick={() =>
-                            setCurrentPage((prev) =>
-                              Math.min(prev + 1, totalPages)
-                            )
-                          }
-                        >
-                          Next
-                        </button>
-                      </div>
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(p) => setCurrentPage(p)}
+                      />
                     </div>
                   )}
                 </>

@@ -1,7 +1,133 @@
+body.reader-open {
+    overflow: hidden !important;
+}
+
+body.reader-open .navbar,
+body.reader-open nav.navbar,
+body.reader-open header.navbar,
+body.reader-open #site-navbar,
+body.reader-open .site-header,
+body.reader-open header[role="banner"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+.reader-shell {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    overflow: hidden;
+    z-index: 2147483647;
+}
+
+.pagination-wrap {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.pagination-list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+    max-width: 100%;
+    overflow-x: auto;
+    padding: 6px 4px;
+    margin: 0;
+    list-style: none;
+    scrollbar-width: none;
+}
+
+.pagination-list::-webkit-scrollbar {
+    display: none;
+}
+
+.pagination-btn {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #cdd7ff;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #263fbd;
+    font-weight: 700;
+    font-size: 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s ease;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #eef3ff;
+    border-color: #3046c7;
+    transform: translateY(-1px);
+}
+
+.pagination-btn.active {
+    background: #3046c7;
+    border-color: #3046c7;
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(48, 70, 199, 0.22);
+}
+
+.pagination-btn:disabled,
+.pagination-btn.disabled {
+    background: #f3f5f9;
+    border-color: #dde3ef;
+    color: #aeb8c8;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.pagination-btn.nav {
+    min-width: 86px;
+}
+
+.pagination-ellipsis {
+    min-width: 34px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #7a86a3;
+    font-weight: 700;
+}
+
+@media (max-width: 576px) {
+    .pagination-list {
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    .pagination-btn {
+        min-width: 38px;
+        height: 38px;
+        padding: 0 11px;
+        border-radius: 10px;
+        font-size: 14px;
+    }
+
+    .pagination-btn.nav {
+        min-width: 68px;
+    }
+
+    .pagination-ellipsis {
+        height: 38px;
+        min-width: 24px;
+    }
+}
+
 .shining {
     position: relative;
     display: inline-block;
-    color: white; 
+    color: white;
     -webkit-mask-image: linear-gradient(
         -75deg, 
         black 50%, 

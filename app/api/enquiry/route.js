@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import db from "../../../lib/db";
 import { sendBulkEmails } from "../../../lib/awsclient";
+import { sendReportRequestConfirmationEmail } from "../../../lib/emails/reportRequestConfirmation";
+import {
+  isValidIndianMobile,
+  normalizeIndianMobile,
+  INVALID_MOBILE_MESSAGE,
+} from "../../../lib/validation/phone";
 
 export async function POST(req) {
   try {
@@ -44,6 +50,15 @@ export async function POST(req) {
       );
     }
 
+    if (!isValidIndianMobile(phone)) {
+      return NextResponse.json(
+        { success: false, message: INVALID_MOBILE_MESSAGE },
+        { status: 400 }
+      );
+    }
+
+    const normalizedPhone = normalizeIndianMobile(phone);
+
     const insertQuery = `
       INSERT INTO enquiries (
         name,
@@ -63,7 +78,7 @@ export async function POST(req) {
       company_name.trim(),
       email.trim(),
       designation?.trim() || null,
-      phone.trim(),
+      normalizedPhone,
       location?.trim() || null,
       area_of_interest.trim(),
       preferred_contact.trim(),
@@ -83,7 +98,7 @@ export async function POST(req) {
       <p><strong>Company:</strong> ${company_name.trim()}</p>
       <p><strong>Email:</strong> ${email.trim()}</p>
       <p><strong>Designation:</strong> ${designation?.trim() || "-"}</p>
-      <p><strong>Phone:</strong> ${phone.trim()}</p>
+      <p><strong>Phone:</strong> ${normalizedPhone}</p>
       <p><strong>Location:</strong> ${location?.trim() || "-"}</p>
       <p><strong>Area of Interest:</strong> ${area_of_interest.trim()}</p>
       <p><strong>Preferred Contact:</strong> ${preferred_contact.trim()}</p>
@@ -99,11 +114,34 @@ export async function POST(req) {
       }
     `;
 
-    await sendBulkEmails(
-      ["kh@raceinnovations.in", "projecthead@raceinnovations.in"],
-      subject,
-      htmlContent
-    );
+    try {
+      await sendBulkEmails(
+        ["kh@raceinnovations.in", "projecthead@raceinnovations.in"],
+        subject,
+        htmlContent
+      );
+      console.log("Admin enquiry email sent");
+    } catch (adminMailErr) {
+      console.error("Admin enquiry email failed:", adminMailErr);
+    }
+
+    try {
+      await sendReportRequestConfirmationEmail({
+        name: name.trim(),
+        reportTitle: cleanReportTitle,
+        companyName: company_name.trim(),
+        email: email.trim(),
+        designation: designation?.trim() || "",
+        phoneNumber: normalizedPhone,
+        location: location?.trim() || "",
+        areaOfInterest: area_of_interest.trim(),
+      });
+    } catch (confirmMailErr) {
+      console.error(
+        "Customer confirmation email failed (outer catch):",
+        confirmMailErr
+      );
+    }
 
     return NextResponse.json({
       success: true,
