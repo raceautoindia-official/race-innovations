@@ -54,3 +54,36 @@
   max-width: 25%;
   text-decoration: none;
 }
+
+.footer-contact-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+}
+
+.footer-contact-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.24);
+}
+
+.footer-contact-whatsapp {
+  background-color: #25d366;
+}
+
+.footer-contact-email {
+  background-color: #2f45bf;
+}
+
+@media (max-width: 575px) {
+  .footer-contact-btn {
+    width: 36px;
+    height: 36px;
+  }
+}

@@ -2,6 +2,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import BootstrapClient from './components/BootstrapClient';
+import GlobalFloatingWidgets from './components/GlobalFloatingWidgets';
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from 'react-toastify';
 import 'core-js/full/promise/with-resolvers';
@@ -60,7 +61,8 @@ export default function RootLayout({ children }) {
       <ToastContainer />
         {children}
         <BootstrapClient/>
-        
+        <GlobalFloatingWidgets />
+
       </body>
     </html>
   );

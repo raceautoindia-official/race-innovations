@@ -5,6 +5,7 @@ import Image from "./Image";
 
 import Formats from "./Formats";
 import Last from "./Last";
+import MarketReportSEO from "./MarketReportSEO";
 import Why from "../product/Why";
 
 
@@ -18,9 +19,10 @@ function Flash() {
     <Navbar/>
     <div className="main-content">
     <Image/>
-   
+
     <Formats/>
     <Last/>
+    <MarketReportSEO/>
     <div className="mt-5">
       <Why />
       </div>

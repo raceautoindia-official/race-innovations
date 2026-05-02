@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Pagination from "../components/common/Pagination";
+import ReportsCertifications from "../components/ReportsCertifications";
 
 const CATEGORY_OPTIONS = [
   "Market Forecast Reports",
@@ -51,29 +52,15 @@ function uniqueClean(values) {
 }
 
 export default function HomePage() {
-  const trustedItems = [
-    "Global OEMs",
-    "Tier-1 Suppliers",
-    "Strategy Consultants",
-    "Investment Firms",
-    "Government Bodies",
-    "Research Institutions",
-  ];
-
-  const stats = [
-    { value: "50+", label: "Countries Covered" },
-    { value: "200+", label: "Reports Published" },
-    { value: "500+", label: "Enterprise Clients" },
-    { value: "15+", label: "Years of Expertise" },
-  ];
-
   const [reports, setReports] = useState([]);
   const [rawCategoryValues, setRawCategoryValues] = useState([]);
   const [rawCountryValues, setRawCountryValues] = useState([]);
+  const [rawRegionValues, setRawRegionValues] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [reportsError, setReportsError] = useState("");
 
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedRegion, setSelectedRegion] = useState("All");
   const [selectedCountry, setSelectedCountry] = useState("All");
   const [searchText, setSearchText] = useState("");
 
@@ -126,6 +113,10 @@ export default function HomePage() {
 
         const allCountriesFromDb = uniqueClean(
           rawReports.map((item) => item?.country || "")
+        );
+
+        const allRegionsFromDb = uniqueClean(
+          rawReports.map((item) => item?.region || "")
         );
 
         const normalized = rawReports
@@ -191,6 +182,7 @@ export default function HomePage() {
         if (active) {
           setRawCategoryValues(allCategoriesFromDb);
           setRawCountryValues(allCountriesFromDb);
+          setRawRegionValues(allRegionsFromDb);
           setReports(normalized);
         }
       } catch (error) {
@@ -199,6 +191,7 @@ export default function HomePage() {
           setReports([]);
           setRawCategoryValues([]);
           setRawCountryValues([]);
+          setRawRegionValues([]);
           setReportsError(error?.message || "Unable to load reports right now.");
         }
       } finally {
@@ -223,12 +216,19 @@ export default function HomePage() {
     return ["All", ...uniqueClean([...COUNTRY_OPTIONS, ...rawCountryValues])];
   }, [rawCountryValues]);
 
+  const regions = useMemo(() => {
+    return ["All", ...uniqueClean(rawRegionValues)];
+  }, [rawRegionValues]);
+
   const filteredReports = useMemo(() => {
     const q = searchText.trim().toLowerCase();
 
     return reports.filter((report) => {
       const matchCategory =
         selectedCategory === "All" || report.category === selectedCategory;
+
+      const matchRegion =
+        selectedRegion === "All" || report.region === selectedRegion;
 
       const matchCountry =
         selectedCountry === "All" || report.country === selectedCountry;
@@ -243,13 +243,13 @@ export default function HomePage() {
         String(report.category || "").toLowerCase().includes(q) ||
         String(report.description || "").toLowerCase().includes(q);
 
-      return matchCategory && matchCountry && matchSearch;
+      return matchCategory && matchRegion && matchCountry && matchSearch;
     });
-  }, [reports, selectedCategory, selectedCountry, searchText]);
+  }, [reports, selectedCategory, selectedRegion, selectedCountry, searchText]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, selectedCountry, searchText]);
+  }, [selectedCategory, selectedRegion, selectedCountry, searchText]);
 
   useEffect(() => {
     const section = document.getElementById("reports");
@@ -340,6 +340,14 @@ export default function HomePage() {
 
   return (
     <>
+      <style>{`
+        @media (max-width: 991px) {
+          .hero-title-one-line {
+            white-space: normal !important;
+          }
+        }
+      `}</style>
+
       <section
         className="d-flex align-items-center"
         style={{
@@ -350,55 +358,41 @@ export default function HomePage() {
       >
         <div className="container-fluid px-4 px-md-5 px-lg-5">
           <div className="row">
-            <div className="col-12 col-lg-8 col-xl-7 ps-lg-5">
-              <span
-                className="d-inline-block px-3 py-2 mb-4 rounded-pill"
-                style={{
-                  border: "1px solid rgba(47, 69, 191, 0.25)",
-                  color: "#2f45bf",
-                  fontSize: "14px",
-                  fontWeight: 600,
-                  letterSpacing: "2px",
-                  backgroundColor: "#ffffff",
-                }}
-              >
-                AUTOMOTIVE INTELLIGENCE
-              </span>
-
+            <div className="col-12 ps-lg-5">
               <h1
-                className="fw-bold"
+                className="fw-bold hero-title-one-line"
                 style={{
-                  fontSize: "clamp(2.5rem, 4.8vw, 4.6rem)",
-                  lineHeight: "1.02",
+                  fontSize: "clamp(1.8rem, 3vw, 3.4rem)",
+                  lineHeight: "1.08",
                   letterSpacing: "-1px",
                   color: "#111111",
                   marginBottom: "24px",
+                  whiteSpace: "nowrap",
                 }}
               >
-                Premium Automotive
-                <br />
+                Premium Automotive{" "}
                 <span style={{ color: "#2f45bf" }}>
                   Market Intelligence &amp;
-                </span>
-                <br />
+                </span>{" "}
                 Forecast Reports
               </h1>
 
               <p
                 style={{
-                  maxWidth: "720px",
+                  maxWidth: "820px",
                   fontSize: "clamp(1rem, 1.8vw, 1.5rem)",
                   lineHeight: "1.5",
                   color: "#5f6b85",
                   fontWeight: 400,
-                  marginBottom: "36px",
+                  margin: "0 auto 36px auto",
+                  textAlign: "center",
                 }}
               >
                 Country-wise, segment-wise, and OEM-level automotive insights
                 for strategic decision-making
               </p>
 
-              <div className="d-flex flex-column flex-sm-row gap-3">
+              <div className="d-flex flex-column flex-sm-row gap-3 justify-content-center">
                 <a
                   href="#reports"
                   className="btn px-4 py-3"
@@ -437,142 +431,10 @@ export default function HomePage() {
       </section>
 
       <section
-        style={{
-          borderTop: "1px solid #dde3f0",
-          borderBottom: "1px solid #dde3f0",
-          background:
-            "linear-gradient(135deg, #f8fbff 0%, #eef4ff 45%, #f9f5ff 100%)",
-        }}
-      >
-        <div className="container-fluid px-4 px-md-5 px-lg-5">
-          <div
-            className="text-center"
-            style={{
-              paddingTop: "38px",
-              paddingBottom: "34px",
-              borderBottom: "1px solid rgba(47, 69, 191, 0.12)",
-            }}
-          >
-            <div
-              style={{
-                color: "#223e6c",
-                fontSize: "18px",
-                fontWeight: 800,
-                letterSpacing: "2.4px",
-                textTransform: "uppercase",
-                marginBottom: "24px",
-              }}
-            >
-              TRUSTED BY LEADING ORGANIZATIONS
-            </div>
-
-            <div className="row justify-content-center g-3">
-              {trustedItems.map((item, index) => {
-                const stylesList = [
-                  {
-                    background:
-                      "linear-gradient(135deg, #eef4ff 0%, #dce8ff 100%)",
-                    color: "#2346a0",
-                    border: "1px solid #c9d8ff",
-                    boxShadow: "0 10px 24px rgba(35, 70, 160, 0.10)",
-                  },
-                  {
-                    background:
-                      "linear-gradient(135deg, #eefcf4 0%, #ddf7e8 100%)",
-                    color: "#177245",
-                    border: "1px solid #c7ecd6",
-                    boxShadow: "0 10px 24px rgba(23, 114, 69, 0.10)",
-                  },
-                  {
-                    background:
-                      "linear-gradient(135deg, #fff5ea 0%, #ffe7cc 100%)",
-                    color: "#b05a00",
-                    border: "1px solid #ffd6a8",
-                    boxShadow: "0 10px 24px rgba(176, 90, 0, 0.10)",
-                  },
-                  {
-                    background:
-                      "linear-gradient(135deg, #f5efff 0%, #e8dbff 100%)",
-                    color: "#6b39b2",
-                    border: "1px solid #d9c2ff",
-                    boxShadow: "0 10px 24px rgba(107, 57, 178, 0.10)",
-                  },
-                  {
-                    background:
-                      "linear-gradient(135deg, #eefbff 0%, #d7f1fb 100%)",
-                    color: "#0f6e8c",
-                    border: "1px solid #bae7f7",
-                    boxShadow: "0 10px 24px rgba(15, 110, 140, 0.10)",
-                  },
-                  {
-                    background:
-                      "linear-gradient(135deg, #fff0f5 0%, #ffdbe8 100%)",
-                    color: "#b03060",
-                    border: "1px solid #ffc4d9",
-                    boxShadow: "0 10px 24px rgba(176, 48, 96, 0.10)",
-                  },
-                ];
-
-                const itemStyle = stylesList[index % stylesList.length];
-
-                return (
-                  <div key={index} className="col-6 col-md-auto">
-                    <div
-                      style={{
-                        ...itemStyle,
-                        fontSize: "18px",
-                        fontWeight: 700,
-                        padding: "14px 24px",
-                        borderRadius: "999px",
-                        transition: "transform 0.25s ease, box-shadow 0.25s ease",
-                        cursor: "default",
-                      }}
-                    >
-                      {item}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div style={{ paddingTop: "40px", paddingBottom: "40px" }}>
-            <div className="row text-center justify-content-center">
-              {stats.map((stat, index) => (
-                <div key={index} className="col-6 col-lg-3 mb-4 mb-lg-0">
-                  <div
-                    style={{
-                      color: "#2f45bf",
-                      fontSize: "clamp(2.2rem, 4vw, 3.4rem)",
-                      fontWeight: 800,
-                      lineHeight: "1",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    {stat.value}
-                  </div>
-
-                  <div
-                    style={{
-                      color: "#41506b",
-                      fontSize: "18px",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
         id="reports"
         style={{
-          paddingTop: "56px",
-          paddingBottom: "64px",
+         
+          paddingBottom: "54px",
           backgroundColor: "#ffffff",
         }}
       >
@@ -619,147 +481,208 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="row justify-content-center mb-4">
-            <div className="col-12 col-xl-11">
+          <div className="row justify-content-center mb-5">
+            <div className="col-12 col-xl-10">
               <div
-                className="row g-2 align-items-center"
                 style={{
-                  backgroundColor: "#f8faff",
-                  border: "1px solid #e3e8f4",
-                  borderRadius: "20px",
-                  padding: "16px",
-                  boxShadow: "0 10px 24px rgba(20, 30, 70, 0.04)",
+                  width: "100%",
+                  maxWidth: "1120px",
+                  margin: "0 auto",
                 }}
               >
-                <div className="col-12 col-md-6 col-lg-4">
-                  <label
-                    className="d-block mb-2"
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: 700,
-                      color: "#41506b",
-                    }}
-                  >
-                    Category
-                  </label>
-                  <select
-                    className="form-select"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      color: "#24324a",
-                      fontWeight: 500,
-                      boxShadow: "none",
-                    }}
-                  >
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-12 col-md-6 col-lg-4">
-                  <label
-                    className="d-block mb-2"
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: 700,
-                      color: "#41506b",
-                    }}
-                  >
-                    Country
-                  </label>
-                  <select
-                    className="form-select"
-                    value={selectedCountry}
-                    onChange={(e) => setSelectedCountry(e.target.value)}
-                    style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      color: "#24324a",
-                      fontWeight: 500,
-                      boxShadow: "none",
-                    }}
-                  >
-                    {countries.map((country) => (
-                      <option key={country} value={country}>
-                        {country}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="col-12 col-lg-4">
-                  <label
-                    className="d-block mb-2"
-                    style={{
-                      fontSize: "14px",
-                      fontWeight: 700,
-                      color: "#41506b",
-                    }}
-                  >
-                    Search
-                  </label>
+                <div
+                  style={{
+                    position: "relative",
+                    width: "100%",
+                    marginBottom: "18px",
+                  }}
+                >
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Search by title, country, category..."
+                    placeholder="Search Reports..."
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      color: "#24324a",
-                      fontWeight: 500,
+                      width: "100%",
+                      height: "55px",
+                      borderRadius: "999px",
+                      border: "2px solid #555555",
+                      backgroundColor: "#ffffff",
+                      padding: "0 58px 0 22px",
+                      fontSize: "clamp(16px, 1.4vw, 21px)",
+                      fontWeight: 400,
+                      color: "#111111",
                       boxShadow: "none",
+                      outline: "none",
                     }}
                   />
+
+                  <span
+                    style={{
+                      position: "absolute",
+                      right: "20px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      fontSize: "30px",
+                      lineHeight: 1,
+                      color: "#9ca3af",
+                      pointerEvents: "none",
+                    }}
+                  >
+                    ⌕
+                  </span>
                 </div>
 
-                <div className="col-12">
-                  <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-1">
-                    <div
+                <div className="row g-3 justify-content-center">
+                  <div className="col-12 col-md-4">
+                    <label
+                      className="d-block mb-2"
                       style={{
-                        color: "#5f6b85",
-                        fontSize: "15px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {loadingReports
-                        ? "Loading reports..."
-                        : `${filteredReports.length} report${
-                            filteredReports.length !== 1 ? "s" : ""
-                          } found`}
-                    </div>
-
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() => {
-                        setSelectedCategory("All");
-                        setSelectedCountry("All");
-                        setSearchText("");
-                        setCurrentPage(1);
-                      }}
-                      style={{
-                        backgroundColor: "#ffffff",
-                        color: "#2f45bf",
-                        border: "1px solid rgba(47, 69, 191, 0.22)",
-                        borderRadius: "14px",
+                        fontSize: "14px",
                         fontWeight: 700,
-                        padding: "9px 16px",
+                        color: "#334155",
                       }}
                     >
-                      Reset Filters
-                    </button>
+                      Category
+                    </label>
+
+                    <select
+                      className="form-select"
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      style={{
+                        height: "38px",
+                        borderRadius: "12px",
+                        border: "1px solid #d7dfef",
+                        color: "#24324a",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        boxShadow: "none",
+                        backgroundColor: "#ffffff",
+                      }}
+                    >
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
+                  <div className="col-12 col-md-4">
+                    <label
+                      className="d-block mb-2"
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        color: "#334155",
+                      }}
+                    >
+                      Region
+                    </label>
+
+                    <select
+                      className="form-select"
+                      value={selectedRegion}
+                      onChange={(e) => setSelectedRegion(e.target.value)}
+                      style={{
+                        height: "38px",
+                        borderRadius: "12px",
+                        border: "1px solid #d7dfef",
+                        color: "#24324a",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        boxShadow: "none",
+                        backgroundColor: "#ffffff",
+                      }}
+                    >
+                      {regions.map((region) => (
+                        <option key={region} value={region}>
+                          {region}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="col-12 col-md-4">
+                    <label
+                      className="d-block mb-2"
+                      style={{
+                        fontSize: "14px",
+                        fontWeight: 700,
+                        color: "#334155",
+                      }}
+                    >
+                      Country
+                    </label>
+
+                    <select
+                      className="form-select"
+                      value={selectedCountry}
+                      onChange={(e) => setSelectedCountry(e.target.value)}
+                      style={{
+                        height: "38px",
+                        borderRadius: "12px",
+                        border: "1px solid #d7dfef",
+                        color: "#24324a",
+                        fontSize: "13px",
+                        fontWeight: 600,
+                        boxShadow: "none",
+                        backgroundColor: "#ffffff",
+                      }}
+                    >
+                      {countries.map((country) => (
+                        <option key={country} value={country}>
+                          {country}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div
+                  className="d-flex flex-wrap align-items-center justify-content-between gap-3 mt-4"
+                  style={{
+                    maxWidth: "1120px",
+                    margin: "0 auto",
+                  }}
+                >
+                  <div
+                    style={{
+                      color: "#5f6b85",
+                      fontSize: "15px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {loadingReports
+                      ? "Loading reports..."
+                      : `${filteredReports.length} report${
+                          filteredReports.length !== 1 ? "s" : ""
+                        } found`}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => {
+                      setSelectedCategory("All");
+                      setSelectedRegion("All");
+                      setSelectedCountry("All");
+                      setSearchText("");
+                      setCurrentPage(1);
+                    }}
+                    style={{
+                      backgroundColor: "#ffffff",
+                      color: "#2f45bf",
+                      border: "1px solid rgba(47, 69, 191, 0.22)",
+                      borderRadius: "14px",
+                      fontWeight: 700,
+                      padding: "10px 18px",
+                    }}
+                  >
+                    Reset Filters
+                  </button>
                 </div>
               </div>
             </div>
@@ -979,7 +902,9 @@ export default function HomePage() {
                             fontWeight: 500,
                           }}
                         >
-                          <span>◉ {report.country || "Country not specified"}</span>
+                          <span>
+                            ◉ {report.country || "Country not specified"}
+                          </span>
                           <span>◷ {report.period || "Period not specified"}</span>
                         </div>
 
@@ -1080,6 +1005,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <ReportsCertifications />
+
       {isEnquiryOpen && (
         <div
           onClick={closeEnquiryModal}
@@ -1172,10 +1099,7 @@ export default function HomePage() {
             <form onSubmit={handleEnquirySubmit}>
               <div className="row g-3">
                 <div className="col-12 col-md-6">
-                  <label
-                    className="form-label"
-                    style={{ fontWeight: 700, color: "#334155" }}
-                  >
+                  <label className="form-label" style={{ fontWeight: 700 }}>
                     Name <span style={{ color: "#dc2626" }}>*</span>
                   </label>
                   <input
@@ -1186,20 +1110,11 @@ export default function HomePage() {
                     value={enquiryForm.name}
                     onChange={handleEnquiryChange}
                     required
-                    style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      boxShadow: "none",
-                    }}
                   />
                 </div>
 
                 <div className="col-12 col-md-6">
-                  <label
-                    className="form-label"
-                    style={{ fontWeight: 700, color: "#334155" }}
-                  >
+                  <label className="form-label" style={{ fontWeight: 700 }}>
                     Company Name <span style={{ color: "#dc2626" }}>*</span>
                   </label>
                   <input
@@ -1210,20 +1125,11 @@ export default function HomePage() {
                     value={enquiryForm.company_name}
                     onChange={handleEnquiryChange}
                     required
-                    style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      boxShadow: "none",
-                    }}
                   />
                 </div>
 
                 <div className="col-12 col-md-6">
-                  <label
-                    className="form-label"
-                    style={{ fontWeight: 700, color: "#334155" }}
-                  >
+                  <label className="form-label" style={{ fontWeight: 700 }}>
                     Email <span style={{ color: "#dc2626" }}>*</span>
                   </label>
                   <input
@@ -1234,20 +1140,11 @@ export default function HomePage() {
                     value={enquiryForm.email}
                     onChange={handleEnquiryChange}
                     required
-                    style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      boxShadow: "none",
-                    }}
                   />
                 </div>
 
                 <div className="col-12 col-md-6">
-                  <label
-                    className="form-label"
-                    style={{ fontWeight: 700, color: "#334155" }}
-                  >
+                  <label className="form-label" style={{ fontWeight: 700 }}>
                     Designation
                   </label>
                   <input
@@ -1257,20 +1154,11 @@ export default function HomePage() {
                     placeholder="Enter your Designation"
                     value={enquiryForm.designation}
                     onChange={handleEnquiryChange}
-                    style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      boxShadow: "none",
-                    }}
                   />
                 </div>
 
                 <div className="col-12 col-md-6">
-                  <label
-                    className="form-label"
-                    style={{ fontWeight: 700, color: "#334155" }}
-                  >
+                  <label className="form-label" style={{ fontWeight: 700 }}>
                     Phone Number <span style={{ color: "#dc2626" }}>*</span>
                   </label>
                   <input
@@ -1281,20 +1169,11 @@ export default function HomePage() {
                     value={enquiryForm.phone}
                     onChange={handleEnquiryChange}
                     required
-                    style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      boxShadow: "none",
-                    }}
                   />
                 </div>
 
                 <div className="col-12 col-md-6">
-                  <label
-                    className="form-label"
-                    style={{ fontWeight: 700, color: "#334155" }}
-                  >
+                  <label className="form-label" style={{ fontWeight: 700 }}>
                     Location
                   </label>
                   <input
@@ -1304,20 +1183,11 @@ export default function HomePage() {
                     placeholder="Enter your Location"
                     value={enquiryForm.location}
                     onChange={handleEnquiryChange}
-                    style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      boxShadow: "none",
-                    }}
                   />
                 </div>
 
                 <div className="col-12 col-md-6">
-                  <label
-                    className="form-label"
-                    style={{ fontWeight: 700, color: "#334155" }}
-                  >
+                  <label className="form-label" style={{ fontWeight: 700 }}>
                     Area of Interest <span style={{ color: "#dc2626" }}>*</span>
                   </label>
                   <select
@@ -1326,12 +1196,6 @@ export default function HomePage() {
                     value={enquiryForm.area_of_interest}
                     onChange={handleEnquiryChange}
                     required
-                    style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      boxShadow: "none",
-                    }}
                   >
                     <option value="">Select Your Area of Interest</option>
                     <option>Technic</option>
@@ -1351,10 +1215,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="col-12 col-md-6">
-                  <label
-                    className="form-label"
-                    style={{ fontWeight: 700, color: "#334155" }}
-                  >
+                  <label className="form-label" style={{ fontWeight: 700 }}>
                     Preferred Mode of Contact{" "}
                     <span style={{ color: "#dc2626" }}>*</span>
                   </label>
@@ -1364,12 +1225,6 @@ export default function HomePage() {
                     value={enquiryForm.preferred_contact}
                     onChange={handleEnquiryChange}
                     required
-                    style={{
-                      height: "48px",
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      boxShadow: "none",
-                    }}
                   >
                     <option value="">Select Contact Method</option>
                     <option>Email</option>
@@ -1378,10 +1233,7 @@ export default function HomePage() {
                 </div>
 
                 <div className="col-12">
-                  <label
-                    className="form-label"
-                    style={{ fontWeight: 700, color: "#334155" }}
-                  >
+                  <label className="form-label" style={{ fontWeight: 700 }}>
                     Message <span style={{ color: "#dc2626" }}>*</span>
                   </label>
                   <textarea
@@ -1392,12 +1244,6 @@ export default function HomePage() {
                     value={enquiryForm.message}
                     onChange={handleEnquiryChange}
                     required
-                    style={{
-                      borderRadius: "14px",
-                      border: "1px solid #d7dfef",
-                      boxShadow: "none",
-                      resize: "none",
-                    }}
                   />
                 </div>
               </div>
@@ -1407,14 +1253,7 @@ export default function HomePage() {
                   type="button"
                   onClick={closeEnquiryModal}
                   disabled={submittingEnquiry}
-                  className="btn px-4 py-2"
-                  style={{
-                    backgroundColor: "#ffffff",
-                    color: "#2f45bf",
-                    border: "1px solid rgba(47, 69, 191, 0.25)",
-                    borderRadius: "14px",
-                    fontWeight: 700,
-                  }}
+                  className="btn btn-outline-secondary px-4 py-2"
                 >
                   Cancel
                 </button>

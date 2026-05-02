@@ -116,27 +116,44 @@ function findPresetMatch(options, value) {
   return options.find((item) => normalizeCompare(item) === target) || "";
 }
 
-function getAdminPageItems(currentPage, totalPages) {
-  if (totalPages <= 1) return [1];
-  if (totalPages === 2) return [1, 2];
+function getPaginationItems(currentPage, totalPages) {
+  if (totalPages <= 1) return [];
 
-  const items = [1, 2];
-
-  if (currentPage > 3) {
-    items.push("left-ellipsis");
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
 
-  if (currentPage > 2 && currentPage < totalPages) {
-    items.push(currentPage);
+  const pages = new Set([1, totalPages, currentPage]);
+
+  if (currentPage > 1) pages.add(currentPage - 1);
+  if (currentPage < totalPages) pages.add(currentPage + 1);
+
+  if (currentPage <= 3) {
+    pages.add(2);
+    pages.add(3);
+    pages.add(4);
   }
 
-  if (currentPage < totalPages - 1) {
-    items.push("right-ellipsis");
+  if (currentPage >= totalPages - 2) {
+    pages.add(totalPages - 1);
+    pages.add(totalPages - 2);
+    pages.add(totalPages - 3);
   }
 
-  items.push(totalPages);
+  const sorted = Array.from(pages)
+    .filter((p) => p >= 1 && p <= totalPages)
+    .sort((a, b) => a - b);
 
-  return [...new Set(items)];
+  const result = [];
+
+  sorted.forEach((page, index) => {
+    if (index > 0 && page - sorted[index - 1] > 1) {
+      result.push("ellipsis");
+    }
+    result.push(page);
+  });
+
+  return result;
 }
 
 export default function AdminReportsPage() {
@@ -608,7 +625,19 @@ export default function AdminReportsPage() {
                       </div>
 
                       <div className="admin-number-pagination">
-                        {getAdminPageItems(currentPage, totalPages).map(
+                        <button
+                          type="button"
+                          className="admin-number-page-btn admin-page-nav"
+                          onClick={() =>
+                            setCurrentPage((p) => Math.max(1, p - 1))
+                          }
+                          disabled={currentPage <= 1}
+                          aria-label="Previous page"
+                        >
+                          ‹
+                        </button>
+
+                        {getPaginationItems(currentPage, totalPages).map(
                           (item, index) => {
                             if (typeof item === "string") {
                               return (
@@ -616,7 +645,7 @@ export default function AdminReportsPage() {
                                   key={`${item}-${index}`}
                                   className="admin-pagination-ellipsis"
                                 >
-                                  ...
+                                  …
                                 </span>
                               );
                             }
@@ -629,12 +658,27 @@ export default function AdminReportsPage() {
                                   currentPage === item ? " active" : ""
                                 }`}
                                 onClick={() => setCurrentPage(item)}
+                                aria-current={
+                                  currentPage === item ? "page" : undefined
+                                }
                               >
                                 {item}
                               </button>
                             );
                           }
                         )}
+
+                        <button
+                          type="button"
+                          className="admin-number-page-btn admin-page-nav"
+                          onClick={() =>
+                            setCurrentPage((p) => Math.min(totalPages, p + 1))
+                          }
+                          disabled={currentPage >= totalPages}
+                          aria-label="Next page"
+                        >
+                          ›
+                        </button>
                       </div>
                     </div>
                   )}

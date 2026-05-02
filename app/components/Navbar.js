@@ -99,8 +99,23 @@ const Navbar = () => {
     <>
       <style jsx global>{`
         @media (min-width: 992px) {
+          .desktop_nav .nav-item.dropdown {
+            position: relative;
+          }
           .desktop_nav .dropdown-menu {
             margin-top: 0;
+            top: 100%;
+          }
+          /* Invisible bridge so the hover state doesn't drop while the cursor
+             moves from the toggle to the menu. */
+          .desktop_nav .nav-item.dropdown::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 100%;
+            height: 8px;
+            pointer-events: auto;
           }
         }
       `}</style>
@@ -135,9 +150,16 @@ const Navbar = () => {
           </a>
 
           <div className="collapse navbar-collapse desktop_nav d-none d-lg-flex" id="navbarNav">
-            <ul className="navbar-nav me-auto" style={{ fontSize: "18px", fontWeight: "700" }}>
+            <ul
+              className="navbar-nav me-auto align-items-center"
+              style={{
+                fontSize: "16px",
+                fontWeight: "700",
+                gap: "18px",
+              }}
+            >
               <li
-                className="nav-item dropdown ms-5"
+                className="nav-item dropdown"
                 onMouseEnter={handleDesktopDropdownEnter}
                 onMouseLeave={handleDesktopDropdownLeave}
               >
@@ -146,7 +168,7 @@ const Navbar = () => {
                   className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                   id="aboutDropdown"
                   role="button"
-                  style={{ color: "#293BB1" }}
+                  style={{ color: "#293BB1", whiteSpace: "nowrap" }}
                 >
                   About Us
                 </Link>
@@ -165,7 +187,7 @@ const Navbar = () => {
               </li>
 
               <li
-                className="nav-item dropdown ms-5"
+                className="nav-item dropdown"
                 onMouseEnter={handleDesktopDropdownEnter}
                 onMouseLeave={handleDesktopDropdownLeave}
               >
@@ -174,7 +196,7 @@ const Navbar = () => {
                   className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                   id="productsDropdown"
                   role="button"
-                  style={{ color: "#293BB1" }}
+                  style={{ color: "#293BB1", whiteSpace: "nowrap" }}
                 >
                   Products
                 </Link>
@@ -194,11 +216,7 @@ const Navbar = () => {
                       Connect
                     </Link>
                   </li>
-                  <li>
-                    <Link className="dropdown-item" href="/intellect/lbi">
-                      LBI Route Survey
-                    </Link>
-                  </li>
+
                   <li>
                     <Link className="dropdown-item" href="/accounting-and-legal">
                       Accounting & Legal
@@ -208,7 +226,7 @@ const Navbar = () => {
               </li>
 
               <li
-                className="nav-item dropdown ms-5"
+                className="nav-item dropdown"
                 onMouseEnter={handleDesktopDropdownEnter}
                 onMouseLeave={handleDesktopDropdownLeave}
               >
@@ -217,7 +235,7 @@ const Navbar = () => {
                   className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                   id="reportsDropdown"
                   role="button"
-                  style={{ color: "#293BB1" }}
+                  style={{ color: "#293BB1", whiteSpace: "nowrap" }}
                 >
                   Reports
                 </Link>
@@ -240,47 +258,70 @@ const Navbar = () => {
                 </ul>
               </li>
 
-              <Link
-                href="/about-us/investors"
-                className={`nav-link menus ms-4 ${styles.navbarCustom}`}
-                style={{ color: "#293BB1" }}
-              >
-                Investors
-              </Link>
+              <li className="nav-item">
+                <Link
+                  href="/about-us/investors"
+                  className={`nav-link menus ${styles.navbarCustom}`}
+                  style={{ color: "#293BB1", whiteSpace: "nowrap" }}
+                >
+                  Investors
+                </Link>
+              </li>
 
-              <li className="nav-item ms-5">
+              <li className="nav-item">
                 <Link
                   className={`nav-link menus shining ${styles.navbarCustom}`}
                   href="/it"
-                  style={{ color: "red" }}
+                  style={{ color: "red", whiteSpace: "nowrap" }}
                 >
                   IT Services
                 </Link>
               </li>
 
-              <li className="nav-item ms-5">
+              <li
+                className="nav-item dropdown"
+                onMouseEnter={handleDesktopDropdownEnter}
+                onMouseLeave={handleDesktopDropdownLeave}
+              >
                 <Link
-                  className={`nav-link menus ${styles.navbarCustom}`}
+                  className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                   href="/logistics"
-                  style={{ color: "#293BB1" }}
+                  id="logisticsDropdown"
+                  role="button"
+                  aria-expanded="false"
+                  style={{ color: "#293BB1", whiteSpace: "nowrap" }}
                 >
-                  ODC Logistics
+                  ODC Logistics and Route Survey
                 </Link>
+
+                <ul className="dropdown-menu" aria-labelledby="logisticsDropdown">
+                  <li>
+                    <Link className="dropdown-item" href="/logistics">
+                      ODC Logistics
+                    </Link>
+                  </li>
+
+                  <li>
+                    <Link className="dropdown-item" href="/intellect/lbi">
+                      LBI Route Survey
+                    </Link>
+                  </li>
+                </ul>
               </li>
 
-              <li className="nav-item ms-5">
+              <li className="nav-item">
                 <Link
                   className={`nav-link menus ${styles.navbarCustom}`}
                   href="/web-blog"
                   onClick={handleOffcanvasHide}
-                  style={{ color: "#293BB1" }}
+                  style={{ color: "#293BB1", whiteSpace: "nowrap" }}
                 >
                   Blogs
                 </Link>
               </li>
             </ul>
 
-            <div className="d-flex">
+            <div className="d-flex align-items-center">
               <a
                 className={`nav-link menus ${styles.navbarCustom}`}
                 href="/corporate-profile"
@@ -288,12 +329,13 @@ const Navbar = () => {
                   color: "#fff",
                   backgroundColor: "#293BB1",
                   borderRadius: "20px",
-                  padding: "7px 10px",
+                  padding: "7px 14px",
                   fontWeight: "600",
                   textAlign: "center",
                   display: "inline-block",
                   border: "2px solid #293BB1",
                   transition: "0.3s",
+                  whiteSpace: "nowrap",
                 }}
                 onMouseEnter={(e) => (e.target.style.backgroundColor = "#1F2C8A")}
                 onMouseLeave={(e) => (e.target.style.backgroundColor = "#293BB1")}
@@ -508,15 +550,50 @@ const Navbar = () => {
                   </Link>
                 </li>
 
-                <li className="nav-item ms-5">
-                  <Link
-                    className={`nav-link menus ${styles.navbarCustom}`}
-                    href="/logistics"
-                    onClick={handleOffcanvasHide}
-                    style={{ color: "#293BB1" }}
+                <li className="nav-item dropdown ms-5 mobile-menu-item">
+                  <button
+                    type="button"
+                    className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
+                    id="logisticsDropdownMobile"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    style={{
+                      color: "#293BB1",
+                      whiteSpace: "normal",
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      textAlign: "left",
+                      fontWeight: 700,
+                    }}
                   >
-                    ODC Logistics
-                  </Link>
+                    ODC Logistics and Route Survey
+                  </button>
+
+                  <ul
+                    className="dropdown-menu mobile-dropdown-menu"
+                    aria-labelledby="logisticsDropdownMobile"
+                  >
+                    <li>
+                      <Link
+                        className="dropdown-item"
+                        href="/logistics"
+                        onClick={handleOffcanvasHide}
+                      >
+                        ODC Logistics
+                      </Link>
+                    </li>
+
+                    <li>
+                      <Link
+                        className="dropdown-item"
+                        href="/intellect/lbi"
+                        onClick={handleOffcanvasHide}
+                      >
+                        LBI Route Survey
+                      </Link>
+                    </li>
+                  </ul>
                 </li>
 
                 <li className="nav-item ms-5">

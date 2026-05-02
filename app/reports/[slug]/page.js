@@ -1,9 +1,10 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { getReportBySlug } from "../../../lib/report-service";
+import { getReportBySlug, getAllReports } from "../../../lib/report-service";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import ReportDetailClientActions from "../../components/ReportDetailClientActions";
+import ReportAIQuestionBox from "../../components/ReportAIQuestionBox";
 
 export async function generateMetadata({ params }) {
   const slug = decodeURIComponent(params.slug || "");
@@ -26,11 +27,73 @@ export async function generateMetadata({ params }) {
   };
 }
 
+function computeRelatedReports(currentReport, allReports) {
+  if (!currentReport || !Array.isArray(allReports) || allReports.length === 0) {
+    return [];
+  }
+
+  const currentId = currentReport.id;
+  const currentSlug = currentReport.slug;
+  const currentCategory = String(currentReport.category || "").toLowerCase();
+  const currentCountry = String(
+    currentReport.country || currentReport.geography || ""
+  ).toLowerCase();
+
+  const activeOthers = allReports.filter((item) => {
+    const isActive =
+      item?.isActive === true ||
+      item?.isActive === 1 ||
+      item?.isActive === "1" ||
+      item?.is_active === true ||
+      item?.is_active === 1 ||
+      item?.is_active === "1";
+
+    const isNotCurrent =
+      item.id !== currentId && item.slug !== currentSlug;
+
+    return isActive && isNotCurrent;
+  });
+
+  const scored = activeOthers.map((item) => {
+    let score = 0;
+
+    const itemCategory = String(item.category || item.badge || "").toLowerCase();
+    const itemCountry = String(
+      item.country || item.geography || ""
+    ).toLowerCase();
+
+    if (currentCategory && itemCategory === currentCategory) score += 50;
+    if (currentCountry && itemCountry === currentCountry) score += 35;
+
+    if (
+      item.isFeatured === true ||
+      item.isFeatured === 1 ||
+      item.is_featured === 1
+    ) {
+      score += 15;
+    }
+
+    score += Math.max(0, 10 - Number(item.sortOrder ?? item.sort_order ?? 0));
+
+    return { item, score };
+  });
+
+  return scored
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5)
+    .map((entry) => entry.item);
+}
+
 export default async function ReportDetailPage({ params }) {
   const slug = decodeURIComponent(params.slug || "");
-  const report = await getReportBySlug(slug);
+  const [report, allReports] = await Promise.all([
+    getReportBySlug(slug),
+    getAllReports().catch(() => []),
+  ]);
 
   if (!report) notFound();
+
+  const relatedReports = computeRelatedReports(report, allReports);
 
   const imageSrc =
     report.sampleImage ||
@@ -65,7 +128,7 @@ export default async function ReportDetailPage({ params }) {
             </div>
 
             <div className="row g-5 align-items-start">
-              <div className="col-12 col-xl-8">
+              <div className="col-12 col-lg-8">
                 <h1
                   className="fw-bold mb-4"
                   style={{
@@ -139,6 +202,8 @@ export default async function ReportDetailPage({ params }) {
                     </div>
                   ))}
                 </div>
+
+                <ReportAIQuestionBox report={report} />
 
                 {!!report.highlights?.length && (
                   <section className="mb-5">
@@ -471,7 +536,7 @@ export default async function ReportDetailPage({ params }) {
                 )}
               </div>
 
-              <div className="col-12 col-xl-4">
+              <div className="col-12 col-lg-4">
                 <div style={{ position: "sticky", top: "130px" }}>
                   <div
                     style={{
@@ -577,11 +642,165 @@ export default async function ReportDetailPage({ params }) {
                       <ReportDetailClientActions report={normalizedReport} />
                     </div>
                   </div>
+
+                  {relatedReports.length > 0 && (
+                    <div
+                      style={{
+                        marginTop: "20px",
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #d9deea",
+                        borderRadius: "14px",
+                        boxShadow: "0 10px 26px rgba(16, 33, 63, 0.04)",
+                        padding: "18px",
+                      }}
+                    >
+                      <div className="d-flex align-items-center justify-content-between mb-3">
+                        <h3
+                          className="fw-bold mb-0"
+                          style={{
+                            color: "#1f2f63",
+                            fontSize: "1.05rem",
+                          }}
+                        >
+                          Related Reports
+                        </h3>
+                        <a
+                          href="/market-report"
+                          className="text-decoration-none"
+                          style={{
+                            color: "#2f45bf",
+                            fontWeight: 700,
+                            fontSize: "0.78rem",
+                          }}
+                        >
+                          See all →
+                        </a>
+                      </div>
+
+                      <div className="d-flex flex-column gap-2">
+                        {relatedReports.map((rec) => {
+                          const recImage =
+                            rec.sampleImage ||
+                            rec.sample_image ||
+                            rec.image ||
+                            rec.coverImage ||
+                            rec.cover_image ||
+                            "";
+
+                          const recHref = rec.slug
+                            ? `/reports/${rec.slug}`
+                            : "#";
+
+                          return (
+                            <a
+                              key={rec.id || rec.slug}
+                              href={recHref}
+                              className="text-decoration-none"
+                              style={{
+                                color: "inherit",
+                                display: "flex",
+                                gap: "12px",
+                                padding: "10px",
+                                borderRadius: "10px",
+                                border: "1px solid #eef1f7",
+                                backgroundColor: "#fafbfe",
+                                transition:
+                                  "background-color 160ms ease, border-color 160ms ease",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  flex: "0 0 64px",
+                                  width: "64px",
+                                  height: "64px",
+                                  borderRadius: "8px",
+                                  overflow: "hidden",
+                                  backgroundColor: "#eef2fb",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                {recImage ? (
+                                  <img
+                                    src={recImage}
+                                    alt={rec.title || "Report image"}
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                      display: "block",
+                                    }}
+                                  />
+                                ) : (
+                                  <span
+                                    style={{
+                                      color: "#2f45bf",
+                                      fontSize: "0.7rem",
+                                      fontWeight: 800,
+                                      letterSpacing: "0.5px",
+                                    }}
+                                  >
+                                    REPORT
+                                  </span>
+                                )}
+                              </div>
+
+                              <div style={{ minWidth: 0, flex: 1 }}>
+                                <div
+                                  style={{
+                                    color: "#091f4d",
+                                    fontSize: "0.88rem",
+                                    fontWeight: 700,
+                                    lineHeight: 1.3,
+                                    marginBottom: "4px",
+                                    display: "-webkit-box",
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: "vertical",
+                                    overflow: "hidden",
+                                  }}
+                                >
+                                  {rec.title}
+                                </div>
+                                <div
+                                  className="d-flex flex-wrap align-items-center gap-2"
+                                  style={{
+                                    color: "#5b6f93",
+                                    fontSize: "0.72rem",
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {rec.category ? (
+                                    <span
+                                      style={{
+                                        color: "#2f45bf",
+                                        backgroundColor: "#eef2ff",
+                                        borderRadius: "6px",
+                                        padding: "2px 6px",
+                                        fontSize: "0.68rem",
+                                        fontWeight: 800,
+                                        textTransform: "uppercase",
+                                        letterSpacing: "0.4px",
+                                      }}
+                                    >
+                                      {rec.category}
+                                    </span>
+                                  ) : null}
+                                  {rec.country ? <span>◉ {rec.country}</span> : null}
+                                </div>
+                              </div>
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </section>
+
       </main>
       <Footer />
     </>
