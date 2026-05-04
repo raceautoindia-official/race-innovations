@@ -244,84 +244,394 @@ function scrollToReports() {
   }
 }
 
-function matchFaq(rawText) {
-  const lower = String(rawText || "").toLowerCase().trim();
-  if (!lower) return null;
-
-  let best = null;
-  let bestScore = 0;
-
-  for (const faq of CUSTOM_FAQS) {
-    let score = 0;
-    let longestMatch = 0;
-    for (const kw of faq.keywords) {
-      const k = String(kw).toLowerCase();
-      if (!k) continue;
-      if (lower.includes(k)) {
-        score += 1 + k.length / 50;
-        if (k.length > longestMatch) longestMatch = k.length;
-      }
-    }
-    if (faq.question && lower === faq.question.toLowerCase()) {
-      score += 5;
-    }
-    if (score > bestScore) {
-      bestScore = score + longestMatch / 1000;
-      best = faq;
-    }
-  }
-  return best;
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^\w\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function buildBotReply(rawText, ctx) {
-  const text = String(rawText || "").trim();
-  if (!text) {
+function includesAny(text, keywords) {
+  return keywords.some((keyword) => text.includes(keyword));
+}
+
+function makeBotReply(userText, context = {}) {
+  const q = normalizeText(userText);
+
+  const reportCount = context?.reportCount || 0;
+  const countryCount = context?.countryCount || 0;
+  const categoryCount = context?.categoryCount || 0;
+
+  if (!q) {
     return {
-      text: "Please type a question or pick one of the quick suggestions below.",
+      text:
+        "Please type your question. I can help with reports, samples, pricing, subscriptions, countries, categories, and custom research.",
+      actions: [
+        { label: "Explore Reports", href: "/market-report" },
+        { label: "Contact Sales", href: "/contact" },
+      ],
     };
   }
 
-  const lower = text.toLowerCase();
+  if (
+    includesAny(q, [
+      "customize",
+      "customise",
+      "customized",
+      "customised",
+      "custom report",
+      "tailor",
+      "tailored",
+      "specific requirement",
+      "own report",
+      "custom research",
+      "special report",
+    ])
+  ) {
+    return {
+      text:
+        "Yes, RACE Innovations can customize reports based on your business requirement. We can support country-specific research, segment-level analysis, OEM benchmarking, EV intelligence, sales forecasts, competitor tracking, and custom automotive market studies.",
+      actions: [
+        { label: "Request Custom Report", href: "/contact" },
+        { label: "Explore Reports", href: "/market-report" },
+      ],
+    };
+  }
 
-  if (/^(hi|hello|hey|hola|good (morning|afternoon|evening))\b/.test(lower)) {
+  if (
+    includesAny(q, ["sample", "preview", "demo", "sample pdf", "request sample"])
+  ) {
+    return {
+      text:
+        "Yes, sample reports are available for selected reports. Open any report page and use the Request Sample option, or contact our sales team to get the most suitable sample for your requirement.",
+      actions: [
+        { label: "Explore Reports", href: "/market-report" },
+        { label: "Contact Sales", href: "/contact" },
+      ],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "price",
+      "pricing",
+      "cost",
+      "how much",
+      "buy",
+      "purchase",
+      "payment",
+      "quote",
+    ])
+  ) {
+    return {
+      text:
+        "Report pricing depends on the report type, country coverage, license type, data depth, and customization requirement. Please contact our sales team for the latest price, sample access, and purchase support.",
+      actions: [
+        { label: "Contact Sales", href: "/contact" },
+        { label: "View Reports", href: "/market-report" },
+      ],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "subscription",
+      "subscribe",
+      "plan",
+      "membership",
+      "access",
+    ])
+  ) {
+    return {
+      text:
+        "RACE Innovations offers report access and subscription options for automotive market intelligence, forecast reports, flash reports, EV intelligence, and country-wise insights. You can explore reports or contact sales for the right access plan.",
+      actions: [
+        { label: "Explore Reports", href: "/market-report" },
+        { label: "Contact Sales", href: "/contact" },
+      ],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "how many reports",
+      "number of reports",
+      "total reports",
+      "reports are there",
+      "available reports",
+    ])
+  ) {
+    return {
+      text:
+        reportCount > 0
+          ? `There are currently ${reportCount} active reports available in the RACE Innovations report library. You can filter them by category, region, country, or search keyword.`
+          : "You can view all available reports in the RACE Innovations report library and filter them by category, region, country, or search keyword.",
+      actions: [{ label: "View All Reports", href: "/market-report" }],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "country",
+      "countries",
+      "country reports",
+      "india report",
+      "global reports",
+    ])
+  ) {
+    return {
+      text:
+        countryCount > 0
+          ? `RACE Innovations provides country-wise automotive market reports across ${countryCount}+ markets, covering vehicle sales, forecast outlook, segment trends, OEM performance, and market intelligence.`
+          : "RACE Innovations provides country-wise automotive market reports covering vehicle sales, forecast outlook, segment trends, OEM performance, and market intelligence.",
+      actions: [{ label: "Explore Country Reports", href: "/market-report" }],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "category",
+      "categories",
+      "segment",
+      "segments",
+      "available categories",
+    ])
+  ) {
+    return {
+      text:
+        categoryCount > 0
+          ? `The report library includes ${categoryCount}+ report categories such as market forecast reports, flash reports, EV intelligence, country reports, OEM benchmarking, commercial vehicle reports, passenger vehicle reports, two-wheeler reports, three-wheeler reports, tractor reports, and construction equipment reports.`
+          : "The report library includes market forecast reports, flash reports, EV intelligence, country reports, OEM benchmarking, commercial vehicle reports, passenger vehicle reports, two-wheeler reports, three-wheeler reports, tractor reports, and construction equipment reports.",
+      actions: [{ label: "Browse Categories", href: "/market-report" }],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "ev",
+      "electric vehicle",
+      "electric vehicles",
+      "alternative fuel",
+      "hybrid",
+    ])
+  ) {
+    return {
+      text:
+        "RACE Innovations provides EV intelligence reports covering electric vehicle adoption, alternative fuel trends, OEM movement, segment-wise EV penetration, policy impact, and forecast outlook.",
+      actions: [
+        { label: "Explore EV Reports", href: "/market-report" },
+        { label: "Contact Sales", href: "/contact" },
+      ],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "forecast",
+      "projection",
+      "outlook",
+      "future market",
+      "market forecast",
+    ])
+  ) {
+    return {
+      text:
+        "RACE Innovations provides automotive forecast reports with forward-looking insights on vehicle sales, segment outlook, OEM trends, EV adoption, market growth, and country-wise automotive demand.",
+      actions: [{ label: "Explore Forecast Reports", href: "/market-report" }],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "oem",
+      "benchmark",
+      "benchmarking",
+      "brand",
+      "manufacturer",
+      "competition",
+      "competitor",
+    ])
+  ) {
+    return {
+      text:
+        "RACE Innovations supports OEM benchmarking and brand-level analysis, including market share, competitive positioning, segment performance, product trends, and strategic opportunities.",
+      actions: [
+        { label: "Explore OEM Reports", href: "/market-report" },
+        { label: "Contact Sales", href: "/contact" },
+      ],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "commercial vehicle",
+      "commercial vehicles",
+      "truck",
+      "trucks",
+      "bus",
+      "buses",
+      "cv",
+      "lcv",
+      "mcv",
+      "hcv",
+    ])
+  ) {
+    return {
+      text:
+        "RACE Innovations provides commercial vehicle reports covering trucks, buses, LCV, MCV, HCV, fleet demand, OEM performance, logistics-linked demand, and market forecast insights.",
+      actions: [{ label: "Explore CV Reports", href: "/market-report" }],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "passenger vehicle",
+      "passenger vehicles",
+      "car",
+      "cars",
+      "suv",
+      "pv",
+    ])
+  ) {
+    return {
+      text:
+        "RACE Innovations provides passenger vehicle market reports covering cars, SUVs, OEM performance, sales trends, powertrain shifts, premiumization, EV adoption, and market outlook.",
+      actions: [{ label: "Explore PV Reports", href: "/market-report" }],
+    };
+  }
+
+  if (includesAny(q, ["two wheeler", "2w", "motorcycle", "scooter"])) {
+    return {
+      text:
+        "RACE Innovations provides two-wheeler reports covering motorcycles, scooters, OEM performance, EV two-wheeler adoption, demand trends, and forecast outlook.",
+      actions: [{ label: "Explore 2W Reports", href: "/market-report" }],
+    };
+  }
+
+  if (
+    includesAny(q, ["three wheeler", "3w", "auto rickshaw", "rickshaw"])
+  ) {
+    return {
+      text:
+        "RACE Innovations provides three-wheeler reports covering passenger and cargo three-wheelers, electric three-wheelers, OEM trends, regional demand, and market forecast insights.",
+      actions: [{ label: "Explore 3W Reports", href: "/market-report" }],
+    };
+  }
+
+  if (includesAny(q, ["tractor", "tractors", "agri", "agriculture", "farm"])) {
+    return {
+      text:
+        "RACE Innovations provides tractor and agri-equipment market reports covering rural demand, OEM performance, sales trends, farm mechanization, and forecast outlook.",
+      actions: [{ label: "Explore Tractor Reports", href: "/market-report" }],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "construction equipment",
+      "excavator",
+      "loader",
+      "ce market",
+    ])
+  ) {
+    return {
+      text:
+        "RACE Innovations provides construction equipment market reports covering infrastructure-linked demand, equipment categories, OEM performance, sales trends, and market outlook.",
+      actions: [{ label: "Explore Equipment Reports", href: "/market-report" }],
+    };
+  }
+
+  if (includesAny(q, ["download", "pdf", "brochure"])) {
+    return {
+      text:
+        "For downloadable samples or full PDF reports, open the specific report page and use the available report actions. For full report access, contact the sales team.",
+      actions: [
+        { label: "Explore Reports", href: "/market-report" },
+        { label: "Contact Sales", href: "/contact" },
+      ],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "contact",
+      "sales",
+      "call",
+      "email",
+      "phone",
+      "support",
+      "talk to sales",
+    ])
+  ) {
+    return {
+      text:
+        "You can contact the RACE Innovations sales team for report pricing, samples, custom research, subscription access, and enterprise requirements.",
+      actions: [{ label: "Contact Sales", href: "/contact" }],
+    };
+  }
+
+  if (includesAny(q, ["login", "sign in", "signin", "account"])) {
+    return {
+      text:
+        "If you already have access, please use the login or subscription access option available on the website. For access issues, contact the RACE Innovations team.",
+      actions: [{ label: "Contact Support", href: "/contact" }],
+    };
+  }
+
+  if (includesAny(q, ["free", "free report", "trial"])) {
+    return {
+      text:
+        "Some report previews or samples may be available based on the report. For full reports, custom access, or trial-related questions, please contact the sales team.",
+      actions: [
+        { label: "Explore Reports", href: "/market-report" },
+        { label: "Contact Sales", href: "/contact" },
+      ],
+    };
+  }
+
+  if (
+    includesAny(q, [
+      "race",
+      "race innovations",
+      "about",
+      "company",
+      "who are you",
+    ])
+  ) {
+    return {
+      text:
+        "RACE Innovations provides automotive market intelligence, forecast reports, EV intelligence, OEM benchmarking, country-wise vehicle sales analysis, custom research, and strategic consulting support for the automotive industry.",
+      actions: [
+        { label: "About RACE", href: "/about-us/vision-mission" },
+        { label: "Explore Reports", href: "/market-report" },
+      ],
+    };
+  }
+
+  if (/^(hi|hello|hey|hola|good (morning|afternoon|evening))\b/.test(q)) {
     return {
       text:
         "Hello! I can help you find automotive market reports by country, category, segment, or forecast need. Pick a quick question or type your requirement.",
-    };
-  }
-
-  const faq = matchFaq(text);
-  if (faq) {
-    const answer =
-      typeof faq.answer === "function"
-        ? faq.answer(ctx || {})
-        : String(faq.answer || "");
-    const actions = Array.isArray(faq.actions)
-      ? faq.actions.map((a) => ACTION_MAP[a]).filter(Boolean)
-      : [];
-    return { text: answer, actions };
-  }
-
-  const matchedCountry = (ctx?.countries || DEFAULT_COUNTRIES).find((c) =>
-    lower.includes(String(c).toLowerCase())
-  );
-  if (matchedCountry) {
-    return {
-      text: `Yes, we have ${matchedCountry} reports. You can use the Country filter or search '${matchedCountry}' in the report search bar.`,
       actions: [
-        {
-          label: `View ${matchedCountry} Reports`,
-          type: "country",
-          value: matchedCountry,
-        },
+        { label: "Explore Reports", href: "/market-report" },
+        { label: "Contact Sales", href: "/contact" },
       ],
     };
   }
 
   return {
     text:
-      "I can help with report availability, countries, categories, samples, subscriptions, and custom research. Please choose one of the quick questions or type your requirement.",
+      "I can help with automotive market reports, forecast reports, EV intelligence, OEM benchmarking, country reports, sample requests, pricing, subscriptions, and custom research. Please ask your question in a little more detail, or choose one of the options below.",
+    actions: [
+      { label: "Explore Reports", href: "/market-report" },
+      { label: "Contact Sales", href: "/contact" },
+    ],
   };
+}
+
+function buildBotReply(rawText, ctx) {
+  return makeBotReply(rawText, ctx);
 }
 
 export default function ReportChatbot({
@@ -369,6 +679,9 @@ export default function ReportChatbot({
       countryCount:
         countryCount ??
         (Array.isArray(countries) ? countries.length : undefined),
+      categoryCount: Array.isArray(categories)
+        ? categories.length
+        : DEFAULT_CATEGORIES.length,
       countries:
         Array.isArray(countries) && countries.length > 0
           ? countries
@@ -394,6 +707,14 @@ export default function ReportChatbot({
 
   function handleAction(action) {
     if (!action) return;
+
+    if (action.href) {
+      if (typeof window !== "undefined") {
+        window.location.href = action.href;
+      }
+      return;
+    }
+
     if (action.type === "explore") {
       scrollToReports();
     } else if (action.type === "sales") {
