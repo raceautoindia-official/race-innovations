@@ -5,6 +5,51 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 const BRAND = "#2f45bf";
 const BRAND_DARK = "#2434a8";
 
+const CHAT_STORAGE_KEY = "race_report_assistant_messages_v2";
+const CHAT_OPEN_KEY = "race_report_assistant_open_v2";
+const CHAT_DRAFT_KEY = "race_report_assistant_draft_v2";
+
+const DEFAULT_MESSAGES = [
+  {
+    id: 1,
+    from: "bot",
+    text:
+      "Hi! I'm the RACE Report Assistant. I can help with report availability, countries, categories, samples, subscriptions, pricing, and custom research. Please choose one of the quick questions or type your requirement.",
+    actions: [
+      { label: "Explore Reports", href: "/market-report" },
+      { label: "Contact Sales", href: "/contact" },
+    ],
+  },
+];
+
+function safeParseMessages(value) {
+  try {
+    const parsed = JSON.parse(value || "[]");
+    return Array.isArray(parsed) && parsed.length > 0
+      ? parsed
+      : DEFAULT_MESSAGES;
+  } catch {
+    return DEFAULT_MESSAGES;
+  }
+}
+
+function loadInitialMessages() {
+  if (typeof window === "undefined") return DEFAULT_MESSAGES;
+  const saved = window.localStorage.getItem(CHAT_STORAGE_KEY);
+  if (!saved) return DEFAULT_MESSAGES;
+  return safeParseMessages(saved);
+}
+
+function loadInitialOpen() {
+  if (typeof window === "undefined") return false;
+  return window.localStorage.getItem(CHAT_OPEN_KEY) === "true";
+}
+
+function loadInitialDraft() {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem(CHAT_DRAFT_KEY) || "";
+}
+
 const DEFAULT_COUNTRIES = [
   "India",
   "South Africa",
@@ -647,7 +692,7 @@ export default function ReportChatbot({
   onClose,
   hideLauncher = false,
 }) {
-  const [internalOpen, setInternalOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(() => loadInitialOpen());
   const isControlled = typeof controlledIsOpen === "boolean";
   const isOpen = isControlled ? controlledIsOpen : internalOpen;
   const setIsOpen = (v) => {
@@ -657,19 +702,17 @@ export default function ReportChatbot({
       setInternalOpen(v);
     }
   };
-  const [inputValue, setInputValue] = useState("");
-  const [messages, setMessages] = useState(() => [
-    {
-      id: 1,
-      from: "bot",
-      text:
-        "Hi! I'm the RACE Report Assistant. I can help you find automotive market reports by country, category, segment, or forecast need.",
-    },
-  ]);
-  const [showQuick, setShowQuick] = useState(true);
+  const [inputValue, setInputValue] = useState(() => loadInitialDraft());
+  const [messages, setMessages] = useState(() => loadInitialMessages());
+  const [showQuick, setShowQuick] = useState(
+    () => loadInitialMessages().length <= 1
+  );
 
   const messagesEndRef = useRef(null);
-  const nextIdRef = useRef(2);
+  const nextIdRef = useRef(
+    Math.max(0, ...loadInitialMessages().map((m) => Number(m?.id) || 0)) + 1
+  );
+  const hydratedRef = useRef(false);
 
   const isMobile = useMobile();
 
@@ -699,6 +742,45 @@ export default function ReportChatbot({
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isOpen]);
+
+  // Mark hydration complete after the first client render. Persistence
+  // writes only happen after this — so the lazy initial state can never be
+  // overwritten by the very first render's "default" values.
+  useEffect(() => {
+    hydratedRef.current = true;
+  }, []);
+
+  // Persist messages whenever they change (post-hydration).
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+    } catch {}
+  }, [messages]);
+
+  // Persist input draft.
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(CHAT_DRAFT_KEY, inputValue);
+    } catch {}
+  }, [inputValue]);
+
+  // Persist open state (uncontrolled mode only — when controlled, the
+  // parent owns the open state and is responsible for its own persistence).
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    if (isControlled) return;
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(
+        CHAT_OPEN_KEY,
+        internalOpen ? "true" : "false"
+      );
+    } catch {}
+  }, [internalOpen, isControlled]);
 
   function appendMessage(msg) {
     const id = nextIdRef.current++;

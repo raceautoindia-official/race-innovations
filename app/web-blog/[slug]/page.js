@@ -419,6 +419,49 @@ export default function BlogDetailsPage() {
                   className="articleBody"
                   dangerouslySetInnerHTML={{ __html: post?.content || post?.description || "" }}
                 />
+
+                <section className="blog-market-cta blog-market-contact-only">
+                  <div className="blog-market-cta-grid contact-only-grid">
+                    <div className="blog-market-info-card">
+                      <span className="blog-market-info-icon">✉️</span>
+                      <div className="blog-market-info-content">
+                        <strong>Email Us</strong>
+                        <small>
+                          <a href="mailto:projecthead@raceinnovations.in">
+                            projecthead@raceinnovations.in
+                          </a>
+                          <a href="mailto:kh@raceinnovations.in">
+                            kh@raceinnovations.in
+                          </a>
+                        </small>
+                      </div>
+                    </div>
+
+                    <div className="blog-market-info-card">
+                      <span className="blog-market-info-icon">📞</span>
+                      <div className="blog-market-info-content">
+                        <strong>Call / WhatsApp</strong>
+                        <small>
+                          <a href="tel:+919003031527">+91 9003031527</a>
+                          <a href="tel:+919840490241">+91 9840490241</a>
+                        </small>
+                      </div>
+                    </div>
+
+                    <a
+                      href="https://raceinnovations.in/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="blog-market-info-card blog-market-info-link"
+                    >
+                      <span className="blog-market-info-icon">🌐</span>
+                      <div className="blog-market-info-content">
+                        <strong>Website</strong>
+                        <small>raceinnovations.in</small>
+                      </div>
+                    </a>
+                  </div>
+                </section>
               </div>
             </article>
 
@@ -471,7 +514,7 @@ export default function BlogDetailsPage() {
                 </div>
               ) : null}
 
-              <div className="commentsSection sidebarBlock">
+              <div className="commentsSection sidebarBlock blogCommentsSticky">
                 <div className="commentsTitle">Discussions</div>
 
                 <div className="commentsOn">
@@ -537,7 +580,7 @@ export default function BlogDetailsPage() {
           display: grid;
           grid-template-columns: minmax(0, 1fr) 400px;
           gap: 22px;
-          align-items: start;
+          align-items: stretch;
         }
 
         .articleCard,
@@ -550,6 +593,10 @@ export default function BlogDetailsPage() {
         .articleCard {
           min-width: 0;
           overflow: hidden;
+        }
+
+        .sidebarCard {
+          align-self: stretch;
         }
 
         .articleContent {
@@ -724,14 +771,141 @@ export default function BlogDetailsPage() {
           word-break: break-word;
         }
 
+        .blog-market-cta {
+          margin-top: 28px;
+          padding: 22px;
+          border-radius: 22px;
+          background:
+            radial-gradient(circle at 12% 0%, rgba(47, 69, 191, 0.06), transparent 38%),
+            linear-gradient(180deg, #ffffff 0%, #f5faff 60%, #eef3ff 100%);
+          border: 1px solid rgba(47, 69, 191, 0.14);
+          box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+        }
+
+        .blog-market-cta-grid.contact-only-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+          align-items: stretch;
+        }
+
+        .blog-market-info-card {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 16px 18px;
+          border-radius: 14px;
+          background: rgba(255, 255, 255, 0.92);
+          border: 1px solid rgba(47, 69, 191, 0.12);
+          color: inherit;
+          text-decoration: none;
+          height: 100%;
+          min-width: 0;
+          transition: transform 0.18s ease, box-shadow 0.18s ease,
+            border-color 0.18s ease;
+        }
+
+        .blog-market-info-link:hover {
+          transform: translateY(-2px);
+          border-color: rgba(47, 69, 191, 0.28);
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+        }
+
+        .blog-market-info-icon {
+          flex-shrink: 0;
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: #eef2ff;
+          color: #2f45bf;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          line-height: 1;
+        }
+
+        .blog-market-info-content {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 2px;
+          min-width: 0;
+          flex: 1;
+        }
+
+        .blog-market-info-card strong {
+          display: block;
+          color: #0b1220;
+          font-size: 14px;
+          font-weight: 800;
+          letter-spacing: 0.1px;
+          line-height: 1.3;
+        }
+
+        .blog-market-info-card small {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          color: #475569;
+          font-size: 13px;
+          font-weight: 600;
+          line-height: 1.5;
+          min-width: 0;
+        }
+
+        .blog-market-info-card small a {
+          color: #2f45bf;
+          text-decoration: none;
+          word-break: break-word;
+          overflow-wrap: anywhere;
+        }
+
+        .blog-market-info-card small a:hover {
+          text-decoration: underline;
+        }
+
+        @media (max-width: 991px) {
+          .blog-market-cta-grid.contact-only-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 575px) {
+          .blog-market-cta {
+            padding: 18px;
+            border-radius: 18px;
+          }
+
+          .blog-market-cta-grid.contact-only-grid {
+            grid-template-columns: 1fr;
+          }
+        }
+
         .sidebarCard {
           padding: 18px;
-          position: sticky;
-          top: 24px;
         }
 
         .sidebarBlock {
           margin-top: 16px;
+        }
+
+        .blogCommentsSticky {
+          position: sticky;
+          top: 96px;
+          max-height: calc(100vh - 120px);
+          overflow-y: auto;
+        }
+
+        @media (max-width: 991px) {
+          .mainGrid {
+            grid-template-columns: 1fr;
+          }
+          .blogCommentsSticky {
+            position: static;
+            max-height: none;
+            overflow: visible;
+          }
         }
 
         .linkedinSectionHead {

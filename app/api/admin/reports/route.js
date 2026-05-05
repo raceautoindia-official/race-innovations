@@ -72,7 +72,7 @@ export async function POST(req) {
         : body.price;
 
     const currency = normalizeText(body.currency, "INR");
-    const formatText = normalizeText(body.formatText, "PDF + Excel");
+    const formatText = normalizeText(body.formatText, "PDF");
     const licenseText = normalizeText(body.licenseText, "Single User");
     const deliveryText = normalizeText(body.deliveryText, "Within 24 hours");
 

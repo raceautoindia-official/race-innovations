@@ -8,7 +8,29 @@ const WHATSAPP_GREEN = "#25d366";
 
 export default function GlobalFloatingWidgets() {
   const [expanded, setExpanded] = useState(false);
-  const [chatbotOpen, setChatbotOpen] = useState(false);
+  const CHAT_OPEN_KEY = "race_report_assistant_open_v2";
+  const [chatbotOpen, setChatbotOpenState] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return window.localStorage.getItem(CHAT_OPEN_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
+  const setChatbotOpen = (next) => {
+    setChatbotOpenState((prev) => {
+      const value = typeof next === "function" ? next(prev) : next;
+      if (typeof window !== "undefined") {
+        try {
+          window.localStorage.setItem(
+            CHAT_OPEN_KEY,
+            value ? "true" : "false"
+          );
+        } catch {}
+      }
+      return value;
+    });
+  };
   const [isMobile, setIsMobile] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -94,28 +116,6 @@ export default function GlobalFloatingWidgets() {
   }
 
   const items = [
-    {
-      key: "top",
-      label: "Back to top",
-      bg: BRAND,
-      onClick: scrollToTop,
-      icon: (
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <line x1="12" y1="19" x2="12" y2="5" />
-          <polyline points="5 12 12 5 19 12" />
-        </svg>
-      ),
-    },
     {
       key: "whatsapp",
       label: "WhatsApp",
@@ -226,13 +226,27 @@ export default function GlobalFloatingWidgets() {
           ))}
         </div>
 
-        <button
-          type="button"
-          onClick={handleMainClick}
-          aria-label={expanded ? "Close quick actions" : "Open quick actions"}
-          aria-expanded={expanded}
-          className={`gfw-main ${expanded ? "gfw-main-active" : ""}`}
-        >
+        <div className="gfw-main-row">
+          {!expanded && !chatbotOpen ? (
+            <button
+              type="button"
+              className="gfw-talk-label"
+              onClick={openChatbot}
+              aria-label="Talk to expert"
+            >
+              Talk to Expert
+            </button>
+          ) : null}
+
+          <button
+            type="button"
+            onClick={handleMainClick}
+            aria-label={
+              expanded ? "Close quick actions" : "Open quick actions"
+            }
+            aria-expanded={expanded}
+            className={`gfw-main ${expanded ? "gfw-main-active" : ""}`}
+          >
           <span className={`gfw-main-icon ${expanded ? "gfw-rotate" : ""}`}>
             {expanded ? (
               <svg
@@ -266,6 +280,7 @@ export default function GlobalFloatingWidgets() {
             )}
           </span>
         </button>
+        </div>
       </div>
 
       <ReportChatbot
@@ -322,6 +337,42 @@ export default function GlobalFloatingWidgets() {
           filter: brightness(1.05);
         }
 
+        .gfw-main-row {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+
+        .gfw-talk-label {
+          background: #ffffff;
+          color: ${BRAND};
+          border: 1px solid rgba(47, 69, 191, 0.18);
+          border-radius: 999px;
+          padding: 16px 28px;
+          min-height: 56px;
+          min-width: 190px;
+          font-size: 22px;
+          font-weight: 900;
+          line-height: 1;
+          letter-spacing: 0.2px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          white-space: nowrap;
+          cursor: pointer;
+          box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
+          transition: transform 180ms ease, background-color 180ms ease,
+            color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .gfw-talk-label:hover {
+          background: ${BRAND};
+          color: #ffffff;
+          border-color: transparent;
+          transform: translateY(-1px);
+          box-shadow: 0 20px 40px rgba(47, 69, 191, 0.32);
+        }
+
         .gfw-main {
           width: 60px;
           height: 60px;
@@ -369,6 +420,18 @@ export default function GlobalFloatingWidgets() {
           .gfw-btn {
             width: 42px;
             height: 42px;
+          }
+          .gfw-talk-label {
+            font-size: 17px;
+            padding: 12px 20px;
+            min-height: 48px;
+            min-width: 160px;
+          }
+        }
+
+        @media (max-width: 420px) {
+          .gfw-talk-label {
+            display: none;
           }
         }
 

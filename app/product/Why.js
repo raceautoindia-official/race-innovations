@@ -1,11 +1,54 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 
+function getAreaOfInterestForPath(pathname) {
+  if (!pathname) return '';
+
+  const path = String(pathname).toLowerCase();
+
+  if (path.startsWith('/it-services') || path === '/it' || path.startsWith('/it/')) {
+    return 'IT Services';
+  }
+  if (path.startsWith('/intellect/lbi')) return 'LBI Route Survey';
+  if (path.startsWith('/logistics')) return 'ODC Logistics';
+  if (
+    path.startsWith('/market-report') ||
+    path.startsWith('/reports') ||
+    path.startsWith('/report/')
+  ) {
+    return 'Market Report';
+  }
+  if (path.startsWith('/corporate-profile')) return 'Corporate Profile';
+  if (path.startsWith('/about-us/investors')) return 'Investors';
+  if (
+    path.startsWith('/about-us/vision-mission') ||
+    path.startsWith('/about-us/management-team')
+  ) {
+    return 'General Enquiry';
+  }
+  if (path.startsWith('/web-blog') || path.startsWith('/blog')) {
+    return 'General Enquiry';
+  }
+  if (path.startsWith('/technic')) return 'Technic';
+  if (path.startsWith('/intellect')) return 'Intellect';
+  if (path.startsWith('/connect')) return 'Connect';
+  if (path.startsWith('/accounting-and-legal')) return 'Accounting & Legal';
+  if (path.startsWith('/product')) return 'Product Report';
+  if (path.startsWith('/strategic-report')) return 'Strategic Report';
+  if (path.startsWith('/flash-reports')) return 'Flash Report';
+
+  return '';
+}
+
 export default function EnquiryForm() {
+  const pathname = usePathname();
+  const defaultAreaOfInterest = getAreaOfInterestForPath(pathname);
+
   const [formData, setFormData] = useState({
     name: '',
     company_name: '',
@@ -13,15 +56,27 @@ export default function EnquiryForm() {
     designation: '',
     phone: '',
     location: '',
-    area_of_interest: '',
+    area_of_interest: defaultAreaOfInterest,
     preferred_contact: '',
     message: '',
   });
 
   const [showModal, setShowModal] = useState(false);
+  const [userTouchedArea, setUserTouchedArea] = useState(false);
+
+  useEffect(() => {
+    if (userTouchedArea) return;
+    setFormData((prev) => ({
+      ...prev,
+      area_of_interest: getAreaOfInterestForPath(pathname),
+    }));
+  }, [pathname, userTouchedArea]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'area_of_interest') {
+      setUserTouchedArea(true);
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -58,10 +113,11 @@ export default function EnquiryForm() {
           designation: '',
           phone: '',
           location: '',
-          area_of_interest: '',
+          area_of_interest: getAreaOfInterestForPath(pathname),
           preferred_contact: '',
           message: '',
         });
+        setUserTouchedArea(false);
         handleCloseModal();
       } else {
         toast.error(res.data.message || 'Submission failed.');
@@ -174,6 +230,8 @@ export default function EnquiryForm() {
                             <option>Funding</option>
                             <option>IT Services</option>
                             <option>ODC Logistics</option>
+                            <option>Corporate Profile</option>
+                            <option>General Enquiry</option>
                           </select>
                         </div>
 

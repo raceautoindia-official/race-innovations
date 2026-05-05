@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import BootstrapClient from './components/BootstrapClient';
 import GlobalFloatingWidgets from './components/GlobalFloatingWidgets';
+import ScrollToTopButton from './components/ScrollToTopButton';
+import CookieConsent from './components/CookieConsent';
+import ConsentScripts from './components/ConsentScripts';
+import NewsletterPopup from './components/NewsletterPopup';
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from 'react-toastify';
 import 'core-js/full/promise/with-resolvers';
@@ -62,6 +66,10 @@ export default function RootLayout({ children }) {
         {children}
         <BootstrapClient/>
         <GlobalFloatingWidgets />
+        <ScrollToTopButton />
+        <CookieConsent />
+        <ConsentScripts />
+        <NewsletterPopup />
 
       </body>
     </html>

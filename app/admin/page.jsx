@@ -16,7 +16,7 @@ const emptyForm = {
 
   price: "",
   currency: "INR",
-  formatText: "PDF + Excel",
+  formatText: "PDF",
   licenseText: "Single User",
   deliveryText: "Within 24 hours",
   pages: "",
@@ -115,7 +115,7 @@ export default function AdminReportsPage() {
 
       price: report.price || "",
       currency: report.currency || "INR",
-      formatText: report.formatText || "PDF + Excel",
+      formatText: report.formatText || "PDF",
       licenseText: report.licenseText || "Single User",
       deliveryText: report.deliveryText || "Within 24 hours",
       pages: report.pages || "",

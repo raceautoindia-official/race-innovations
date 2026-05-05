@@ -112,7 +112,7 @@ export async function PUT(req, { params }) {
 
         body.price ?? existingReport.price ?? null,
         normalizeText(body.currency, existingReport.currency || "INR"),
-        normalizeText(body.formatText, existingReport.formatText || "PDF + Excel"),
+        normalizeText(body.formatText, existingReport.formatText || "PDF"),
         normalizeText(body.licenseText, existingReport.licenseText || "Single User"),
         normalizeText(body.deliveryText, existingReport.deliveryText || "Within 24 hours"),
         body.pages ?? existingReport.pages ?? null,

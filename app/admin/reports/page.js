@@ -59,7 +59,7 @@ const emptyForm = {
 
   price: "",
   currency: "USD",
-  formatText: "PDF + Excel",
+  formatText: "PDF",
   licenseText: "Single User",
   deliveryText: "3 - 4 Weeks",
   pages: "",
@@ -83,15 +83,46 @@ const emptyForm = {
   buyersText: "",
   deliverablesText: `[
   {
+    "icon": "⇩",
     "title": "PDF Report",
-    "description": "280-page comprehensive analysis",
-    "icon": "📄"
+    "description": "100-page comprehensive analysis"
+  },
+  {
+    "icon": "◎",
+    "title": "Market Forecast",
+    "description": "Forward-looking projections and trend outlook"
+  },
+  {
+    "icon": "?",
+    "title": "Analyst Access",
+    "description": "30-minute post-purchase consultation"
+  },
+  {
+    "icon": "◔",
+    "title": "Update Access",
+    "description": "12-month access to interim updates"
   }
 ]`,
   faqsText: `[
   {
     "question": "What format will I receive the report in?",
-    "answer": "The report is delivered in PDF format along with an Excel data pack containing key tables and structured market data."
+    "answer": "The report is delivered in PDF format only."
+  },
+  {
+    "question": "Can I request a customized version of this report?",
+    "answer": "Yes. We can tailor the report scope, segment coverage, OEM coverage, forecast horizon, and output structure based on your requirements."
+  },
+  {
+    "question": "Is a sample available before purchase?",
+    "answer": "Yes. A sample preview or selected extract can be shared for review before final purchase confirmation."
+  },
+  {
+    "question": "What license options are available?",
+    "answer": "We offer single-user, team, and enterprise licensing options depending on your organization size and usage requirements."
+  },
+  {
+    "question": "How frequently is the report updated?",
+    "answer": "This report includes the current edition and can also be supported with periodic updates depending on the subscription or engagement structure."
   }
 ]`,
 
@@ -116,44 +147,38 @@ function findPresetMatch(options, value) {
   return options.find((item) => normalizeCompare(item) === target) || "";
 }
 
-function getPaginationItems(currentPage, totalPages) {
+function getAdminPaginationItems(currentPage, totalPages) {
   if (totalPages <= 1) return [];
 
-  if (totalPages <= 5) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  if (totalPages <= 6) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
   }
 
-  const pages = new Set([1, totalPages, currentPage]);
-
-  if (currentPage > 1) pages.add(currentPage - 1);
-  if (currentPage < totalPages) pages.add(currentPage + 1);
-
-  if (currentPage <= 3) {
-    pages.add(2);
-    pages.add(3);
-    pages.add(4);
+  if (currentPage <= 5) {
+    return [1, 2, 3, 4, 5, "ellipsis", totalPages];
   }
 
-  if (currentPage >= totalPages - 2) {
-    pages.add(totalPages - 1);
-    pages.add(totalPages - 2);
-    pages.add(totalPages - 3);
+  if (currentPage >= totalPages - 4) {
+    return [
+      1,
+      "ellipsis",
+      totalPages - 4,
+      totalPages - 3,
+      totalPages - 2,
+      totalPages - 1,
+      totalPages,
+    ];
   }
 
-  const sorted = Array.from(pages)
-    .filter((p) => p >= 1 && p <= totalPages)
-    .sort((a, b) => a - b);
-
-  const result = [];
-
-  sorted.forEach((page, index) => {
-    if (index > 0 && page - sorted[index - 1] > 1) {
-      result.push("ellipsis");
-    }
-    result.push(page);
-  });
-
-  return result;
+  return [
+    1,
+    "ellipsis",
+    currentPage - 1,
+    currentPage,
+    currentPage + 1,
+    "ellipsis",
+    totalPages,
+  ];
 }
 
 export default function AdminReportsPage() {
@@ -278,7 +303,7 @@ export default function AdminReportsPage() {
 
       price: report.price || "",
       currency: report.currency || "USD",
-      formatText: report.formatText || report.format_text || "PDF + Excel",
+      formatText: report.formatText || report.format_text || "PDF ",
       licenseText: report.licenseText || report.license_text || "Single User",
       deliveryText: report.deliveryText || report.delivery_text || "3 - 4 Weeks",
       pages: report.pages || "",
@@ -624,20 +649,19 @@ export default function AdminReportsPage() {
                         of {sortedReports.length} reports
                       </div>
 
-                      <div className="admin-number-pagination">
+                      <div className="admin-pagination-bar">
                         <button
                           type="button"
-                          className="admin-number-page-btn admin-page-nav"
+                          className="admin-pagination-step"
                           onClick={() =>
                             setCurrentPage((p) => Math.max(1, p - 1))
                           }
                           disabled={currentPage <= 1}
-                          aria-label="Previous page"
                         >
-                          ‹
+                          Prev
                         </button>
 
-                        {getPaginationItems(currentPage, totalPages).map(
+                        {getAdminPaginationItems(currentPage, totalPages).map(
                           (item, index) => {
                             if (typeof item === "string") {
                               return (
@@ -654,8 +678,8 @@ export default function AdminReportsPage() {
                               <button
                                 key={item}
                                 type="button"
-                                className={`admin-number-page-btn${
-                                  currentPage === item ? " active" : ""
+                                className={`admin-pagination-page${
+                                  currentPage === item ? " is-active" : ""
                                 }`}
                                 onClick={() => setCurrentPage(item)}
                                 aria-current={
@@ -670,16 +694,89 @@ export default function AdminReportsPage() {
 
                         <button
                           type="button"
-                          className="admin-number-page-btn admin-page-nav"
+                          className="admin-pagination-step"
                           onClick={() =>
                             setCurrentPage((p) => Math.min(totalPages, p + 1))
                           }
                           disabled={currentPage >= totalPages}
-                          aria-label="Next page"
                         >
-                          ›
+                          Next
                         </button>
                       </div>
+
+                      <style jsx>{`
+                        .admin-pagination-wrap {
+                          margin-top: 16px;
+                          display: flex;
+                          flex-direction: column;
+                          gap: 10px;
+                        }
+
+                        .admin-pagination-info {
+                          color: #475569;
+                          font-size: 13px;
+                          font-weight: 600;
+                        }
+
+                        .admin-pagination-bar {
+                          display: flex;
+                          flex-wrap: wrap;
+                          align-items: center;
+                          gap: 6px;
+                        }
+
+                        .admin-pagination-step,
+                        .admin-pagination-page {
+                          min-width: 38px;
+                          height: 36px;
+                          padding: 0 12px;
+                          border-radius: 8px;
+                          border: 1px solid #d8dfeb;
+                          background: #ffffff;
+                          color: #1f2a44;
+                          font-size: 13px;
+                          font-weight: 700;
+                          cursor: pointer;
+                          transition: background 0.15s ease,
+                            color 0.15s ease, border-color 0.15s ease;
+                        }
+
+                        .admin-pagination-step:hover:not(:disabled),
+                        .admin-pagination-page:hover:not(.is-active) {
+                          background: #f1f4fb;
+                          border-color: #c5cee0;
+                        }
+
+                        .admin-pagination-page.is-active {
+                          background: #2f45bf;
+                          border-color: #2f45bf;
+                          color: #ffffff;
+                        }
+
+                        .admin-pagination-step:disabled {
+                          background: #f1f5f9;
+                          border-color: #e2e8f0;
+                          color: #94a3b8;
+                          cursor: not-allowed;
+                        }
+
+                        .admin-pagination-ellipsis {
+                          padding: 0 6px;
+                          color: #64748b;
+                          font-weight: 700;
+                          letter-spacing: 1px;
+                        }
+
+                        @media (max-width: 575px) {
+                          .admin-pagination-step,
+                          .admin-pagination-page {
+                            height: 32px;
+                            min-width: 32px;
+                            padding: 0 9px;
+                            font-size: 12px;
+                          }
+                        }
+                      `}</style>
                     </div>
                   )}
                 </>
