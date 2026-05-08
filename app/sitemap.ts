@@ -7,7 +7,24 @@ export const revalidate = 86400;
 type SlugRow = {
   slug: string | null;
   updated_at?: string | Date | null;
+  report_type?: string | null;
+  category?: string | null;
 };
+
+const LBI_CATEGORY_FALLBACK = [
+  "ODC Route Feasibility Study Report",
+  "Route Survey Report",
+  "Logistics Intelligence Report",
+  "Corridor Feasibility Report",
+  "Port Connectivity Report",
+  "Heavy Cargo Movement Report",
+  "Location Based Intelligence Report",
+];
+
+function isLbiRow(row: SlugRow) {
+  if (String(row.report_type || "").toLowerCase() === "lbi") return true;
+  return LBI_CATEGORY_FALLBACK.includes(String(row.category || ""));
+}
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/+$/, "") ||
@@ -35,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const [rows] = await db.query(
       `
-      SELECT slug, updated_at
+      SELECT slug, updated_at, report_type, category
       FROM reports
       WHERE slug IS NOT NULL
         AND slug <> ''
@@ -72,7 +89,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
+      url: absUrl("/market-report"),
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.9,
+    },
+    {
       url: absUrl("/reports"),
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.9,
+    },
+    {
+      url: absUrl("/lbi-reports"),
       lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: 0.9,
@@ -85,10 +114,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  const reportEntries: MetadataRoute.Sitemap = reports
-    .filter((r) => r.slug && String(r.slug).trim() !== "")
+  const validReports = reports.filter(
+    (r) => r.slug && String(r.slug).trim() !== ""
+  );
+
+  const reportEntries: MetadataRoute.Sitemap = validReports.map((report) => ({
+    url: absUrl(`/reports/${safeSlug(report.slug)}`),
+    lastModified: getValidDate(report.updated_at),
+    changeFrequency: "daily" as const,
+    priority: 0.8,
+  }));
+
+  const lbiDetailEntries: MetadataRoute.Sitemap = validReports
+    .filter(isLbiRow)
     .map((report) => ({
-      url: absUrl(`/reports/${safeSlug(report.slug)}`),
+      url: absUrl(`/lbi-reports/${safeSlug(report.slug)}`),
       lastModified: getValidDate(report.updated_at),
       changeFrequency: "daily" as const,
       priority: 0.8,
@@ -103,5 +143,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-  return [...staticEntries, ...reportEntries, ...blogEntries];
+  return [
+    ...staticEntries,
+    ...reportEntries,
+    ...lbiDetailEntries,
+    ...blogEntries,
+  ];
 }

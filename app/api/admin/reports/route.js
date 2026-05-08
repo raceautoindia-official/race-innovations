@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { getAllReports } from "../../../../lib/report-service";
+import {
+  getAllReports,
+  ensureReportTypeColumn,
+} from "../../../../lib/report-service";
 import { slugify } from "../../../../lib/report-utils";
 import db from "../../../../lib/db";
 
@@ -35,9 +38,25 @@ async function getUniqueSlug(baseSlug) {
   }
 }
 
-export async function GET() {
+export async function GET(req) {
   try {
-    const reports = await getAllReports();
+    const { searchParams } = new URL(req.url);
+    const type = (searchParams.get("type") || "").trim();
+
+    let reports;
+    if (type === "lbi") {
+      reports = await getAllReports({ reportType: "lbi" });
+    } else if (type === "market") {
+      // Treat market or empty/legacy values as market
+      const all = await getAllReports();
+      reports = all.filter((r) => {
+        const t = String(r.reportType || "").toLowerCase();
+        return t === "" || t === "market";
+      });
+    } else {
+      reports = await getAllReports();
+    }
+
     return NextResponse.json({ success: true, data: reports });
   } catch (error) {
     console.error("GET admin reports error:", error);
@@ -50,6 +69,8 @@ export async function GET() {
 
 export async function POST(req) {
   try {
+    await ensureReportTypeColumn();
+
     const body = await req.json();
 
     const rawSlug = normalizeText(body.slug) || slugify(body.title || "");
@@ -65,6 +86,11 @@ export async function POST(req) {
     const period = normalizeText(body.period);
     const badge = normalizeText(body.badge, "NEW");
     const accent = normalizeText(body.accent, "#2f45bf");
+
+    const reportTypeRaw = String(body.reportType || body.report_type || "market")
+      .trim()
+      .toLowerCase();
+    const reportType = reportTypeRaw === "lbi" ? "lbi" : "market";
 
     const price =
       body.price === "" || body.price === undefined || body.price === null
@@ -98,13 +124,13 @@ export async function POST(req) {
 
     const [result] = await db.query(
       `INSERT INTO reports (
-        slug, title, preview_title, company, description, region, category, country, period, badge, accent,
+        slug, title, preview_title, company, description, region, report_type, category, country, period, badge, accent,
         price, currency, format_text, license_text, delivery_text, pages, geography, forecast_text, publisher,
         meta_title, meta_description, hero_description, why_this_report,
         sample_table_title, sample_table_note, sample_image, sample_pdf, sample_table_json,
         tags_json, highlights_json, sections_json, buyers_json, deliverables_json, faqs_json,
         is_featured, is_active, sort_order
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 
       [
         slug,
@@ -113,6 +139,7 @@ export async function POST(req) {
         company,
         description,
         region,
+        reportType,
         category,
         country,
         period,

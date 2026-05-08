@@ -1,12 +1,17 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import ReportChatbot from "./ReportChatbot";
 
 const BRAND = "#2f45bf";
 const WHATSAPP_GREEN = "#25d366";
 
 export default function GlobalFloatingWidgets() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const isAdminRoute = (pathname || "").startsWith("/admin");
+
   const [expanded, setExpanded] = useState(false);
   const CHAT_OPEN_KEY = "race_report_assistant_open_v2";
   const [chatbotOpen, setChatbotOpenState] = useState(() => {
@@ -189,12 +194,15 @@ export default function GlobalFloatingWidgets() {
     },
   ];
 
+  // Hide all floating widgets on admin routes — they are only meant for
+  // the public website and clutter the admin panel.
+  if (isAdminRoute) return null;
+
   return (
     <>
       <div
         ref={wrapperRef}
         className="gfw-wrapper"
-        onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
         <div
@@ -231,7 +239,7 @@ export default function GlobalFloatingWidgets() {
             <button
               type="button"
               className="gfw-talk-label"
-              onClick={openChatbot}
+              onClick={() => router.push("/contact")}
               aria-label="Talk to expert"
             >
               Talk to Expert
@@ -241,6 +249,7 @@ export default function GlobalFloatingWidgets() {
           <button
             type="button"
             onClick={handleMainClick}
+            onMouseEnter={handleMouseEnter}
             aria-label={
               expanded ? "Close quick actions" : "Open quick actions"
             }

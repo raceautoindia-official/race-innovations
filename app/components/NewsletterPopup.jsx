@@ -1,11 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const NEWSLETTER_KEY = "race_newsletter_popup_v1";
+const COOKIE_KEY = "race_cookie_consent_v1";
+const COOKIE_EVENT = "race-cookie-consent-changed";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function NewsletterPopup() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -15,17 +19,46 @@ export default function NewsletterPopup() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    let saved = null;
+    let newsletterSaved = null;
     try {
-      saved = window.localStorage.getItem(NEWSLETTER_KEY);
+      newsletterSaved = window.localStorage.getItem(NEWSLETTER_KEY);
     } catch {
-      saved = null;
+      newsletterSaved = null;
     }
 
-    if (saved) return;
+    if (newsletterSaved) return;
 
-    const timer = setTimeout(() => setVisible(true), 2000);
-    return () => clearTimeout(timer);
+    let cookieSaved = null;
+    try {
+      cookieSaved = window.localStorage.getItem(COOKIE_KEY);
+    } catch {
+      cookieSaved = null;
+    }
+
+    let timer;
+
+    if (cookieSaved) {
+      // Cookie consent already handled in a previous session — show
+      // newsletter popup after a short delay.
+      timer = setTimeout(() => setVisible(true), 2000);
+      return () => clearTimeout(timer);
+    }
+
+    // Cookie banner is showing first. Wait until the user accepts/rejects
+    // it (CookieConsent dispatches "race-cookie-consent-changed"), then
+    // show the newsletter popup after a comfortable delay so the two
+    // never appear at the same time.
+    function handleConsentChange() {
+      window.removeEventListener(COOKIE_EVENT, handleConsentChange);
+      timer = setTimeout(() => setVisible(true), 1500);
+    }
+
+    window.addEventListener(COOKIE_EVENT, handleConsentChange);
+
+    return () => {
+      window.removeEventListener(COOKIE_EVENT, handleConsentChange);
+      if (timer) clearTimeout(timer);
+    };
   }, []);
 
   function persistStatus(value) {
@@ -113,6 +146,7 @@ export default function NewsletterPopup() {
     }
   }
 
+  if ((pathname || "").startsWith("/admin")) return null;
   if (!visible) return null;
 
   return (

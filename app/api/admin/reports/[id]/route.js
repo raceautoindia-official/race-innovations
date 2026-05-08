@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 
-import { getReportById } from "../../../../../lib/report-service";
+import {
+  getReportById,
+  ensureReportTypeColumn,
+} from "../../../../../lib/report-service";
 import { slugify } from "../../../../../lib/report-utils";
 import db from "../../../../../lib/db";
 
@@ -49,6 +52,8 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   try {
+    await ensureReportTypeColumn();
+
     const id = params?.id;
 
     if (!id) {
@@ -73,6 +78,13 @@ export async function PUT(req, { params }) {
     const slug =
       normalizeText(body.slug) || slugify(title || existingReport.title || "");
 
+    const reportTypeRaw = String(
+      body.reportType ?? body.report_type ?? existingReport.reportType ?? "market"
+    )
+      .trim()
+      .toLowerCase();
+    const reportType = reportTypeRaw === "lbi" ? "lbi" : "market";
+
     const sampleImage =
       body.sampleImage !== undefined
         ? body.sampleImage
@@ -89,7 +101,7 @@ export async function PUT(req, { params }) {
 
     await db.query(
       `UPDATE reports SET
-        slug = ?, title = ?, preview_title = ?, company = ?, description = ?, region = ?, category = ?, country = ?, period = ?, badge = ?, accent = ?,
+        slug = ?, title = ?, preview_title = ?, company = ?, description = ?, region = ?, report_type = ?, category = ?, country = ?, period = ?, badge = ?, accent = ?,
         price = ?, currency = ?, format_text = ?, license_text = ?, delivery_text = ?, pages = ?, geography = ?, forecast_text = ?, publisher = ?,
         meta_title = ?, meta_description = ?, hero_description = ?, why_this_report = ?,
         sample_table_title = ?, sample_table_note = ?, sample_image = ?, sample_pdf = ?,
@@ -104,6 +116,7 @@ export async function PUT(req, { params }) {
         normalizeText(body.company, existingReport.company || "RACE Innovations"),
         normalizeText(body.description, existingReport.description || ""),
         normalizeText(body.region, existingReport.region || ""),
+        reportType,
         normalizeText(body.category, existingReport.category || ""),
         normalizeText(body.country, existingReport.country || ""),
         normalizeText(body.period, existingReport.period || ""),

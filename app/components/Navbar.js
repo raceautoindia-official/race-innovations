@@ -306,6 +306,12 @@ const Navbar = () => {
                       LBI Route Survey
                     </Link>
                   </li>
+
+                  <li>
+                    <Link className="dropdown-item" href="/lbi-reports">
+                      LBI Reports
+                    </Link>
+                  </li>
                 </ul>
               </li>
 
@@ -591,6 +597,16 @@ const Navbar = () => {
                         onClick={handleOffcanvasHide}
                       >
                         LBI Route Survey
+                      </Link>
+                    </li>
+
+                    <li>
+                      <Link
+                        className="dropdown-item"
+                        href="/lbi-reports"
+                        onClick={handleOffcanvasHide}
+                      >
+                        LBI Reports
                       </Link>
                     </li>
                   </ul>

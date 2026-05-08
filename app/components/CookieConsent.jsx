@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { COOKIE_KEY } from "../../lib/cookieConsent";
 
 export const CONSENT_EVENT = "race-cookie-consent-changed";
 
 export default function CookieConsent() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
   const [showPrefs, setShowPrefs] = useState(false);
   const [preferences, setPreferences] = useState({
@@ -73,6 +75,7 @@ export default function CookieConsent() {
     saveConsent("custom", preferences);
   }
 
+  if ((pathname || "").startsWith("/admin")) return null;
   if (!visible) return null;
 
   return (

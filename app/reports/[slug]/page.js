@@ -27,6 +27,22 @@ export async function generateMetadata({ params }) {
   };
 }
 
+const LBI_CATEGORY_FALLBACK = [
+  "ODC Route Feasibility Study Report",
+  "Route Survey Report",
+  "Logistics Intelligence Report",
+  "Corridor Feasibility Report",
+  "Port Connectivity Report",
+  "Heavy Cargo Movement Report",
+  "Location Based Intelligence Report",
+];
+
+function isLbiReport(report) {
+  const t = String(report?.reportType || "").toLowerCase();
+  if (t === "lbi") return true;
+  return LBI_CATEGORY_FALLBACK.includes(String(report?.category || ""));
+}
+
 function computeRelatedReports(currentReport, allReports) {
   if (!currentReport || !Array.isArray(allReports) || allReports.length === 0) {
     return [];
@@ -38,6 +54,7 @@ function computeRelatedReports(currentReport, allReports) {
   const currentCountry = String(
     currentReport.country || currentReport.geography || ""
   ).toLowerCase();
+  const currentIsLbi = isLbiReport(currentReport);
 
   const activeOthers = allReports.filter((item) => {
     const isActive =
@@ -51,7 +68,10 @@ function computeRelatedReports(currentReport, allReports) {
     const isNotCurrent =
       item.id !== currentId && item.slug !== currentSlug;
 
-    return isActive && isNotCurrent;
+    // Only suggest reports of the same family — never cross LBI ↔ market.
+    const sameFamily = isLbiReport(item) === currentIsLbi;
+
+    return isActive && isNotCurrent && sameFamily;
   });
 
   const scored = activeOthers.map((item) => {
@@ -94,6 +114,8 @@ export default async function ReportDetailPage({ params }) {
   if (!report) notFound();
 
   const relatedReports = computeRelatedReports(report, allReports);
+  const reportIsLbi = isLbiReport(report);
+  const browseAllHref = reportIsLbi ? "/lbi-reports" : "/market-report";
 
   const imageSrc =
     report.sampleImage ||
@@ -119,11 +141,11 @@ export default async function ReportDetailPage({ params }) {
           <div className="container-fluid px-4 px-md-5 px-lg-5">
             <div className="mb-4">
               <a
-                href="/market-report"
+                href={browseAllHref}
                 className="text-decoration-none"
                 style={{ color: "#3346c7", fontSize: "1.1rem", fontWeight: 600 }}
               >
-                ← Back to Reports
+                ← Back to {reportIsLbi ? "LBI Reports" : "Reports"}
               </a>
             </div>
 
@@ -665,7 +687,7 @@ export default async function ReportDetailPage({ params }) {
                           Related Reports
                         </h3>
                         <a
-                          href="/market-report"
+                          href={browseAllHref}
                           className="text-decoration-none"
                           style={{
                             color: "#2f45bf",
