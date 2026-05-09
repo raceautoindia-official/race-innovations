@@ -6,6 +6,7 @@ import {
 } from "../../../../lib/report-service";
 import { slugify } from "../../../../lib/report-utils";
 import db from "../../../../lib/db";
+import { notifySearchEngines } from "../../../../lib/seo/indexingPing";
 
 function toJson(value, fallback) {
   try {
@@ -182,6 +183,14 @@ export async function POST(req) {
         Number.isFinite(Number(body.sortOrder)) ? Number(body.sortOrder) : 9999,
       ]
     );
+
+    // Fire-and-forget search engine notification — never blocks the response.
+    notifySearchEngines([
+      `/reports/${slug}`,
+      ...(reportType === "lbi"
+        ? [`/lbi-reports/${slug}`, "/lbi-reports"]
+        : ["/market-report"]),
+    ]);
 
     return NextResponse.json({
       success: true,
