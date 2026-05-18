@@ -21,10 +21,10 @@ function Certifications() {
   return (
     <div className="container-fluid">
       <div className="row text-center">
-        <h1>
+        <h2>
           <span style={{ color: "black" }}>Our</span>{" "}
           <span style={{ color: "#293BB1" }}>Certifications</span>
-        </h1>
+        </h2>
         <p>
           Race Innovationss Pvt. Ltd is ISO27001, ISO9001, and CMMI Level 3
           Certified Company

@@ -21,9 +21,9 @@ function Connected() {
         >
           <div className="row">
             <div className="col-md-6 col-12 p-3">
-              <h1 className="text-md-start text-center" style={{ color: "#3848b7" }}>
+              <h2 className="text-md-start text-center" style={{ color: "#3848b7" }}>
                 Stay Connected..!
-              </h1>
+              </h2>
               <form>
                 <div className="mb-3">
                   <label className="form-label">Name</label>
@@ -59,9 +59,9 @@ function Connected() {
               </form>
             </div>
             <div className="col-md-6 col-12 p-4">
-              <h1 className="text-md-start text-center" style={{ color: "#3848b7" }}>
+              <h2 className="text-md-start text-center" style={{ color: "#3848b7" }}>
                 Let's Work Together
-              </h1>
+              </h2>
               <p className="mt-1 text-md-start text-center">
                 Race Innovationss welcomes collaboration to champion diversity, equity, and inclusion.
                 Together, we'll break barriers, challenge biases, and shape a brighter, more inclusive future for all.

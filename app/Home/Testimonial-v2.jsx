@@ -99,10 +99,10 @@ const Testimonial_v2 = () => {
     <div className="container">
       <div className="row">
         <div className="col-12 text-center">
-          <h1>
+          <h2>
             <span style={{ color: 'black' }}>Our</span>{' '}
             <span style={{ color: '#293BB1' }}>Testimonials</span>
-          </h1>
+          </h2>
         </div>
       </div>
 

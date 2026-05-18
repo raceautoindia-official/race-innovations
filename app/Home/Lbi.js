@@ -32,10 +32,10 @@ function Lbi() {
         viewport={{ once: true }}
       >
         <div className="col-md-6 text-center">
-          <h1 style={{ color: "#293BB1" }}>
+          <h2 style={{ color: "#293BB1" }}>
             LBI-Route Survey For
             <br /> Over Dimensional Cargo (ODC)
-          </h1>
+          </h2>
           <p className="mt-3" style={{ color: "#555555" }}>
             Location Based Intelligence emphasizes facilitating hindrance-free
             movement of goods by conducting route surveys by a team of experts.

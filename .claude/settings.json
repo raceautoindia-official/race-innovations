@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(rm -rf d:/race-innovations/app/\\\\[indexnowKey\\\\] && echo \"removed\")"
+      "Bash(rm -rf d:/race-innovations/app/\\\\[indexnowKey\\\\] && echo \"removed\")",
+      "Bash(grep -v \":0$\")"
     ],
     "additionalDirectories": [
       "d:\\race-innovations\\app\\[indexnowKey]"

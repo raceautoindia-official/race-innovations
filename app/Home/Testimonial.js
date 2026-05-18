@@ -4,10 +4,10 @@ function Testimonial() {
   return (
     <>
       <div>
-        <h1 className="text-center mt-5">
+        <h2 className="text-center mt-5">
           <span style={{ color: "black" }}>Our</span>
           <span style={{ color: "#293BB1" }}> Testimonials</span>
-        </h1>
+        </h2>
       </div>
 
       {/* Background Image Container */}

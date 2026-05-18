@@ -47,7 +47,7 @@ function Connect() {
             transform: textTranslateY.to((y) => `translateY(${y}px)`),
           }}
         >
-          <h1 className="text-primary fw-bold">Connect</h1>
+          <h2 className="text-primary fw-bold">Connect</h2>
           <h4 className="mt-2 fw-semibold">RACE has a global presence</h4>
           <p className="mt-3">
             RACE Application Engineering capability helps companies develop the

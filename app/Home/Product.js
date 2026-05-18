@@ -373,7 +373,7 @@ function Product() {
               <div className="container text-white ms-5">
                 <div className="row">
                   <div className="col-lg-6" id="lbi">
-                    <h1 className="fw-bold">LBI-Route Survey For<br />Over Dimensional Cargo (ODC)</h1>
+                    <h2 className="fw-bold">LBI-Route Survey For<br />Over Dimensional Cargo (ODC)</h2>
                     <p className="mt-3" style={{textAlign: "justify"}}>
                       Location Based Intelligence emphasis on facilitating hindrance-free movement of goods by conducting route surveys by a team of experts.
                       LBI team expertise in providing reports with recommendations which help the users to move freely without any difficulties. LBI uses...

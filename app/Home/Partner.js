@@ -25,10 +25,10 @@ const Partner = () => {
 
   return (
     <>
-      <h1 className="text-center mt-4">
+      <h2 className="text-center mt-4">
         <span style={{ color: "black" }}>Our</span>
         <span style={{ color: "#293BB1" }}> Partnerships</span>
-      </h1>
+      </h2>
       <div
         className="container-fluid "
         style={{ backgroundColor: "#F5F5F5", padding: "20px" }}

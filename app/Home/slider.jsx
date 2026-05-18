@@ -49,6 +49,25 @@ export default function ResponsiveSwiper() {
 
   return (
     <div className="flex justify-center items-center min-h-screen mb-5">
+      {/* Single SEO H1 for the homepage. Visually hidden so the slider
+          design is unchanged, but read by search engines and screen readers. */}
+      <h1
+        style={{
+          position: "absolute",
+          width: "1px",
+          height: "1px",
+          padding: 0,
+          margin: "-1px",
+          overflow: "hidden",
+          clip: "rect(0, 0, 0, 0)",
+          whiteSpace: "nowrap",
+          border: 0,
+        }}
+      >
+        RACE Innovations — Automotive Market Intelligence, ODC Route Survey
+        &amp; Strategic Consulting
+      </h1>
+
       <Swiper
         speed={1200}
         slidesPerView={1}

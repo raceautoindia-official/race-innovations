@@ -77,10 +77,10 @@ const ClientSection = () => {
 function Client() {
   return (
     <div>
-      <h1 className="text-center mt-4 mb-3">
+      <h2 className="text-center mt-4 mb-3">
         <span style={{ color: "black" }}>Our</span>{" "}
         <span style={{ color: "#293BB1" }}>Clients</span>
-      </h1>
+      </h2>
       <ClientSection />
     </div>
   );

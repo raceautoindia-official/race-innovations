@@ -23,7 +23,7 @@ function Legal() {
             transition={{ duration: 0.4, delay: 0.1 }}
             viewport={{ once: true }}
           >
-            <h1 style={{ color: "#293BB1" }} className="mt-3">Legal</h1>
+            <h2 style={{ color: "#293BB1" }} className="mt-3">Legal</h2>
             <p className="mt-3">
               Most of the businesses face many complex legal and commercial pressures...
             </p>
@@ -128,7 +128,7 @@ function Legal() {
             transition={{ duration: 0.4, delay: 0.1 }}
             viewport={{ once: true }}
           >
-            <h1 style={{ color: "#293BB1" }} className="mt-3">Legal</h1>
+            <h2 style={{ color: "#293BB1" }} className="mt-3">Legal</h2>
             <p className="mt-3">Most of the businesses face many complex legal and commercial pressures...</p>
             <motion.button
               className="btn btn-outline-primary"
