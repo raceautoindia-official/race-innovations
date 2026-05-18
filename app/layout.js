@@ -23,35 +23,49 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// Global defaults — individual pages (page.jsx in each route) override these
+// with their own metadata. metadataBase makes every relative URL in a page's
+// metadata (canonical, OG images) resolve against this domain automatically.
 export const metadata = {
-  title: "Race Innovations",
-  description: "Race Innovations is a global leader in technology solutions, with a strong presence across multiple countries and headquarters in India.",
-  keywords: "Race Innovations, technology solutions, global innovation, AI, automation, digital transformation",
+  metadataBase: new URL("https://raceinnovations.in"),
+  title: {
+    default: "RACE Innovations | Automotive Intelligence & ODC Reports",
+    template: "%s | RACE Innovations",
+  },
+  description:
+    "Automotive market intelligence, EV insights, OEM benchmarking, ODC route survey & LBI reports from RACE Innovations.",
+  applicationName: "RACE Innovations",
+  authors: [{ name: "RACE Innovations" }],
+  generator: "Next.js",
+  keywords: [
+    "RACE Innovations",
+    "automotive market intelligence",
+    "ODC route survey",
+    "LBI reports",
+    "OEM benchmarking",
+    "EV intelligence",
+    "automotive forecast reports",
+  ],
   robots: "index, follow",
   openGraph: {
-    title: "Race Innovations - Transforming Industries",
-    description: "Race Innovations provides cutting-edge technology solutions, AI-driven automation, and digital transformation services to businesses worldwide.",
-    url: "https://raceinnovation.com",
-    siteName: "Race Innovations",
+    siteName: "RACE Innovations",
+    type: "website",
+    locale: "en_IN",
     images: [
       {
         url: "/images/logo.jpg",
         width: 1200,
         height: 630,
-        alt: "Race Innovations ",
+        alt: "RACE Innovations",
       },
     ],
-    type: "website",
   },
   twitter: {
     card: "summary_large_image",
     site: "@raceinnovation",
-    title: "Race Innovations ",
-    description: "Join Race Innovations in pioneering AI, automation, and digital transformation on a global scale.",
-    images: ["https://raceinnovation.com/assets/og-image.jpg"],
   },
   alternates: {
-    canonical: "https://raceinnovation.com",
+    canonical: "https://raceinnovations.in/",
   },
 };
 
@@ -60,7 +74,23 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-  
+      <head>
+        {/* Preconnect / DNS-prefetch for third-party origins we always use.
+            Shaves 100–300ms off TTFB on first paint. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://unpkg.com" />
+        <link
+          rel="dns-prefetch"
+          href="https://raceautonextjs-bucket.s3.ap-south-1.amazonaws.com"
+        />
+        <link rel="dns-prefetch" href="https://wa.me" />
+        <link rel="dns-prefetch" href="https://mail.google.com" />
+
+        {/* Theme colour for mobile browser chrome */}
+        <meta name="theme-color" content="#2f45bf" />
+      </head>
+
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
       <ToastContainer />
         {children}

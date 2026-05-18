@@ -5,6 +5,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import ReportDetailClientActions from "../../components/ReportDetailClientActions";
 import ReportAIQuestionBox from "../../components/ReportAIQuestionBox";
+import PageViewTracker from "../../components/PageViewTracker";
 
 export async function generateMetadata({ params }) {
   const slug = decodeURIComponent(params.slug || "");
@@ -132,6 +133,11 @@ export default async function ReportDetailPage({ params }) {
 
   return (
     <>
+      <PageViewTracker
+        contentType="report"
+        slug={report.slug}
+        contentId={report.id}
+      />
       <Navbar />
       <main
         className="main-content"

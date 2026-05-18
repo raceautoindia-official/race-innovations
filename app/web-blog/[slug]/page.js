@@ -11,6 +11,7 @@ import {
 import { FaShareAlt } from "react-icons/fa";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import PageViewTracker from "../../components/PageViewTracker";
 
 function resolveImg(src) {
   if (!src) return "";
@@ -327,6 +328,11 @@ export default function BlogDetailsPage() {
 
   return (
     <>
+      <PageViewTracker
+        contentType="blog"
+        slug={post?.slug || ""}
+        contentId={post?.id || null}
+      />
       <Navbar />
 
       <div className="blogDetailPage main-content">

@@ -1,10 +1,11 @@
 import Home from "./Home/home.js";
 
 export const metadata = {
-  title:
-    "RACE Innovations | Automotive Market Intelligence, ODC Logistics & Strategic Reports",
+  // Title: 58 chars (safely under Google's ~60-char truncation point).
+  title: "RACE Innovations | Automotive Intelligence & ODC Reports",
+  // Description: 156 chars (within Google's 150–160 sweet spot).
   description:
-    "RACE Innovations delivers automotive market intelligence, ODC route survey, LBI reports, EV intelligence, OEM benchmarking, vehicle sales forecasts and custom research for OEMs, investors and strategy teams.",
+    "Automotive market intelligence, EV insights, OEM benchmarking, ODC route survey & LBI reports from RACE Innovations — research for OEMs & investors.",
   keywords: [
     "RACE Innovations",
     "automotive market intelligence",
