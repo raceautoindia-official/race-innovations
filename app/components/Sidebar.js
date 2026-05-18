@@ -8,12 +8,14 @@ import {
   MdAttachMoney,
   MdHome,
   MdSettings,
+  MdInsights,
 } from "react-icons/md";
 
 const navLinks = [
   { href: "/dashboard", Icon: MdDashboard, text: "Dashboard" },
   { href: "/admin/posts/new", Icon: MdArticle, text: "Blog" },
   { href: "/admin/report", Icon: MdAssessment, text: "Reports" },
+  { href: "/admin/analytics", Icon: MdInsights, text: "Analytics" },
   { href: "/admin/gallery", Icon: MdImage, text: "Gallery" },
   { href: "/admin/funding", Icon: MdAttachMoney, text: "Funding" },
   { href: "/admin/posts/new", Icon: MdArticle, text: "Posts" },
