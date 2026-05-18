@@ -89,7 +89,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const [rows] = await db.query(
       `
       SELECT slug, updated_at
-      FROM blogs
+      FROM posts
       WHERE slug IS NOT NULL
         AND slug <> ''
       ORDER BY updated_at DESC
