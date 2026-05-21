@@ -22,7 +22,7 @@ function Legal() {
         variants={slideUpVariants}
         transition={{ duration: 0.3 }}
       >
-        <h1
+        <h2
           className="text-center"
           style={{
             fontSize: "clamp(2rem, 5vw, 3rem)",
@@ -30,7 +30,7 @@ function Legal() {
           }}
         >
           <span style={{ color: "#293BB1" }}>Legal</span>
-        </h1>
+        </h2>
 
         <p style={{ fontSize: "18px", textAlign: "justify" }}>
           Most businesses face many complex legal and commercial pressures when
@@ -63,10 +63,10 @@ function Legal() {
         variants={slideUpVariants}
         transition={{ duration: 0.3, delay: 0.1 }}
       >
-        <h1 className="text-center">
+        <h2 className="text-center">
           <span style={{ color: "black", marginRight: "10px" }}>Key</span>
           <span style={{ color: "#293BB1" }}>Legal Services</span>
-        </h1>
+        </h2>
 
         <div className="row">
           {/* Services Column 1 */}

@@ -149,7 +149,9 @@ const Footer = () => {
               © 2025 Race Innovationss - All Rights Reserved
             </p>
 
-            {/* Links Section */}
+            {/* Links Section — balance internal vs external link ratio by
+                surfacing the main internal destinations alongside the social
+                links above. */}
             <div className="row text-center text-md-start justify-content-between">
               <div className="col-6 col-md-auto mb-2">
                 <Link
@@ -162,6 +164,33 @@ const Footer = () => {
               </div>
               <div className="col-6 col-md-auto mb-2">
                 <Link
+                  href="/market-report"
+                  className="text-decoration-none text-dark d-block"
+                  style={{ fontSize: "12px" }}
+                >
+                  Market Reports
+                </Link>
+              </div>
+              <div className="col-6 col-md-auto mb-2">
+                <Link
+                  href="/lbi-reports"
+                  className="text-decoration-none text-dark d-block"
+                  style={{ fontSize: "12px" }}
+                >
+                  LBI Reports
+                </Link>
+              </div>
+              <div className="col-6 col-md-auto mb-2">
+                <Link
+                  href="/web-blog"
+                  className="text-decoration-none text-dark d-block"
+                  style={{ fontSize: "12px" }}
+                >
+                  Blog
+                </Link>
+              </div>
+              <div className="col-6 col-md-auto mb-2">
+                <Link
                   href="/career"
                   className="text-decoration-none text-dark d-block"
                   style={{ fontSize: "12px" }}
@@ -169,7 +198,7 @@ const Footer = () => {
                   Careers
                 </Link>
               </div>
-              <div className="col-6 col-md-auto">
+              <div className="col-6 col-md-auto mb-2">
                 <Link
                   href="/contact"
                   className="text-decoration-none text-dark d-block"
@@ -178,13 +207,22 @@ const Footer = () => {
                   Contact
                 </Link>
               </div>
-              <div className="col-6 col-md-auto">
+              <div className="col-6 col-md-auto mb-2">
                 <Link
                   href="/about-us/investors"
                   className="text-decoration-none text-dark d-block"
                   style={{ fontSize: "12px" }}
                 >
                   Investor
+                </Link>
+              </div>
+              <div className="col-6 col-md-auto mb-2">
+                <Link
+                  href="/corporate-profile"
+                  className="text-decoration-none text-dark d-block"
+                  style={{ fontSize: "12px" }}
+                >
+                  Corporate Profile
                 </Link>
               </div>
             </div>

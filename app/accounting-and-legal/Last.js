@@ -21,9 +21,9 @@ function Last() {
         variants={slideUpVariants}
         transition={{ duration: 0.4 }}
       >
-        <h1 className="text-center" style={{ fontSize: "3rem", whiteSpace: "nowrap" }}>
+        <h2 className="text-center" style={{ fontSize: "3rem", whiteSpace: "nowrap" }}>
           <span style={{ color: "#293BB1" }}>Tax</span>
-        </h1>
+        </h2>
 
         <p style={{ fontSize: "18px", textAlign: "justify" }}>
           With the experienced account and audit team, we have handled taxation
@@ -57,10 +57,10 @@ function Last() {
         variants={slideUpVariants}
         transition={{ duration: 0.4, delay: 0.1 }}
       >
-        <h1 className="text-center">
+        <h2 className="text-center">
           <span style={{ color: "black", marginRight: "10px" }}>Key</span>
           <span style={{ color: "#293BB1" }}>Accounting Services</span>
-        </h1>
+        </h2>
 
         <div className="row">
           {/* Services List Column 1 */}

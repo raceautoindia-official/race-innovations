@@ -20,7 +20,7 @@ function Advisory() {
         variants={slideUpVariants}
         transition={{ duration: 0.3 }}
       >
-        <h1
+        <h2
           className="text-center"
           style={{
             fontSize: "clamp(2rem, 5vw, 3rem)",
@@ -28,7 +28,7 @@ function Advisory() {
           }}
         >
           <span style={{ color: "#293BB1" }}>Advisory</span>
-        </h1>
+        </h2>
 
         <p style={{ fontSize: "18px", textAlign: "justify" }}>
           RACE associates have worked with most industries and have been a part
@@ -61,10 +61,10 @@ function Advisory() {
         variants={slideUpVariants}
         transition={{ duration: 0.3, delay: 0.1 }}
       >
-        <h1 className="text-center">
+        <h2 className="text-center">
           <span style={{ color: "black", marginRight: "10px" }}>Key</span>
           <span style={{ color: "#293BB1" }}>Accounting Services</span>
-        </h1>
+        </h2>
 
         <div className="row">
           {/* List Column 1 */}

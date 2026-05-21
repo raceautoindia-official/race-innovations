@@ -10,7 +10,6 @@ import NewsletterPopup from './components/NewsletterPopup';
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from 'react-toastify';
 import 'core-js/full/promise/with-resolvers';
-import "react-quill/dist/quill.snow.css";
 
 
 const geistSans = Geist({
