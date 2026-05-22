@@ -32,10 +32,10 @@ function Office() {
       variants={slideFromBottom}
       onViewportEnter={() => setHasAnimated(true)}
     >
-      <h1 className="text-center" style={{ fontSize: "3rem", whiteSpace: "nowrap" }}>
+      <h2 className="text-center" style={{ fontSize: "3rem", whiteSpace: "nowrap" }}>
         <span style={{ color: "black", marginRight: "10px" }}>Our</span>
         <span style={{ color: "#293BB1" }}>Office</span>
-      </h1>
+      </h2>
 
       <p style={{ textAlign: "justify" }}>
         RACE Connect is the cost-effective strategy to experience an evolving market and the most

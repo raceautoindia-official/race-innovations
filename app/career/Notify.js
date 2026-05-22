@@ -40,7 +40,7 @@ function Notify() {
             variants={slideFromBottom}
             transition={{ duration: 0.4 }}
           >
-            <h1 className="fw-bold">Get Notified</h1>
+            <h2 className="fw-bold">Get Notified</h2>
             <p>Signup to receive occasional updates.</p>
 
             <div className="mb-3 d-flex flex-column flex-sm-row align-items-stretch">

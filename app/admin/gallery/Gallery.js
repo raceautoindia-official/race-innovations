@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 function Gallery() {
   const [content, setContent] = useState("");

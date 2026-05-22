@@ -25,7 +25,7 @@ function Offerings() {
           viewport={{ once: true, amount: 0.3 }}
           variants={fadeInVariants}
         >
-          <h1 className="mb-3">Features</h1>
+          <h2 className="mb-3">Features</h2>
           <ul
             className="text-start"
             style={{

@@ -51,13 +51,13 @@ function Features() {
           className="col-md-6"
           variants={slideFromBottom}
         >
-          <h1
+          <h2
             className="text-center"
             style={{ fontSize: "clamp(2rem, 5vw, 3rem)", whiteSpace: "nowrap" }}
           >
             <span style={{ color: "black" }}>Key</span>
             <span style={{ color: "#293BB1" }}> Features</span>
-          </h1>
+          </h2>
 
           <ul style={{ textAlign: "justify" }}>
             {features.map((feature, index) => (

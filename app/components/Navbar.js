@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import styles from "../../app/page.module.css";
-import "bootstrap/dist/css/bootstrap.min.css";
+// Bootstrap CSS is imported once in app/layout.js — no need to re-import here.
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { FaInstagram, FaFacebook, FaLinkedin, FaYoutube } from "react-icons/fa";
 import { SiX } from "react-icons/si";

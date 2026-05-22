@@ -15,9 +15,9 @@ const scrollUpVariants = {
 function Deliverable() {
   return (
     <div className="container" style={{ marginBottom: "100px", textAlign: "justify" }}>
-      <h1 style={{ color: "#293bb1" }} className="text-center mb-4">
+      <h2 style={{ color: "#293bb1" }} className="text-center mb-4">
         Deliverable
-      </h1>
+      </h2>
       <div className="row justify-content-center">
         {[
           {

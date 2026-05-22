@@ -37,7 +37,7 @@ function Manage() {
             alt="M.P. Rajesh Khanna"
           />
 
-          <h1 className="mt-3">M.P. Rajesh Khanna</h1>
+          <h2 className="mt-3">M.P. Rajesh Khanna</h2>
           <h4>Managing Director</h4>
 
           {/* Social Media Icons */}
@@ -68,10 +68,10 @@ function Manage() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.3, ease: "easeOut", delay: 0.2 }}
         >
-          <h1>
+          <h2>
             <span style={{ color: "black", marginRight: "10px" }}>Message</span>
             <span style={{ color: "#293BB1" }}>from the MD</span>
-          </h1>
+          </h2>
           <p>
             RACE is driven by the ambition to unlock the full potential of the automotive
             industry. Today, the Indian automotive, agricultural, construction, and mining

@@ -56,10 +56,10 @@ function Int() {
         </motion.div>
       </div>
 
-      <h1 className="text-center">
+      <h2 className="text-center">
         <span style={{ color: "black" }}>Unlock Actionable </span>
         <span style={{ color: "#293BB1", marginLeft: "15px" }}>Insights with RACE</span>
-      </h1>
+      </h2>
 
       <p style={{ textAlign: "justify" }}>
         At RACE, we go beyond data—we decode your business challenges to deliver

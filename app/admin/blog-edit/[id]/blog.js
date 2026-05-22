@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import { useParams, useRouter } from "next/navigation";
-import "react-toastify/dist/ReactToastify.css";
 
 function EditBlog() {
   const [formData, setFormData] = useState({

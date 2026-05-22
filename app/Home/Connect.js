@@ -3,7 +3,7 @@
 import React from "react";
 import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import Image from "next/image";
-import "bootstrap/dist/css/bootstrap.min.css";
+// Bootstrap CSS comes from the global import in app/layout.js.
 
 function Connect() {
   const { scrollY } = useScroll();

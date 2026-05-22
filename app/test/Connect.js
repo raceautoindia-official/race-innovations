@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import 'bootstrap/dist/css/bootstrap.min.css';
+// Bootstrap CSS comes from the global import in app/layout.js.
 
 function Connect() {
   const imageRef = useRef(null);

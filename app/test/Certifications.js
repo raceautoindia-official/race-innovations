@@ -5,7 +5,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
 import Image from "next/image";
-import "bootstrap/dist/css/bootstrap.min.css";
+// Bootstrap CSS comes from the global import in app/layout.js.
 
 function Certifications() {
   const images = [

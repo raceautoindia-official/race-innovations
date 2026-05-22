@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 export default function EditReport() {
   const { id } = useParams(); // Get the report ID from the URL params

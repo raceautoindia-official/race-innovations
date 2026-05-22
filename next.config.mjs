@@ -90,6 +90,26 @@ const nextConfig = {
   compress: true,
   productionBrowserSourceMaps: false,
   poweredByHeader: false,
+
+  // Reduce the number of separate JS modules emitted for icon and UI
+  // libraries. Without this, every imported icon ships as its own module — the
+  // audit flagged that as "too many JavaScript files." This consolidates them
+  // into far fewer chunks at build time.
+  experimental: {
+    optimizePackageImports: [
+      "react-icons",
+      "react-icons/md",
+      "react-icons/fa",
+      "react-icons/fa6",
+      "react-icons/fi",
+      "react-icons/hi",
+      "react-icons/si",
+      "lucide-react",
+      "framer-motion",
+      "swiper",
+      "react-bootstrap",
+    ],
+  },
 };
 
 export default nextConfig;

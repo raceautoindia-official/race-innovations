@@ -11,25 +11,10 @@ const fadeInUpVariants = {
 function Message() {
   return (
     <div className="container mt-1">
-      <motion.h1
-        className="ms-4 d-flex justify-content-center"
-        style={{
-          fontSize: "clamp(2rem, 5vw, 3rem)",
-          whiteSpace: "nowrap",
-          width: "100%",
-        }}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
-        variants={fadeInUpVariants}
-        transition={{ duration: 1 }}
-      >
-
-      </motion.h1>
-      <h1 style={{ fontSize: "3rem", fontWeight: "bold" }}>
+      <h2 style={{ fontSize: "3rem", fontWeight: "bold" }}>
         <span style={{ color: "black", marginRight: "10px" }}>Message</span>
         <span style={{ color: "#293BB1" }}>from the MD</span>
-      </h1>
+      </h2>
 
       {/* Animated Paragraphs */}
       <motion.div

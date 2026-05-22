@@ -70,15 +70,19 @@ function Contact() {
           className="position-absolute top-0 start-0 w-100 h-100"
           style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
         />
-        <h1
+        {/* Same heading rendered for mobile — kept as h2 so the DOM has a
+            single H1 (the desktop banner above) regardless of viewport. Styled
+            inline to look identical to a hero heading. */}
+        <h2
           className="text-white position-relative"
           style={{
             fontSize: "clamp(1.5rem, 6vw, 3rem)",
             zIndex: 1,
+            fontWeight: 500,
           }}
         >
           Contact Us
-        </h1>
+        </h2>
       </motion.div>
     </>
   );
