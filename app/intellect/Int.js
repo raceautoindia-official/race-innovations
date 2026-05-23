@@ -56,7 +56,7 @@ function Int() {
         </motion.div>
       </div>
 
-      <h2 className="text-center">
+      <h2 className="text-center h1">
         <span style={{ color: "black" }}>Unlock Actionable </span>
         <span style={{ color: "#293BB1", marginLeft: "15px" }}>Insights with RACE</span>
       </h2>

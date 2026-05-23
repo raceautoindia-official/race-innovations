@@ -3,7 +3,10 @@
     "allow": [
       "Bash(rm -rf d:/race-innovations/app/\\\\[indexnowKey\\\\] && echo \"removed\")",
       "Bash(grep -v \":0$\")",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(git status *)",
+      "Bash(curl -s -o /tmp/home.html http://localhost:3001/)",
+      "Read(//tmp/**)"
     ],
     "additionalDirectories": [
       "d:\\race-innovations\\app\\[indexnowKey]"

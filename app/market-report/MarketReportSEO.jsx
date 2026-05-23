@@ -64,8 +64,20 @@ export default function MarketReportSEO() {
       },
     },
     about: [
-      "Automotive market reports",
+      "Automotive market",
+      "Automotive industry",
+      "Automotive industry reports",
+      "Automotive industry trends",
+      "Automotive industry growth",
+      "Automotive sector report",
+      "Automotive supply chain",
+      "Automotive logistics",
+      "Automotive components",
+      "Automobile report",
+      "Passenger vehicle",
+      "Future of automotive industry",
       "Automotive forecast reports",
+      "Vehicle sales forecast",
       "EV market intelligence",
       "OEM benchmarking",
       "Commercial vehicle market reports",
@@ -76,6 +88,37 @@ export default function MarketReportSEO() {
       "Construction equipment market reports",
       "Aftermarket reports",
       "Country automotive market reports",
+      "India vehicle market",
+      "India automotive market",
+      "Automotive industry India",
+      "Car sales data in India",
+      "Monthly sales of cars in India",
+      "China auto market",
+      "China automotive",
+      "Chinese automobile",
+      "China electric car",
+      "EV market in China",
+      "Chinese auto company",
+      "China car manufacturing industry",
+      "US auto industry",
+      "US auto market",
+      "Automotive industry United States",
+      "American car manufacturing",
+      "UK automakers",
+      "UK car dealers",
+      "Used cars in England",
+      "Australia vehicle sales",
+      "Cars for sale Australia",
+      "Second hand cars in Australia",
+      "Japan car dealers",
+      "Used car price in Japan",
+      "Germany car sales data",
+      "Brazil automotive industry",
+      "Brazil automotive market",
+      "Indonesia two wheeler market",
+      "Motorcycle market in Indonesia",
+      "Automotive in Thailand",
+      "South Africa automotive",
     ],
   };
 
@@ -237,6 +280,183 @@ export default function MarketReportSEO() {
                   markets, tractor markets, and construction equipment markets
                   — including aftermarket reports, segment outlook, and
                   country-level vehicle sales analysis.
+                </p>
+              </div>
+            </div>
+
+            {/* Country-wise markets we cover — visible content that ranks for
+                the country-specific automotive search queries (India vehicle,
+                US auto industry, China automotive, UK car dealers, Australia
+                vehicle sales, Brazil automotive market, Indonesia two-wheeler
+                market, etc.). */}
+            <h2
+              style={{
+                fontSize: "clamp(1.4rem, 2vw, 1.9rem)",
+                fontWeight: 800,
+                color: "#0b1220",
+                marginTop: "36px",
+                marginBottom: "8px",
+                lineHeight: 1.2,
+              }}
+            >
+              Country-wise Automotive Market Reports We Cover
+            </h2>
+            <p
+              style={{
+                color: "#475467",
+                fontSize: "1rem",
+                lineHeight: 1.65,
+                marginBottom: "20px",
+              }}
+            >
+              RACE Innovations publishes country-wise automotive industry
+              reports, vehicle sales data, OEM activity and forecast outlook
+              across major global automotive markets. Pick a region to explore
+              the automotive industry trends, automotive components landscape
+              and EV market developments unique to that geography.
+            </p>
+
+            <div className="row g-4">
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  India automotive market
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  India vehicle market data, automotive industry India trends,
+                  automobile sales data India, car sales data in India, monthly
+                  sales of cars in India and India automotive market reports
+                  covering passenger vehicles, commercial vehicles, two-wheelers
+                  and tractors.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  China automotive &amp; EV market
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  China auto market, China automotive, Chinese automobile,
+                  Chinese auto company and China car manufacturing industry
+                  coverage — plus dedicated EV market in China reports on China
+                  electric car adoption, China&rsquo;s EV and China&rsquo;s
+                  electric vehicles ecosystem and car production China outlook.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  US auto industry &amp; market
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  US auto industry, US auto market, US car sales, automotive in
+                  USA, automotive industry United States, automotive industry in
+                  America, American car manufacturing, car manufacturing in the
+                  US and automotive companies in the US — segment forecasts and
+                  OEM benchmarking.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  UK automakers &amp; car dealers
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  UK automakers, UK car dealers, car dealerships UK, used cars
+                  in England and UK commercial vehicle sales — UK automotive
+                  market reports covering OEM activity, vehicle sales trends and
+                  forecast outlook.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  Australia vehicle market
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  Australia vehicle sales, Aus car sales, cars for sale
+                  Australia, second hand cars in Australia and second hand cars
+                  Sydney — Australia automotive market reports with new vehicle
+                  registrations and OEM share insights.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  Japan automotive market
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  Japan car dealers, used car price in Japan and cars for sale
+                  in Japan for export — Japan automotive market reports with
+                  domestic sales, export trends and OEM positioning.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  Germany car sales &amp; OEM data
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  Germany car sales data, OEM market share, segment-level
+                  vehicle sales and Germany automotive market reports for
+                  passenger cars, commercial vehicles and EV adoption.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  Brazil automotive industry
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  Brazil automotive industry, Brazil automotive market and
+                  Brazil car sales by brand — Brazil automotive market reports
+                  covering OEM activity, vehicle sales and forecast outlook.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  Indonesia automotive market
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  Indonesia two wheeler market, motorcycle market in Indonesia
+                  and Indonesia car sales by brand — Indonesia automotive market
+                  reports covering passenger vehicles, two-wheelers and OEM
+                  performance.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  Thailand automotive market
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  Automotive in Thailand and Thailand auto — Thailand automotive
+                  market reports covering vehicle sales, manufacturing hub
+                  output and OEM activity across ASEAN.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  South Africa automotive market
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  South Africa automotive, South Africa auto and automobile
+                  South Africa — South Africa automotive market reports covering
+                  passenger vehicle and commercial vehicle activity, OEM share
+                  and export trends.
+                </p>
+              </div>
+
+              <div className="col-12 col-md-6 col-lg-4">
+                <h3 style={{ fontSize: "1.05rem", fontWeight: 800, color: "#1f2f63", marginBottom: "8px" }}>
+                  Automotive components &amp; supply chain
+                </h3>
+                <p style={{ color: "#475467", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                  Automotive components landscape, automotive supply chain
+                  research and automotive logistics insights — supporting
+                  Tier-1, Tier-2 suppliers, OEMs and investors with structured
+                  market intelligence and forecast.
                 </p>
               </div>
             </div>

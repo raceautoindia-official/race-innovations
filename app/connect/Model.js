@@ -88,7 +88,7 @@ function Model() {
         animate={isInView ? "visible" : "hidden"}
         variants={slideUpVariants}
       >
-        <h2 className="text-center">Features</h2>
+        <h2 className="text-center h1">Features</h2>
         <div className="row">
           {features.map((item, index) => (
             <motion.div
@@ -123,7 +123,7 @@ function Model() {
           variants={slideUpVariants}
           transition={{ delay: 0.4 }}
         >
-          <h2 className="text-center">
+          <h2 className="text-center h1">
             <span style={{ color: "black" }}>Operating</span>{" "}
             <span style={{ color: "#293BB1" }}>Model</span>
           </h2>

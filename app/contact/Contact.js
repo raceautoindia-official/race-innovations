@@ -71,14 +71,15 @@ function Contact() {
           style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
         />
         {/* Same heading rendered for mobile — kept as h2 so the DOM has a
-            single H1 (the desktop banner above) regardless of viewport. Styled
-            inline to look identical to a hero heading. */}
+            single H1 (the desktop banner above) regardless of viewport. Inline
+            styles match the original hero heading weight so mobile visually
+            looks identical to before the SEO H1-dedup. */}
         <h2
-          className="text-white position-relative"
+          className="text-white position-relative fw-bold"
           style={{
             fontSize: "clamp(1.5rem, 6vw, 3rem)",
             zIndex: 1,
-            fontWeight: 500,
+            margin: 0,
           }}
         >
           Contact Us

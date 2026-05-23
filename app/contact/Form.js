@@ -129,14 +129,14 @@ function Form() {
       variants={slideFromBottom}
       onViewportEnter={() => setHasAnimated(true)}
     >
-      <h1
-        className="mt-2"
+      <h2
+        className="mt-2 h1"
         style={{ fontSize: "clamp(1rem, 5vw, 3rem)", whiteSpace: "nowrap" }}
       >
         <span style={{ color: "black" }}>You can connect with</span>
         <br />
         <span style={{ color: "#293BB1" }}>us when you need help!</span>
-      </h1>
+      </h2>
 
       <form
         className="container bg-white p-3 rounded shadow"

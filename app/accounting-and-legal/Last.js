@@ -57,7 +57,7 @@ function Last() {
         variants={slideUpVariants}
         transition={{ duration: 0.4, delay: 0.1 }}
       >
-        <h2 className="text-center">
+        <h2 className="text-center h1">
           <span style={{ color: "black", marginRight: "10px" }}>Key</span>
           <span style={{ color: "#293BB1" }}>Accounting Services</span>
         </h2>

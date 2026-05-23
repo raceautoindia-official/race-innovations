@@ -37,7 +37,7 @@ function Manage() {
             alt="M.P. Rajesh Khanna"
           />
 
-          <h2 className="mt-3">M.P. Rajesh Khanna</h2>
+          <h2 className="mt-3 h1">M.P. Rajesh Khanna</h2>
           <h4>Managing Director</h4>
 
           {/* Social Media Icons */}
@@ -68,7 +68,7 @@ function Manage() {
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: 0.3, ease: "easeOut", delay: 0.2 }}
         >
-          <h2>
+          <h2 className="h1">
             <span style={{ color: "black", marginRight: "10px" }}>Message</span>
             <span style={{ color: "#293BB1" }}>from the MD</span>
           </h2>

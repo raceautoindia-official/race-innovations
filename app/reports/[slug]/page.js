@@ -131,8 +131,92 @@ export default async function ReportDetailPage({ params }) {
     samplePdf: report.samplePdf || report.sample_pdf || "",
   };
 
+  // Structured data — helps LLM search engines (ChatGPT search, Claude,
+  // Perplexity, Google AI Overviews) understand this is an authoritative
+  // automotive report so they can cite it when answering market questions.
+  const canonicalUrl = `https://raceinnovations.in/reports/${encodeURIComponent(
+    report.slug || ""
+  )}`;
+  const reportImageAbs =
+    imageSrc && imageSrc.startsWith("http")
+      ? imageSrc
+      : imageSrc
+      ? `https://raceinnovations.in${imageSrc.startsWith("/") ? "" : "/"}${imageSrc}`
+      : "https://raceinnovations.in/images/logo.jpg";
+
+  const reportJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Report",
+    headline: report.title,
+    name: report.title,
+    description:
+      report.metaDescription ||
+      report.heroDescription ||
+      report.description ||
+      `${report.title} — ${reportIsLbi ? "Location Based Intelligence report" : "Automotive market report"} published by RACE Innovations.`,
+    url: canonicalUrl,
+    image: reportImageAbs,
+    inLanguage: "en",
+    isAccessibleForFree: false,
+    datePublished: report.publishedAt || report.published_at || undefined,
+    dateModified:
+      report.updatedAt || report.updated_at || report.publishedAt || undefined,
+    author: {
+      "@type": "Organization",
+      name: "RACE Innovations",
+      url: "https://raceinnovations.in",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "RACE Innovations",
+      url: "https://raceinnovations.in",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://raceinnovations.in/images/logo.jpg",
+      },
+    },
+    about: [report.category, report.geography || report.region]
+      .filter(Boolean)
+      .map((s) => String(s)),
+    keywords: [
+      report.title,
+      report.category,
+      report.geography || report.region,
+      "automotive market report",
+      "automotive industry report",
+      "RACE Innovations",
+    ]
+      .filter(Boolean)
+      .join(", "),
+  };
+
+  const reportBreadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://raceinnovations.in" },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: reportIsLbi ? "LBI Reports" : "Market Reports",
+        item: `https://raceinnovations.in${browseAllHref}`,
+      },
+      { "@type": "ListItem", position: 3, name: report.title, item: canonicalUrl },
+    ],
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(reportJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(reportBreadcrumbJsonLd),
+        }}
+      />
       <PageViewTracker
         contentType="report"
         slug={report.slug}

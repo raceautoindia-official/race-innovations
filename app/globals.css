@@ -1,3 +1,14 @@
+/* Prevent sitewide horizontal scroll on mobile when any descendant element
+   sticks out past the viewport (long inline-styled headings, wide swiper
+   tracks, off-screen animations, etc.). Sets overflow-x clipping on the
+   document root + body — desktop is unaffected because nothing overflows
+   there. */
+html,
+body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 body.reader-open {
     overflow: hidden !important;
 }
