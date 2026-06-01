@@ -11,10 +11,17 @@ export async function generateMetadata({ params }) {
   const slug = decodeURIComponent(params.slug || "");
   const report = await getReportBySlug(slug);
   if (!report) return {};
+  const canonicalUrl = `https://raceinnovations.in/reports/${encodeURIComponent(
+    report.slug || slug
+  )}`;
 
   return {
     title: report.metaTitle || report.title,
     description: report.metaDescription || report.description,
+    robots: "index, follow",
+    alternates: {
+      canonical: canonicalUrl,
+    },
     keywords: [
       "AUTOMOTIVE INDUSTRY REPORTS",
       "AUTOMOTIVE INDUSTRY FORECAST",

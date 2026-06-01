@@ -6,7 +6,7 @@ export const metadata = {
     openGraph: {
       title: "Race Innovations - Transforming Industries",
       description: "Race Innovations provides cutting-edge technology solutions, AI-driven automation, and digital transformation services to businesses worldwide.",
-      url: "https://raceinnovation.com",
+      url: "https://raceinnovations.in",
       siteName: "Race Innovations",
       images: [
         {
@@ -23,10 +23,10 @@ export const metadata = {
       site: "@raceinnovation",
       title: "Race Innovations",
       description: "Join Race Innovations in pioneering AI, automation, and digital transformation on a global scale.",
-      images: ["https://raceinnovation.com/assets/og-image.jpg"],
+      images: ["https://raceinnovations.in/assets/og-image.jpg"],
     },
     alternates: {
-      canonical: "https://raceinnovation.com",
+      canonical: "https://raceinnovations.in",
     },
   };
 import About from "./Home.js";

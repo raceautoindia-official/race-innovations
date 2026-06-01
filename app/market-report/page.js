@@ -1,4 +1,5 @@
 import Flash from "./Home.js";
+import { getAllMarketReports } from "../../lib/report-service";
 
 export const metadata = {
   title:
@@ -198,7 +199,7 @@ export const metadata = {
       "Automotive Market Reports | Automotive Industry & Vehicle Sales Forecast",
     description:
       "Automotive industry reports, vehicle sales forecast, country-wise automotive markets — India, USA, China, UK, Australia, Brazil, Indonesia, Thailand, Germany, Japan — EV intelligence and OEM benchmarking from RACE Innovations.",
-    images: ["https://raceinnovation.com/assets/og-image.jpg"],
+    images: ["https://raceinnovations.in/assets/og-image.jpg"],
   },
 };
 
@@ -341,7 +342,24 @@ const faqJsonLd = {
   ],
 };
 
-export default function Page() {
+export default async function Page() {
+  const marketReports = await getAllMarketReports().catch(() => []);
+  const activeMarketReports = (marketReports || [])
+    .filter((r) => r?.isActive && r?.slug && r?.title)
+    .slice(0, 100);
+
+  const marketReportsItemListJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "RACE Innovations Market Reports",
+    itemListElement: activeMarketReports.map((report, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      url: `https://raceinnovations.in/reports/${encodeURIComponent(report.slug)}`,
+      name: report.title,
+    })),
+  };
+
   return (
     <>
       <script
@@ -355,6 +373,12 @@ export default function Page() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(marketReportsItemListJsonLd),
+        }}
       />
       <main>
         <Flash />
