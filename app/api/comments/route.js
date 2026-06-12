@@ -8,7 +8,8 @@ function json(data, status = 200) {
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
-    const post_id = searchParams.get("post_id");
+    // Accept both `post_id` (canonical) and `postId` (legacy client) param names.
+    const post_id = searchParams.get("post_id") ?? searchParams.get("postId");
     if (!post_id) return json({ comments: [] });
 
     const [rows] = await db.query(
@@ -30,17 +31,17 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const post_id = body?.post_id;
+    // Accept both `post_id` (canonical) and `postId` (legacy client) param names.
+    const post_id = body?.post_id ?? body?.postId;
     const email = String(body?.email || "").trim();
     const comment = String(body?.comment || "").trim();
 
     if (!post_id || !comment) return json({ error: "post_id and comment are required" }, 400);
-    if (!email) return json({ error: "email is required" }, 400);
 
     await db.query(
       `INSERT INTO comments (post_id, email, comment, created_at)
        VALUES (?, ?, ?, NOW())`,
-      [post_id, email, comment]
+      [post_id, email || null, comment]
     );
 
     return json({ ok: true }, 201);

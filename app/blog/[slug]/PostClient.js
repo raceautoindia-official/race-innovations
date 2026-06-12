@@ -199,8 +199,9 @@ export default function PostClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [post?.id]);
 
-  async function postComment(postId) {
+  async function postComment(postId, emailArg) {
     const text = String(commentText || "").trim();
+    const useEmail = String(emailArg ?? email ?? "").trim();
     if (!postId || !text) return;
 
     setPosting(true);
@@ -208,7 +209,7 @@ export default function PostClient() {
       const res = await fetch("/api/comments", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ post_id: postId, email, comment: text }),
+        body: JSON.stringify({ post_id: postId, email: useEmail, comment: text }),
       });
 
       const ct = res.headers.get("content-type") || "";
@@ -238,7 +239,24 @@ export default function PostClient() {
       return;
     }
 
-    await postComment(postId);
+    await postComment(postId, email);
+  }
+
+  // Called from the email modal once a valid email has been entered.
+  function confirmEmailAndPost(rawEmail) {
+    const v = String(rawEmail || "").trim();
+    if (!isValidEmail(v)) {
+      alert("Please enter a valid email");
+      return;
+    }
+    try {
+      localStorage.setItem(LS_EMAIL_KEY, v);
+    } catch {}
+    setEmail(v);
+    setEmailReady(true);
+    setShowEmailPrompt(false);
+    // Pass the email explicitly — state updates above aren't visible to this call yet.
+    postComment(post?.id, v);
   }
 
   function scrollToComments() {
@@ -541,13 +559,7 @@ export default function PostClient() {
                   onChange={(e) => setEmail(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      const v = String(email || "").trim();
-                      if (!isValidEmail(v)) return alert("Please enter a valid email");
-                      localStorage.setItem(LS_EMAIL_KEY, v);
-                      setEmail(v);
-                      setEmailReady(true);
-                      setShowEmailPrompt(false);
-                      setTimeout(() => handlePostClick(), 0);
+                      confirmEmailAndPost(email);
                     }
                   }}
                 />
@@ -558,15 +570,7 @@ export default function PostClient() {
                   </button>
                   <button
                     className="btn btn-dark"
-                    onClick={() => {
-                      const v = String(email || "").trim();
-                      if (!isValidEmail(v)) return alert("Please enter a valid email");
-                      localStorage.setItem(LS_EMAIL_KEY, v);
-                      setEmail(v);
-                      setEmailReady(true);
-                      setShowEmailPrompt(false);
-                      setTimeout(() => handlePostClick(), 0);
-                    }}
+                    onClick={() => confirmEmailAndPost(email)}
                   >
                     Continue
                   </button>
