@@ -1,24 +1,30 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import Pagination from "../components/common/Pagination";
 import ReportsCertifications from "../components/ReportsCertifications";
 
 const CATEGORY_OPTIONS = [
-  "Market Forecast Reports",
-  "Flash Reports",
   "EV Intelligence",
-  "Country Reports",
-  "OEM Benchmarking",
-  "Custom Research",
-  "Aftermarket Reports",
   "Commercial Vehicle Reports",
   "Passenger Vehicle Reports",
   "Two Wheeler Reports",
   "Three Wheeler Reports",
-  "Tractor Reports",
   "Construction Equipment Reports",
 ];
+
+// Categories that should never appear in the filter, even if older reports in
+// the DB are still tagged with them (requested removal — see site corrections).
+const REMOVED_CATEGORIES = new Set([
+  "Market Forecast Reports",
+  "Flash Reports",
+  "Country Reports",
+  "OEM Benchmarking",
+  "Custom Research",
+  "Aftermarket Reports",
+  "Tractor Reports",
+]);
 
 const COUNTRY_OPTIONS = [
   "India",
@@ -209,7 +215,12 @@ export default function HomePage() {
   }, []);
 
   const categories = useMemo(() => {
-    return ["All", ...uniqueClean([...CATEGORY_OPTIONS, ...rawCategoryValues])];
+    return [
+      "All",
+      ...uniqueClean([...CATEGORY_OPTIONS, ...rawCategoryValues]).filter(
+        (c) => !REMOVED_CATEGORIES.has(c)
+      ),
+    ];
   }, [rawCategoryValues]);
 
   const countries = useMemo(() => {
@@ -786,10 +797,9 @@ export default function HomePage() {
                           position: "relative",
                           background:
                             "linear-gradient(180deg, #eef2fb 0%, #edf2fb 100%)",
-                          height: "170px",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
+                          width: "100%",
+                          aspectRatio: "3 / 2",
+                          flexShrink: 0,
                           textAlign: "center",
                           overflow: "hidden",
                         }}
@@ -819,8 +829,9 @@ export default function HomePage() {
                             alt={report.title || "Report image"}
                             style={{
                               width: "100%",
-                              height: "170px",
+                              height: "100%",
                               objectFit: "cover",
+                              objectPosition: "center",
                               display: "block",
                             }}
                             onError={(e) => {
@@ -828,7 +839,13 @@ export default function HomePage() {
                             }}
                           />
                         ) : (
-                          <div style={{ maxWidth: "90%", padding: "20px 16px" }}>
+                          <div
+                            style={{
+                              maxWidth: "90%",
+                              margin: "0 auto",
+                              padding: "42px 16px",
+                            }}
+                          >
                             <div
                               style={{
                                 width: "82px",
@@ -939,7 +956,7 @@ export default function HomePage() {
                         )}
 
                         <div style={{ marginTop: "auto" }}>
-                          <a
+                          <Link
                             href={report.slug ? `/reports/${report.slug}` : "#"}
                             style={{
                               color: "#2f45bf",
@@ -949,7 +966,7 @@ export default function HomePage() {
                             }}
                           >
                             View Report →
-                          </a>
+                          </Link>
                         </div>
                       </div>
                     </div>

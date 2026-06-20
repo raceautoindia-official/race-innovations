@@ -27,7 +27,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
   const [search, setSearch] = useState("");
-  const [tab, setTab] = useState("reports"); // "reports" | "blogs"
+  const [tab, setTab] = useState("reports"); // "reports" | "blogs" | "flipbooks"
   const [sortKey, setSortKey] = useState("total_views");
   const [sortDir, setSortDir] = useState("desc");
 
@@ -57,7 +57,12 @@ export default function AnalyticsPage() {
 
   const rows = useMemo(() => {
     if (!data) return [];
-    const list = tab === "blogs" ? data.blogs || [] : data.reports || [];
+    const list =
+      tab === "blogs"
+        ? data.blogs || []
+        : tab === "flipbooks"
+        ? data.flipbooks || []
+        : data.reports || [];
     const q = search.trim().toLowerCase();
     const filtered = q
       ? list.filter(
@@ -119,8 +124,8 @@ export default function AnalyticsPage() {
         <div>
           <h1 className="h3 mb-1">Page Analytics</h1>
           <p className="text-muted mb-0 small">
-            View counts for reports and blog posts. Same-visitor refreshes
-            within 30 min are deduped; bots are excluded.
+            View counts for reports, blog posts and flipbooks. Same-visitor
+            refreshes within 30 min are deduped; bots are excluded.
           </p>
         </div>
         <button
@@ -205,6 +210,20 @@ export default function AnalyticsPage() {
                   ) : null}
                 </button>
               </li>
+              <li className="nav-item">
+                <button
+                  type="button"
+                  className={`nav-link ${tab === "flipbooks" ? "active" : ""}`}
+                  onClick={() => setTab("flipbooks")}
+                >
+                  Flipbooks
+                  {data?.flipbooks ? (
+                    <span className="badge bg-light text-dark border ms-2">
+                      {data.flipbooks.length}
+                    </span>
+                  ) : null}
+                </button>
+              </li>
             </ul>
 
             <input
@@ -247,6 +266,10 @@ export default function AnalyticsPage() {
                     const href =
                       tab === "blogs"
                         ? `/web-blog/${r.slug}`
+                        : tab === "flipbooks"
+                        ? r.slug === "corporate-profile"
+                          ? "/corporate-profile"
+                          : `/reports/flipbook/${r.slug}`
                         : `/reports/${r.slug}`;
                     return (
                       <tr key={`${r.content_type}-${r.slug}`}>

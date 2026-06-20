@@ -674,6 +674,7 @@ export default async function ReportDetailPage({ params }) {
                           width: "100%",
                           height: "320px",
                           objectFit: "cover",
+                          objectPosition: "center",
                           display: "block",
                           backgroundColor: "#eef2f8",
                         }}

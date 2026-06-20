@@ -9,6 +9,7 @@ import React, {
 } from "react";
 import HTMLFlipBook from "react-pageflip";
 import { pdfjs } from "react-pdf";
+import PageViewTracker from "../components/PageViewTracker";
 import "./video.css";
 import "core-js/full/promise/with-resolvers";
 
@@ -316,6 +317,8 @@ const StaticPDFViewer = () => {
       }`}
       onClick={handleReaderTap}
     >
+      <PageViewTracker contentType="flipbook" slug="corporate-profile" />
+
       <div className="flipbook-shell">
         <button
           type="button"

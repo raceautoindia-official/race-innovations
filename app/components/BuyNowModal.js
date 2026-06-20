@@ -33,6 +33,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
   });
 
   const amount = useMemo(() => getReportPrice(report), [report]);
+  const isFree = amount <= 0;
   const displayCurrency = "USD";
 
   if (!isOpen) return null;
@@ -65,6 +66,83 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
       });
     } catch (error) {
       console.error("Mark failed error:", error);
+    }
+  }
+
+  async function handleFreeReport() {
+    setStatus({ type: "", message: "" });
+
+    if (!form.customer_name || !form.customer_email || !form.customer_phone) {
+      setStatus({
+        type: "error",
+        message: "Name, email, and phone are required.",
+      });
+      return;
+    }
+
+    if (!isValidIndianMobile(form.customer_phone)) {
+      setStatus({ type: "error", message: INVALID_MOBILE_MESSAGE });
+      return;
+    }
+
+    const normalizedPhone = normalizeIndianMobile(form.customer_phone);
+
+    setLoading(true);
+    try {
+      const res = await fetch("/api/free-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          report_id: report?.id || "",
+          report_title: report?.title || "",
+          report_slug: report?.slug || "",
+          sample_pdf: report?.samplePdf || report?.sample_pdf || "",
+          customer_name: form.customer_name,
+          customer_email: form.customer_email,
+          customer_phone: normalizedPhone,
+          customer_company: form.customer_company,
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || "Unable to process free report.");
+      }
+
+      const reportPdf =
+        data?.sample_pdf ||
+        report?.samplePdf ||
+        report?.sample_pdf ||
+        "";
+
+      if (reportPdf) {
+        // Open the report in the flipbook reader so the visitor can read it
+        // right away. The confirmation email was already sent by the API.
+        setStatus({ type: "success", message: "Opening your report…" });
+        const readerUrl = `/sample-flipbook?pdf=${encodeURIComponent(
+          reportPdf
+        )}&title=${encodeURIComponent(report?.title || "Report")}`;
+        window.location.href = readerUrl;
+        return;
+      }
+
+      // No PDF on file — confirm on screen; the team will share it by email.
+      setStatus({
+        type: "success",
+        message:
+          "Success! We've emailed you a confirmation and will share the report shortly.",
+      });
+      setTimeout(() => {
+        onClose?.();
+      }, 1800);
+    } catch (error) {
+      setStatus({
+        type: "error",
+        message: error?.message || "Unable to process free report.",
+      });
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -274,7 +352,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
                   fontWeight: 800,
                 }}
               >
-                Buy Report
+                {isFree ? "Get Your Free Report" : "Buy Report"}
               </h3>
               <p
                 style={{
@@ -283,7 +361,9 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
                   fontSize: "15px",
                 }}
               >
-                Complete payment to purchase this report.
+                {isFree
+                  ? "Fill in your details to receive this report for free."
+                  : "Complete payment to purchase this report."}
               </p>
             </div>
 
@@ -343,7 +423,11 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
                 color: "#2f45bf",
               }}
             >
-              ${amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+              {isFree
+                ? "FREE"
+                : `$${amount.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                  })}`}
             </div>
           </div>
 
@@ -436,7 +520,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
 
             <button
               type="button"
-              onClick={handlePayment}
+              onClick={isFree ? handleFreeReport : handlePayment}
               disabled={loading}
               className="btn"
               style={{
@@ -449,7 +533,11 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
                 opacity: loading ? 0.85 : 1,
               }}
             >
-              {loading ? "Processing..." : "Proceed to Pay"}
+              {loading
+                ? "Processing..."
+                : isFree
+                ? "Get Free Report"
+                : "Proceed to Pay"}
             </button>
           </div>
         </div>

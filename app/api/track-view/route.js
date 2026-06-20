@@ -65,7 +65,7 @@ export async function POST(req) {
 
     if (
       !slug ||
-      !["report", "blog"].includes(contentType)
+      !["report", "blog", "flipbook"].includes(contentType)
     ) {
       return NextResponse.json(
         { success: false, message: "Invalid payload" },

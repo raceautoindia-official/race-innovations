@@ -493,12 +493,12 @@ export default function BlogPage() {
           .imageWrap {
             position: relative;
             width: 100%;
-            aspect-ratio: 16 / 10;
+            aspect-ratio: 16 / 9;
             overflow: hidden;
           }
 
           .featuredCard .imageWrap {
-            aspect-ratio: 16 / 8.2;
+            aspect-ratio: 16 / 9;
           }
 
           .newsImage {

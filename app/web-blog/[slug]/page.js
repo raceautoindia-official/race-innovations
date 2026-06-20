@@ -710,7 +710,7 @@ export default function BlogDetailsPage() {
 
         .articleImageWrap {
           width: 100%;
-          height: 420px;
+          aspect-ratio: 16 / 9;
           overflow: hidden;
           background: #dfe6f2;
           border-radius: 22px;

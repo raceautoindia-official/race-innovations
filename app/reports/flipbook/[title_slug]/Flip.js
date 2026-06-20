@@ -14,6 +14,7 @@ import {
 import { PDFDocument } from "pdf-lib";
 import { toast } from "react-toastify";
 import axios from "axios";
+import PageViewTracker from "../../../components/PageViewTracker";
 import "./flip.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -266,6 +267,10 @@ const prevPage = () => book.current?.pageFlip()?.flipPrev();
 
   return (
     <div className="flipbook-shell">
+      {title_slug ? (
+        <PageViewTracker contentType="flipbook" slug={String(title_slug)} />
+      ) : null}
+
       <div className="flipbook-topbar">
         <div className="flipbook-topbar-inner">
           <div>

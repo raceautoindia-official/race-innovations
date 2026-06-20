@@ -149,6 +149,7 @@ export async function GET(req) {
 
     const wantReports = !type || type === "report";
     const wantBlogs = !type || type === "blog";
+    const wantFlipbooks = !type || type === "flipbook";
 
     // Run each section independently — one failure must not 500 the whole
     // endpoint.
@@ -172,10 +173,21 @@ export async function GET(req) {
           })
       : Promise.resolve([]);
 
-    const [totals, reports, blogs] = await Promise.all([
+    // Flipbooks have no dedicated title table (slug is derived from the
+    // magazine title), so we report the raw aggregate and let the UI show the
+    // slug as the title.
+    const flipbooksPromise = wantFlipbooks
+      ? aggregateBySlug("flipbook", limit).catch((err) => {
+          console.error("flipbooks aggregate failed:", err);
+          return [];
+        })
+      : Promise.resolve([]);
+
+    const [totals, reports, blogs, flipbooks] = await Promise.all([
       totalsPromise,
       reportsPromise,
       blogsPromise,
+      flipbooksPromise,
     ]);
 
     return NextResponse.json({
@@ -183,6 +195,7 @@ export async function GET(req) {
       totals,
       reports,
       blogs,
+      flipbooks,
     });
   } catch (error) {
     console.error("analytics views error:", error);

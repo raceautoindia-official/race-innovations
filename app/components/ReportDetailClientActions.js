@@ -131,6 +131,14 @@ export default function ReportDetailClientActions({ report }) {
 
   const samplePdfUrl = report?.samplePdf || report?.sample_pdf || "";
 
+  // A report priced 0 (or with no price) is offered free — the modal collects
+  // details and opens the report instead of taking payment.
+  const reportPrice =
+    Number(
+      String(report?.price ?? report?.amount ?? 0).replace(/[^0-9.]/g, "")
+    ) || 0;
+  const isFreeReport = reportPrice <= 0;
+
   const flipbookPages = useMemo(
     () => Array.from({ length: numPages }, (_, i) => i + 1),
     [numPages]
@@ -342,7 +350,7 @@ export default function ReportDetailClientActions({ report }) {
             minHeight: "58px",
           }}
         >
-          Buy Now
+          {isFreeReport ? "Get Free Report" : "Buy Now"}
         </button>
 
         <button
@@ -415,7 +423,7 @@ export default function ReportDetailClientActions({ report }) {
                     fontSize: "15px",
                   }}
                 >
-                  Fill in your details to view the sample PDF for "{report?.title}".
+                  Fill in your details to view the sample PDF for &quot;{report?.title}&quot;.
                 </p>
               </div>
 
