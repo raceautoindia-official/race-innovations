@@ -111,26 +111,16 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
         throw new Error(data?.message || "Unable to process free report.");
       }
 
-      // The API returns the best available view link (admin flipbook URL, or a
-      // sample-reader fallback). Open it so the visitor can read the report
-      // now; the access-link email was already sent by the API.
-      const viewLink = data?.view_link || "";
-
-      if (viewLink) {
-        setStatus({ type: "success", message: "Opening your report…" });
-        window.location.href = viewLink;
-        return;
-      }
-
-      // Nothing to open — confirm on screen; the email covers delivery.
+      // Don't open the report on screen — the API has emailed the access link.
+      // Just confirm and close.
       setStatus({
         type: "success",
         message:
-          "Success! We've emailed you a link to access your free report.",
+          "Thank you! We've emailed you a link to access your free report.",
       });
       setTimeout(() => {
         onClose?.();
-      }, 1800);
+      }, 2200);
     } catch (error) {
       setStatus({
         type: "error",
