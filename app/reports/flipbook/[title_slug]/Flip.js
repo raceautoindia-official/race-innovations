@@ -93,6 +93,7 @@ export default function Flip() {
       viewport.height - topArea - bottomToolbar - stageVerticalPadding
     );
 
+    // Mobile shows a single page; desktop shows the two-page spread.
     if (isMobile) {
       const singleScale = Math.min(
         availableWidth / formatSize.width,
@@ -150,8 +151,21 @@ export default function Flip() {
     if (title_slug) fetchFlipbook();
   }, [title_slug]);
 
-const nextPage = () => book.current?.pageFlip()?.flipNext();
-const prevPage = () => book.current?.pageFlip()?.flipPrev();
+const nextPage = () => {
+  const pf = book.current?.pageFlip?.();
+  if (!pf) return;
+  // In portrait (mobile) single-page mode the animated flip is unreliable,
+  // so use the library's index-based turn there; keep the animated flip on
+  // desktop spreads.
+  if (isMobile) pf.turnToNextPage?.();
+  else pf.flipNext();
+};
+const prevPage = () => {
+  const pf = book.current?.pageFlip?.();
+  if (!pf) return;
+  if (isMobile) pf.turnToPrevPage?.();
+  else pf.flipPrev();
+};
 
   useEffect(() => {
     const handleKeyDown = (e) => {

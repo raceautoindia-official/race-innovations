@@ -268,14 +268,32 @@ const Navbar = () => {
                 </Link>
               </li>
 
-              <li className="nav-item">
+              <li
+                className="nav-item dropdown"
+                onMouseEnter={handleDesktopDropdownEnter}
+                onMouseLeave={handleDesktopDropdownLeave}
+              >
                 <Link
-                  className={`nav-link menus shining ${styles.navbarCustom}`}
+                  className={`nav-link dropdown-toggle menus shining ${styles.navbarCustom}`}
                   href="/it"
+                  id="itServicesDropdown"
+                  role="button"
                   style={{ color: "red", whiteSpace: "nowrap" }}
                 >
                   IT Services
                 </Link>
+                <ul className="dropdown-menu" aria-labelledby="itServicesDropdown">
+                  <li>
+                    <Link className="dropdown-item" href="/it">
+                      IT Services
+                    </Link>
+                  </li>
+                  <li>
+                    <Link className="dropdown-item" href="/it-products">
+                      IT Products
+                    </Link>
+                  </li>
+                </ul>
               </li>
 
               <li
@@ -553,6 +571,16 @@ const Navbar = () => {
                     style={{ color: "red" }}
                   >
                     IT Services
+                  </Link>
+                </li>
+
+                <li className="nav-item ms-5">
+                  <Link
+                    className={`nav-link menus shining ${styles.navbarCustom}`}
+                    href="/it-products"
+                    onClick={handleOffcanvasHide}
+                  >
+                    IT Products
                   </Link>
                 </li>
 

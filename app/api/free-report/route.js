@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import db from "../../../lib/db";
-import { sendEmail, sendBulkEmails } from "../../../lib/awsclient";
+import { sendEmail } from "../../../lib/awsclient";
 import {
   isValidIndianMobile,
   normalizeIndianMobile,
@@ -35,6 +35,7 @@ export async function POST(req) {
     const report_title = String(body?.report_title || "").trim();
     const report_slug = String(body?.report_slug || "").trim();
     const sample_pdf = String(body?.sample_pdf || "").trim();
+    const flipbook_url = String(body?.flipbook_url || "").trim();
     const customer_name = String(body?.customer_name || "").trim();
     const customer_email = String(body?.customer_email || "").trim();
     const customer_phone = String(body?.customer_phone || "").trim();
@@ -98,28 +99,40 @@ export async function POST(req) {
       // Don't block the user on a logging failure — continue to emails.
     }
 
-    // Notify the internal team.
-    try {
-      const adminHtml = `
-        <h3>New Free Report Request</h3>
-        <p><strong>Report:</strong> ${escapeHtml(report_title)}</p>
-        <p><strong>Slug:</strong> ${escapeHtml(report_slug || "-")}</p>
-        <p><strong>Name:</strong> ${escapeHtml(customer_name)}</p>
-        <p><strong>Company:</strong> ${escapeHtml(customer_company || "-")}</p>
-        <p><strong>Email:</strong> ${escapeHtml(customer_email)}</p>
-        <p><strong>Phone:</strong> ${escapeHtml(normalizedPhone)}</p>
-      `;
-      await sendBulkEmails(
-        ["kh@raceinnovations.in", "projecthead@raceinnovations.in"],
-        `Free Report Request: ${report_title}`,
-        adminHtml
-      );
-    } catch (adminErr) {
-      console.error("Free report admin email failed:", adminErr);
+    // Build the report view link. Prefer the admin-provided flipbook URL; fall
+    // back to the in-app sample reader, then the report page.
+    const SITE = (
+      process.env.NEXT_PUBLIC_SITE_URL || "https://raceinnovations.in"
+    ).replace(/\/+$/, "");
+    let viewLink = flipbook_url;
+    if (!viewLink) {
+      if (sample_pdf) {
+        viewLink = `${SITE}/sample-flipbook?pdf=${encodeURIComponent(
+          sample_pdf
+        )}&title=${encodeURIComponent(report_title)}`;
+      } else if (report_slug) {
+        viewLink = `${SITE}/reports/${report_slug}`;
+      }
     }
 
-    // Confirm to the customer.
+    // Single automated email to the customer with the free report access link.
     try {
+      const linkBlock = viewLink
+        ? `<p style="margin:0 0 8px 0;">
+             Your requested free report is now available to view. Please use the
+             link below to access the report:
+           </p>
+           <p style="margin:0 0 18px 0;">
+             <a href="${escapeHtml(viewLink)}" target="_blank"
+                style="display:inline-block;background:#2f45bf;color:#ffffff;
+                       text-decoration:none;font-weight:bold;padding:12px 22px;
+                       border-radius:10px;">View Free Report</a>
+           </p>`
+        : `<p style="margin:0 0 18px 0;">
+             Your requested free report will be shared at this email address
+             shortly.
+           </p>`;
+
       const html = `<!doctype html>
 <html>
   <body style="margin:0;padding:0;background:#ffffff;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
@@ -131,13 +144,17 @@ export async function POST(req) {
           </td></tr>
           <tr><td style="padding:24px 28px;font-size:15px;line-height:1.6;">
             <p style="margin:0 0 12px 0;">Dear ${escapeHtml(customer_name)},</p>
+            <p style="margin:0 0 12px 0;">Thank you for submitting your report request.</p>
+            <p style="margin:0 0 12px 0;"><strong>Report Title:</strong> ${escapeHtml(report_title)}</p>
+            ${linkBlock}
             <p style="margin:0 0 12px 0;">
-              Thank you for requesting the complimentary report
-              <strong>${escapeHtml(report_title)}</strong>.
+              This report provides useful insights on automotive market trends,
+              OEM performance, vehicle category analysis, and future growth
+              opportunities.
             </p>
             <p style="margin:0 0 12px 0;">
-              We have received your request and our team will share the report
-              at this email address shortly.
+              For more detailed automotive data, forecasts, or customized market
+              research support, feel free to contact us.
             </p>
             <p style="margin:24px 0 4px 0;">Thanks &amp; Regards,</p>
             <p style="margin:0 0 12px 0;font-weight:bold;">Team Race Innovations Pvt. Ltd.</p>
@@ -154,10 +171,10 @@ export async function POST(req) {
 
       await sendEmail({
         to: customer_email,
-        subject: `Your Free Report: ${report_title}`,
+        subject: "Your Requested Free Report Access Link",
         html,
         from: CONFIRMATION_FROM,
-        // No reply-to — this is a no-reply confirmation email.
+        // No reply-to — this is a no-reply automated email.
       });
     } catch (custErr) {
       console.error("Free report customer email failed:", custErr);
@@ -166,6 +183,7 @@ export async function POST(req) {
     return NextResponse.json({
       success: true,
       message: "Free report request received.",
+      view_link: viewLink || "",
       sample_pdf: sample_pdf || "",
     });
   } catch (error) {

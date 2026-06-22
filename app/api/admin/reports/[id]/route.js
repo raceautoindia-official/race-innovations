@@ -103,12 +103,19 @@ export async function PUT(req, { params }) {
           ? body.sample_pdf
           : existingReport.samplePdf || existingReport.sample_pdf || "";
 
+    const flipbookUrl =
+      body.flipbookUrl !== undefined
+        ? body.flipbookUrl
+        : body.flipbook_url !== undefined
+          ? body.flipbook_url
+          : existingReport.flipbookUrl || "";
+
     await db.query(
       `UPDATE reports SET
         slug = ?, title = ?, preview_title = ?, company = ?, description = ?, region = ?, report_type = ?, category = ?, country = ?, period = ?, badge = ?, accent = ?,
         price = ?, currency = ?, format_text = ?, license_text = ?, delivery_text = ?, pages = ?, geography = ?, forecast_text = ?, publisher = ?,
         meta_title = ?, meta_description = ?, hero_description = ?, why_this_report = ?,
-        sample_table_title = ?, sample_table_note = ?, sample_image = ?, sample_pdf = ?,
+        sample_table_title = ?, sample_table_note = ?, sample_image = ?, sample_pdf = ?, flipbook_url = ?,
         tags_json = ?, highlights_json = ?, sections_json = ?, buyers_json = ?, deliverables_json = ?, faqs_json = ?,
         is_featured = ?, is_active = ?, sort_order = ?,
         updated_at = NOW()
@@ -146,6 +153,7 @@ export async function PUT(req, { params }) {
         normalizeText(body.sampleTableNote, existingReport.sampleTableNote || ""),
         sampleImage ? String(sampleImage).trim() : null,
         samplePdf ? String(samplePdf).trim() : null,
+        flipbookUrl ? String(flipbookUrl).trim() : null,
 
         toJson(body.tags ?? existingReport.tags ?? [], []),
         toJson(body.highlights ?? existingReport.highlights ?? [], []),

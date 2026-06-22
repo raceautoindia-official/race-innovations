@@ -97,6 +97,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
           report_title: report?.title || "",
           report_slug: report?.slug || "",
           sample_pdf: report?.samplePdf || report?.sample_pdf || "",
+          flipbook_url: report?.flipbookUrl || report?.flipbook_url || "",
           customer_name: form.customer_name,
           customer_email: form.customer_email,
           customer_phone: normalizedPhone,
@@ -110,28 +111,22 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
         throw new Error(data?.message || "Unable to process free report.");
       }
 
-      const reportPdf =
-        data?.sample_pdf ||
-        report?.samplePdf ||
-        report?.sample_pdf ||
-        "";
+      // The API returns the best available view link (admin flipbook URL, or a
+      // sample-reader fallback). Open it so the visitor can read the report
+      // now; the access-link email was already sent by the API.
+      const viewLink = data?.view_link || "";
 
-      if (reportPdf) {
-        // Open the report in the flipbook reader so the visitor can read it
-        // right away. The confirmation email was already sent by the API.
+      if (viewLink) {
         setStatus({ type: "success", message: "Opening your report…" });
-        const readerUrl = `/sample-flipbook?pdf=${encodeURIComponent(
-          reportPdf
-        )}&title=${encodeURIComponent(report?.title || "Report")}`;
-        window.location.href = readerUrl;
+        window.location.href = viewLink;
         return;
       }
 
-      // No PDF on file — confirm on screen; the team will share it by email.
+      // Nothing to open — confirm on screen; the email covers delivery.
       setStatus({
         type: "success",
         message:
-          "Success! We've emailed you a confirmation and will share the report shortly.",
+          "Success! We've emailed you a link to access your free report.",
       });
       setTimeout(() => {
         onClose?.();

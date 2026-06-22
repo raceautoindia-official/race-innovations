@@ -122,16 +122,18 @@ export async function POST(req) {
     const sampleImage = normalizeText(body.sampleImage, "") || null;
     const samplePdf =
       normalizeText(body.samplePdf ?? body.sample_pdf, "") || null;
+    const flipbookUrl =
+      normalizeText(body.flipbookUrl ?? body.flipbook_url, "") || null;
 
     const [result] = await db.query(
       `INSERT INTO reports (
         slug, title, preview_title, company, description, region, report_type, category, country, period, badge, accent,
         price, currency, format_text, license_text, delivery_text, pages, geography, forecast_text, publisher,
         meta_title, meta_description, hero_description, why_this_report,
-        sample_table_title, sample_table_note, sample_image, sample_pdf, sample_table_json,
+        sample_table_title, sample_table_note, sample_image, sample_pdf, flipbook_url, sample_table_json,
         tags_json, highlights_json, sections_json, buyers_json, deliverables_json, faqs_json,
         is_featured, is_active, sort_order
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 
       [
         slug,
@@ -166,6 +168,7 @@ export async function POST(req) {
         sampleTableNote,
         sampleImage,
         samplePdf,
+        flipbookUrl,
         toJson(body.sampleTable || { columns: [], rows: [] }, {
           columns: [],
           rows: [],

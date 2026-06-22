@@ -76,6 +76,7 @@ const emptyForm = {
   sampleTableNote: "",
   sampleImage: "",
   samplePdf: "",
+  flipbookUrl: "",
 
   tagsText: "",
   highlightsText: "",
@@ -321,6 +322,7 @@ export default function AdminReportsPage() {
       sampleTableNote: report.sampleTableNote || report.sample_table_note || "",
       sampleImage: report.sampleImage || report.sample_image || "",
       samplePdf: report.samplePdf || report.sample_pdf || "",
+      flipbookUrl: report.flipbookUrl || report.flipbook_url || "",
 
       tagsText: Array.isArray(report.tags) ? report.tags.join("\n") : "",
       highlightsText: Array.isArray(report.highlights)
@@ -496,6 +498,7 @@ export default function AdminReportsPage() {
         sampleTableNote: form.sampleTableNote,
         sampleImage: form.sampleImage,
         samplePdf: form.samplePdf,
+        flipbookUrl: (form.flipbookUrl || "").trim(),
 
         tags: textToArray(form.tagsText),
         highlights: textToArray(form.highlightsText),
@@ -1172,6 +1175,24 @@ export default function AdminReportsPage() {
                         PDF uploaded: {form.samplePdf}
                       </div>
                     ) : null}
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">
+                      Flipbook URL <span className="text-muted">(optional)</span>
+                    </label>
+                    <input
+                      type="url"
+                      name="flipbookUrl"
+                      value={form.flipbookUrl}
+                      onChange={handleChange}
+                      placeholder="https://… link to the flipbook"
+                      className="form-control"
+                    />
+                    <div className="form-text">
+                      If set, free (₹0) reports email this link to the visitor so
+                      they can view the report.
+                    </div>
                   </div>
 
                   <div className="col-md-6">

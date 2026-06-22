@@ -465,6 +465,10 @@ export default function BlogPage() {
             display: grid;
             grid-template-columns: repeat(12, minmax(0, 1fr));
             gap: 22px;
+            /* Don't stretch cards to equal height — each card hugs its own
+               16/9 image so shorter cards don't show empty (ash) space below
+               the image. */
+            align-items: start;
           }
 
           .newsCard {

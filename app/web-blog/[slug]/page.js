@@ -710,17 +710,17 @@ export default function BlogDetailsPage() {
 
         .articleImageWrap {
           width: 100%;
-          aspect-ratio: 16 / 9;
           overflow: hidden;
           background: #dfe6f2;
           border-radius: 22px;
           margin-bottom: 26px;
         }
 
+        /* Detail view shows the FULL image (no crop) at its natural ratio —
+           full width, no letterbox gaps, height follows the image. */
         .articleImage {
           width: 100%;
-          height: 100%;
-          object-fit: cover;
+          height: auto;
           display: block;
         }
 
