@@ -309,6 +309,9 @@ export default function GlobalFloatingWidgets() {
           align-items: center;
           gap: 14px;
           padding-top: 12px;
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
         }
 
         .gfw-stack {
@@ -357,11 +360,10 @@ export default function GlobalFloatingWidgets() {
           color: ${BRAND};
           border: 1px solid rgba(47, 69, 191, 0.18);
           border-radius: 999px;
-          padding: 16px 28px;
-          min-height: 56px;
-          min-width: 190px;
-          font-size: 22px;
-          font-weight: 900;
+          padding: 10px 16px;
+          min-height: 42px;
+          font-size: 14px;
+          font-weight: 800;
           line-height: 1;
           letter-spacing: 0.2px;
           display: inline-flex;
@@ -431,10 +433,9 @@ export default function GlobalFloatingWidgets() {
             height: 42px;
           }
           .gfw-talk-label {
-            font-size: 17px;
-            padding: 12px 20px;
-            min-height: 48px;
-            min-width: 160px;
+            font-size: 13px;
+            padding: 9px 14px;
+            min-height: 40px;
           }
         }
 
