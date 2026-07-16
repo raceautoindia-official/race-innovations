@@ -10,6 +10,14 @@ import {
   FaWarehouse,
   FaFunnelDollar,
   FaChartLine,
+  FaShoppingCart,
+  FaPhotoVideo,
+  FaUserClock,
+  FaMagic,
+  FaNewspaper,
+  FaEnvelopeOpenText,
+  FaBriefcase,
+  FaHeadset,
   FaCheckCircle,
   FaArrowRight,
 } from "react-icons/fa";
@@ -57,12 +65,12 @@ const PRODUCTS = [
     features: ["Inventory & weight tracking", "Dispatch & logistics", "Real-time reports"],
   },
   {
-    key: "LeanSentra — Lead Generation",
+    key: "Lead Generation Tool",
     icon: FaFunnelDollar,
     accent: "#f59e0b",
     tagline: "Capture, qualify & convert leads",
     description:
-      "LeanSentra is a smart lead generation platform that captures prospects, scores and qualifies them, and moves them through your sales funnel with automated follow-ups.",
+      "A smart lead generation platform that captures prospects, scores and qualifies them, and moves them through your sales funnel with automated follow-ups.",
     features: ["Lead capture & scoring", "Sales funnel automation", "Conversion analytics"],
   },
   {
@@ -73,6 +81,78 @@ const PRODUCTS = [
     description:
       "Turn historical data into accurate forecasts — demand, sales and market trends — with interactive dashboards and scenario planning to guide better decisions.",
     features: ["Demand & sales forecasts", "Interactive dashboards", "Scenario planning"],
+  },
+  {
+    key: "Ecommerce Websites",
+    icon: FaShoppingCart,
+    accent: "#ef4444",
+    tagline: "Online stores that convert",
+    description:
+      "Full-featured e-commerce websites with product catalogs, secure checkout, payment gateways and order management — built to scale and drive sales.",
+    features: ["Product catalog & cart", "Secure payments", "Order management"],
+  },
+  {
+    key: "Media Platform",
+    icon: FaPhotoVideo,
+    accent: "#06b6d4",
+    tagline: "Stream, publish & engage",
+    description:
+      "A media platform to host, stream and publish video, audio and articles — with user accounts, playlists and a full content management system.",
+    features: ["Video & audio streaming", "Content management", "User engagement"],
+  },
+  {
+    key: "Attendance App",
+    icon: FaUserClock,
+    accent: "#14b8a6",
+    tagline: "Track attendance effortlessly",
+    description:
+      "Digital attendance and workforce tracking with check-in/out, geo and biometric options, leave and shift management, and automated reports.",
+    features: ["Check-in / check-out", "Leave & shift management", "Automated reports"],
+  },
+  {
+    key: "Skin & Hair Analyzer App",
+    icon: FaMagic,
+    accent: "#d946ef",
+    tagline: "AI skin & hair analysis",
+    description:
+      "An AI-powered app that analyzes skin and hair conditions from photos and recommends personalized care, products and routines — with progress tracking over time.",
+    features: ["AI photo analysis", "Personalized recommendations", "Progress tracking"],
+  },
+  {
+    key: "Newsletter App",
+    icon: FaNewspaper,
+    accent: "#f97316",
+    tagline: "Create & send newsletters",
+    description:
+      "Design, schedule and send beautiful newsletters to your subscribers — with drag-and-drop templates, subscriber lists and open/click tracking.",
+    features: ["Drag-and-drop templates", "Subscriber management", "Open & click tracking"],
+  },
+  {
+    key: "Email Marketing Tool",
+    icon: FaEnvelopeOpenText,
+    accent: "#3b82f6",
+    tagline: "Campaigns that reach inboxes",
+    description:
+      "Plan and run email marketing campaigns with automation, audience segmentation, A/B testing and detailed performance analytics.",
+    features: ["Automation & drip campaigns", "Audience segmentation", "Performance analytics"],
+  },
+  {
+    key: "Client Portfolio Websites",
+    icon: FaBriefcase,
+    accent: "#10b981",
+    tagline: "Showcase your work beautifully",
+    description:
+      "Elegant portfolio and business websites that showcase your work, services and brand — responsive, fast and SEO-friendly.",
+    features: ["Responsive design", "SEO-friendly", "Fast & modern"],
+  },
+  {
+    key: "IT Support Platform",
+    icon: FaHeadset,
+    accent: "#6366f1",
+    tagline: "Helpdesk & ticketing made simple",
+    description:
+      "A complete IT support and helpdesk platform with ticketing, SLA tracking, a knowledge base and multi-channel support to resolve issues faster.",
+    features: ["Ticketing & SLA tracking", "Knowledge base", "Multi-channel support"],
   },
 ];
 
