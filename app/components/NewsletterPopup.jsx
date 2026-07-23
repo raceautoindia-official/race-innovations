@@ -8,6 +8,16 @@ const COOKIE_KEY = "race_cookie_consent_v1";
 const COOKIE_EVENT = "race-cookie-consent-changed";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// True if the stored value was saved today (used to re-show once per day).
+function isSavedToday(raw) {
+  try {
+    const savedDay = String(JSON.parse(raw)?.savedAt || "").slice(0, 10);
+    return !!savedDay && savedDay === new Date().toISOString().slice(0, 10);
+  } catch {
+    return false;
+  }
+}
+
 export default function NewsletterPopup() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
@@ -26,7 +36,8 @@ export default function NewsletterPopup() {
       newsletterSaved = null;
     }
 
-    if (newsletterSaved) return;
+    // Already shown/handled today — don't show again until tomorrow.
+    if (newsletterSaved && isSavedToday(newsletterSaved)) return;
 
     let cookieSaved = null;
     try {
@@ -37,9 +48,9 @@ export default function NewsletterPopup() {
 
     let timer;
 
-    if (cookieSaved) {
-      // Cookie consent already handled in a previous session — show
-      // newsletter popup after a short delay.
+    if (cookieSaved && isSavedToday(cookieSaved)) {
+      // Cookie consent already handled today — show the newsletter popup
+      // after a short delay.
       timer = setTimeout(() => setVisible(true), 2000);
       return () => clearTimeout(timer);
     }

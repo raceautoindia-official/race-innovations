@@ -6,6 +6,17 @@ import { COOKIE_KEY } from "../../lib/cookieConsent";
 
 export const CONSENT_EVENT = "race-cookie-consent-changed";
 
+// True if the stored value was saved on the current day. Used to re-show the
+// banner once per day instead of only once ever.
+function isSavedToday(raw) {
+  try {
+    const savedDay = String(JSON.parse(raw)?.savedAt || "").slice(0, 10);
+    return !!savedDay && savedDay === new Date().toISOString().slice(0, 10);
+  } catch {
+    return false;
+  }
+}
+
 export default function CookieConsent() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
@@ -19,7 +30,8 @@ export default function CookieConsent() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(COOKIE_KEY);
-      if (!saved) {
+      // Show if never handled, or if the last choice was not made today.
+      if (!saved || !isSavedToday(saved)) {
         const timer = setTimeout(() => setVisible(true), 700);
         return () => clearTimeout(timer);
       }
@@ -75,7 +87,12 @@ export default function CookieConsent() {
     saveConsent("custom", preferences);
   }
 
-  if ((pathname || "").startsWith("/admin")) return null;
+  const path = pathname || "";
+  if (path.startsWith("/admin")) return null;
+  // Hide on the full-screen flipbook readers so the banner doesn't overlap them.
+  if (path.startsWith("/reports/flipbook") || path.startsWith("/sample-flipbook")) {
+    return null;
+  }
   if (!visible) return null;
 
   return (
