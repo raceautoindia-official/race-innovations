@@ -194,9 +194,16 @@ export default function GlobalFloatingWidgets() {
     },
   ];
 
-  // Hide all floating widgets on admin routes — they are only meant for
-  // the public website and clutter the admin panel.
-  if (isAdminRoute) return null;
+  // Hide all floating widgets on admin routes and on the full-screen flipbook
+  // readers — they clutter the admin panel and overlap the reader.
+  const path = pathname || "";
+  if (
+    isAdminRoute ||
+    path.startsWith("/reports/flipbook") ||
+    path.startsWith("/sample-flipbook")
+  ) {
+    return null;
+  }
 
   return (
     <>

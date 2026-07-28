@@ -5,7 +5,14 @@ import { usePathname } from "next/navigation";
 
 export default function ScrollToTopButton() {
   const pathname = usePathname();
-  if ((pathname || "").startsWith("/admin")) return null;
+  const path = pathname || "";
+  if (
+    path.startsWith("/admin") ||
+    path.startsWith("/reports/flipbook") ||
+    path.startsWith("/sample-flipbook")
+  ) {
+    return null;
+  }
 
   function scrollToTop() {
     if (typeof window === "undefined") return;
