@@ -78,11 +78,11 @@ export default function Flip() {
   const isMobile = viewport.width <= 768;
 
   const layout = useMemo(() => {
-    const sideButtonSpace = isMobile ? 0 : 140;
-    const horizontalPadding = isMobile ? 12 : 80;
-    const topArea = isMobile ? 105 : 120;
-    const bottomToolbar = isMobile ? 104 : 104;
-    const stageVerticalPadding = isMobile ? 12 : 36;
+    const sideButtonSpace = isMobile ? 0 : 136;
+    const horizontalPadding = isMobile ? 10 : 30;
+    const topArea = isMobile ? 96 : 92;
+    const bottomToolbar = isMobile ? 100 : 104;
+    const stageVerticalPadding = isMobile ? 10 : 16;
 
     const availableWidth = Math.max(
       220,

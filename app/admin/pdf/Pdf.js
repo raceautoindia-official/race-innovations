@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
 
-const FILES_PER_PAGE = 6;
+const PER_PAGE_OPTIONS = [12, 24, 48, 100];
 
 function getPaginationItems(currentPage, totalPages) {
   if (totalPages <= 1) return [];
@@ -61,6 +61,7 @@ export default function PdfUpload() {
   const editFileRef = useRef();
 
   const [searchText, setSearchText] = useState("");
+  const [perPage, setPerPage] = useState(12);
   const [currentPage, setCurrentPage] = useState(1);
 
   const fetchFiles = async () => {
@@ -78,7 +79,7 @@ export default function PdfUpload() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchText]);
+  }, [searchText, perPage]);
 
   const handleUpload = async () => {
     if (!selectedFile || !title.trim())
@@ -173,7 +174,7 @@ export default function PdfUpload() {
 
   const totalPages = Math.max(
     1,
-    Math.ceil(filteredFiles.length / FILES_PER_PAGE)
+    Math.ceil(filteredFiles.length / perPage)
   );
 
   useEffect(() => {
@@ -181,16 +182,13 @@ export default function PdfUpload() {
   }, [currentPage, totalPages]);
 
   const paginatedFiles = useMemo(() => {
-    const start = (currentPage - 1) * FILES_PER_PAGE;
-    return filteredFiles.slice(start, start + FILES_PER_PAGE);
-  }, [filteredFiles, currentPage]);
+    const start = (currentPage - 1) * perPage;
+    return filteredFiles.slice(start, start + perPage);
+  }, [filteredFiles, currentPage, perPage]);
 
   const showingFrom =
-    filteredFiles.length === 0 ? 0 : (currentPage - 1) * FILES_PER_PAGE + 1;
-  const showingTo = Math.min(
-    currentPage * FILES_PER_PAGE,
-    filteredFiles.length
-  );
+    filteredFiles.length === 0 ? 0 : (currentPage - 1) * perPage + 1;
+  const showingTo = Math.min(currentPage * perPage, filteredFiles.length);
 
   return (
     <div className="container-fluid px-3 px-md-4 py-4">
@@ -269,14 +267,30 @@ export default function PdfUpload() {
                   </div>
                 </div>
 
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search by title or format…"
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  style={{ maxWidth: "320px" }}
-                />
+                <div className="d-flex align-items-center gap-2 flex-wrap">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Search by title or format…"
+                    value={searchText}
+                    onChange={(e) => setSearchText(e.target.value)}
+                    style={{ maxWidth: "320px" }}
+                  />
+                  <select
+                    className="form-select"
+                    value={perPage}
+                    onChange={(e) => setPerPage(Number(e.target.value))}
+                    style={{ width: "auto" }}
+                    aria-label="Rows per page"
+                    title="Rows per page"
+                  >
+                    {PER_PAGE_OPTIONS.map((n) => (
+                      <option key={n} value={n}>
+                        {n} / page
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {filteredFiles.length === 0 ? (
