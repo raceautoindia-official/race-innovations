@@ -369,6 +369,103 @@ export default function ReportDetailClientActions({ report }) {
         </button>
       </div>
 
+      {/* Premium expert-consultation CTA */}
+      <div
+        style={{
+          marginTop: "16px",
+          background: "linear-gradient(180deg,#f7f9ff 0%,#eef2ff 100%)",
+          border: "1px solid #dbe3f7",
+          borderRadius: "18px",
+          padding: "20px",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "16px",
+            fontWeight: 800,
+            color: "#0e1b3d",
+            marginBottom: "6px",
+          }}
+        >
+          Need help choosing the right report?
+        </div>
+        <p
+          style={{
+            fontSize: "13.5px",
+            color: "#56607a",
+            lineHeight: 1.6,
+            margin: "0 0 14px",
+          }}
+        >
+          Our market intelligence experts can help you identify the most relevant
+          data, forecasts, and insights for your business needs.
+        </p>
+
+        <ul
+          style={{
+            listStyle: "none",
+            padding: 0,
+            margin: "0 0 18px",
+            display: "grid",
+            gap: "9px",
+          }}
+        >
+          {[
+            "One-to-One Expert Consultation",
+            "Custom Research Guidance",
+            "Report Demonstration",
+            "Enterprise Pricing & Licensing",
+          ].map((f) => (
+            <li
+              key={f}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "9px",
+                fontSize: "13.5px",
+                color: "#243454",
+                fontWeight: 600,
+              }}
+            >
+              <span
+                style={{
+                  color: "#16a34a",
+                  fontWeight: 900,
+                  flexShrink: 0,
+                }}
+              >
+                ✓
+              </span>
+              {f}
+            </li>
+          ))}
+        </ul>
+
+        <button
+          type="button"
+          onClick={() =>
+            window.open(
+              "https://meetings.raceinnovations.in/login",
+              "_blank",
+              "noopener,noreferrer"
+            )
+          }
+          style={{
+            width: "100%",
+            background: "#2f45bf",
+            color: "#ffffff",
+            border: "none",
+            borderRadius: "14px",
+            fontWeight: 800,
+            fontSize: "15px",
+            minHeight: "54px",
+            cursor: "pointer",
+          }}
+        >
+          Talk to an Expert
+        </button>
+      </div>
+
       {isBuyNowOpen && (
         <BuyNowModal
           report={report}

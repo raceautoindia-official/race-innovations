@@ -5,20 +5,98 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 const BRAND = "#2f45bf";
 const BRAND_DARK = "#2434a8";
 
-const CHAT_STORAGE_KEY = "race_report_assistant_messages_v2";
-const CHAT_OPEN_KEY = "race_report_assistant_open_v2";
-const CHAT_DRAFT_KEY = "race_report_assistant_draft_v2";
+const CHAT_STORAGE_KEY = "race_report_assistant_messages_v3";
+const CHAT_OPEN_KEY = "race_report_assistant_open_v3";
+const CHAT_DRAFT_KEY = "race_report_assistant_draft_v3";
+const CHAT_FLOW_KEY = "race_report_assistant_flow_v3";
+
+// ---- Guided assistant flow -------------------------------------------------
+const CATEGORIES = [
+  { key: "automotive", label: "Automotive Market Intelligence" },
+  { key: "engineering", label: "Engineering, Transport & Logistics Consultancy" },
+  { key: "ai", label: "AI Digital Solutions" },
+  { key: "marketEntry", label: "Market Entry & Business Consultation" },
+];
+
+// Contact details collected at the end of every flow.
+const CONTACT_STEPS = [
+  { key: "name", q: "Please share your name.", type: "text" },
+  { key: "email", q: "Your email address?", type: "text", validate: "email" },
+  { key: "phone", q: "Your phone / mobile number?", type: "text", validate: "phone" },
+];
+
+const FLOWS = {
+  automotive: {
+    title: "Automotive Market Intelligence",
+    cta: "Talk to an Automotive Expert",
+    intro: "Great choice! A few quick questions so we can help precisely.",
+    steps: [
+      { key: "need", q: "1) What do you need?", type: "choice", options: ["Market Report", "Sales Data", "Production Data", "Market Forecast", "Competitor Analysis", "Custom Research"] },
+      { key: "segment", q: "2) Which vehicle segment?", type: "choice", options: ["Passenger Vehicles", "Commercial Vehicles", "EVs", "2W / 3W", "Buses & Trucks", "Construction & Agri"] },
+      { key: "market", q: "3) Which market? (country / region)", type: "text" },
+      { key: "objective", q: "4) What is your objective?", type: "choice", options: ["Market Entry", "Investment", "Product Launch", "Business Expansion", "Competitor Benchmarking"] },
+      { key: "consultation", q: "5) Do you need expert consultation?", type: "choice", options: ["Yes", "No"] },
+      { key: "requirement", q: "6) Tell us about your requirement (brief description).", type: "text" },
+    ],
+  },
+  marketEntry: {
+    title: "Market Entry & Business Consultancy",
+    cta: "Talk to a Market Entry Expert",
+    intro:
+      "We help businesses expand into new markets with confidence — Market Entry Strategy, Go-to-Market Planning, Market Research & Feasibility, Distributor & Partner Search, Competitor Analysis and Regulatory Guidance.",
+    steps: [
+      { key: "need", q: "What do you need?", type: "choice", options: ["Market Entry", "Distributor Search", "Market Research", "Business Partner", "Go-to-Market Strategy"] },
+      { key: "market", q: "Target market? (country / region)", type: "text" },
+      { key: "requirement", q: "Tell us about your requirement (brief description).", type: "text" },
+    ],
+  },
+  engineering: {
+    title: "Engineering, Transport & Logistics Consultancy",
+    cta: "Connect with an Expert",
+    intro:
+      "Our experts help with engineering, transport and logistics consultancy. Let's connect you with the right expert — just a few contact details.",
+    steps: [],
+  },
+  ai: {
+    title: "AI Digital Solutions",
+    cta: "Connect with an Expert",
+    intro: "We build AI-powered digital solutions. Which one are you interested in?",
+    steps: [
+      { key: "solution", q: "Which solution?", type: "choice", options: ["AI-powered Website", "AI-powered CRM Tool", "Lead Generation Tool", "Salesforce CRM", "Payment Gateway Integration", "E-commerce Site Development", "Inventory & Asset Management", "Accounting & Finance Tool"] },
+      { key: "requirement", q: "Tell us briefly about your requirement.", type: "text" },
+    ],
+  },
+};
+
+function getFlowSteps(categoryKey) {
+  const f = FLOWS[categoryKey];
+  if (!f) return [];
+  return [...f.steps, ...CONTACT_STEPS];
+}
+
+const EMPTY_FLOW = { category: null, stepIndex: 0, answers: {} };
+
+function loadInitialFlow() {
+  if (typeof window === "undefined") return EMPTY_FLOW;
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(CHAT_FLOW_KEY) || "null");
+    return parsed && typeof parsed === "object" ? parsed : EMPTY_FLOW;
+  } catch {
+    return EMPTY_FLOW;
+  }
+}
 
 const DEFAULT_MESSAGES = [
   {
     id: 1,
     from: "bot",
     text:
-      "Hi! I'm the RACE Report Assistant. I can help with report availability, countries, categories, samples, subscriptions, pricing, and custom research. Please choose one of the quick questions or type your requirement.",
-    actions: [
-      { label: "Explore Reports", href: "/market-report" },
-      { label: "Contact Sales", href: "/contact" },
-    ],
+      "Hi! Welcome to RACE Innovations 👋 What can we help you with today?",
+    actions: CATEGORIES.map((c) => ({
+      label: c.label,
+      type: "flowStart",
+      value: c.key,
+    })),
   },
 ];
 
@@ -704,9 +782,8 @@ export default function ReportChatbot({
   };
   const [inputValue, setInputValue] = useState(() => loadInitialDraft());
   const [messages, setMessages] = useState(() => loadInitialMessages());
-  const [showQuick, setShowQuick] = useState(
-    () => loadInitialMessages().length <= 1
-  );
+  const [showQuick, setShowQuick] = useState(false);
+  const [flow, setFlow] = useState(() => loadInitialFlow());
 
   const messagesEndRef = useRef(null);
   const nextIdRef = useRef(
@@ -787,8 +864,149 @@ export default function ReportChatbot({
     setMessages((prev) => [...prev, { id, ...msg }]);
   }
 
+  // Persist the guided-flow state so a reload resumes where the user left off.
+  useEffect(() => {
+    if (!hydratedRef.current) return;
+    try {
+      window.localStorage.setItem(CHAT_FLOW_KEY, JSON.stringify(flow));
+    } catch {}
+  }, [flow]);
+
+  function postStepQuestion(steps, index) {
+    const step = steps[index];
+    if (!step) return;
+    const actions =
+      step.type === "choice"
+        ? step.options.map((o) => ({ label: o, type: "flowChoice", value: o }))
+        : undefined;
+    appendMessage({ from: "bot", text: step.q, actions });
+  }
+
+  function startFlow(categoryKey) {
+    const f = FLOWS[categoryKey];
+    if (!f) return;
+    const cat = CATEGORIES.find((c) => c.key === categoryKey);
+    appendMessage({ from: "user", text: cat?.label || f.title });
+    const steps = getFlowSteps(categoryKey);
+    setFlow({ category: categoryKey, stepIndex: 0, answers: {} });
+    setTimeout(() => {
+      if (f.intro) appendMessage({ from: "bot", text: f.intro });
+      postStepQuestion(steps, 0);
+    }, 320);
+  }
+
+  function recordAnswer(value) {
+    const category = flow.category;
+    if (!category) return;
+    const steps = getFlowSteps(category);
+    const step = steps[flow.stepIndex];
+    if (!step) return;
+
+    if (step.type === "text" && step.validate === "email") {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        appendMessage({ from: "user", text: value });
+        setTimeout(
+          () =>
+            appendMessage({
+              from: "bot",
+              text: "That doesn't look like a valid email. Please enter a valid email address.",
+            }),
+          250
+        );
+        return;
+      }
+    }
+    if (step.type === "text" && step.validate === "phone") {
+      if (!/^[+\d][\d\s\-()]{6,}$/.test(value)) {
+        appendMessage({ from: "user", text: value });
+        setTimeout(
+          () =>
+            appendMessage({
+              from: "bot",
+              text: "Please enter a valid phone / mobile number.",
+            }),
+          250
+        );
+        return;
+      }
+    }
+
+    appendMessage({ from: "user", text: value });
+    const answers = { ...flow.answers, [step.key]: value };
+    const nextIndex = flow.stepIndex + 1;
+
+    if (nextIndex < steps.length) {
+      setFlow({ ...flow, answers, stepIndex: nextIndex });
+      setTimeout(() => postStepQuestion(steps, nextIndex), 320);
+    } else {
+      const finalFlow = { ...flow, answers, stepIndex: nextIndex };
+      setFlow(finalFlow);
+      setTimeout(() => submitFlow(finalFlow), 320);
+    }
+  }
+
+  async function submitFlow(finalFlow) {
+    const f = FLOWS[finalFlow.category];
+    const answers = finalFlow.answers || {};
+    try {
+      await fetch("/api/chatbot-enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: finalFlow.category,
+          categoryTitle: f?.title || finalFlow.category,
+          answers,
+        }),
+      });
+    } catch {
+      /* best-effort — still confirm to the user */
+    }
+    appendMessage({
+      from: "bot",
+      text: `Thank you${answers.name ? ", " + answers.name : ""}! Your request has been received. Our team will reach out shortly.`,
+      actions: [
+        {
+          label: f?.cta || "Talk to an Expert",
+          href: "https://meetings.raceinnovations.in/login",
+        },
+        { label: "Start over", type: "flowReset" },
+      ],
+    });
+    setFlow(EMPTY_FLOW);
+  }
+
+  function sendCategories(prefix) {
+    appendMessage({
+      from: "bot",
+      text: prefix || "What can we help you with?",
+      actions: CATEGORIES.map((c) => ({
+        label: c.label,
+        type: "flowStart",
+        value: c.key,
+      })),
+    });
+  }
+
+  function resetFlowToStart() {
+    setFlow(EMPTY_FLOW);
+    sendCategories("What else can we help you with?");
+  }
+
   function handleAction(action) {
     if (!action) return;
+
+    if (action.type === "flowStart") {
+      startFlow(action.value);
+      return;
+    }
+    if (action.type === "flowChoice") {
+      recordAnswer(action.value);
+      return;
+    }
+    if (action.type === "flowReset") {
+      resetFlowToStart();
+      return;
+    }
 
     if (action.href) {
       if (typeof window !== "undefined") {
@@ -819,10 +1037,30 @@ export default function ReportChatbot({
   function sendMessage(rawText) {
     const text = String(rawText || "").trim();
     if (!text) return;
-    appendMessage({ from: "user", text });
-    setShowQuick(false);
     setInputValue("");
 
+    // If a guided flow is active and this step expects free text, capture it.
+    if (flow.category) {
+      const steps = getFlowSteps(flow.category);
+      const step = steps[flow.stepIndex];
+      if (step && step.type === "text") {
+        recordAnswer(text);
+        return;
+      }
+      appendMessage({ from: "user", text });
+      setTimeout(
+        () =>
+          appendMessage({
+            from: "bot",
+            text: "Please tap one of the options above to continue.",
+          }),
+        250
+      );
+      return;
+    }
+
+    // No active flow — answer report FAQs if we can, else guide to the menu.
+    appendMessage({ from: "user", text });
     const reply = buildBotReply(text, ctx);
     setTimeout(() => {
       appendMessage({ from: "bot", text: reply.text, actions: reply.actions });
@@ -978,7 +1216,7 @@ export default function ReportChatbot({
                   textOverflow: "ellipsis",
                 }}
               >
-                RACE Report Assistant
+                RACE Assistant
               </div>
               <div
                 style={{
@@ -1000,7 +1238,7 @@ export default function ReportChatbot({
                     boxShadow: "0 0 0 3px rgba(34,197,94,0.25)",
                   }}
                 />
-                Online • Automotive Market Reports
+                Online • Reports, Consulting & IT Solutions
               </div>
             </div>
 
