@@ -38,6 +38,88 @@ export default function GlobalFloatingWidgets() {
   const [isMobile, setIsMobile] = useState(false);
   const wrapperRef = useRef(null);
 
+  // "Talk to an Expert" consultation form
+  const [expertOpen, setExpertOpen] = useState(false);
+  const [expertSubmitting, setExpertSubmitting] = useState(false);
+  const [expertStatus, setExpertStatus] = useState({ type: "", message: "" });
+  const [expertForm, setExpertForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  function handleExpertChange(e) {
+    const { name, value } = e.target;
+    setExpertForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  async function handleExpertSubmit(e) {
+    e.preventDefault();
+    setExpertStatus({ type: "", message: "" });
+
+    const name = expertForm.name.trim();
+    const email = expertForm.email.trim();
+    const phone = expertForm.phone.trim();
+
+    if (!name || !email || !phone) {
+      setExpertStatus({
+        type: "error",
+        message: "Name, email and phone are required.",
+      });
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setExpertStatus({
+        type: "error",
+        message: "Please enter a valid email address.",
+      });
+      return;
+    }
+    if (!/^[+\d][\d\s\-()]{6,}$/.test(phone)) {
+      setExpertStatus({
+        type: "error",
+        message: "Please enter a valid phone number.",
+      });
+      return;
+    }
+
+    setExpertSubmitting(true);
+    try {
+      const res = await fetch("/api/chatbot-enquiry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: "expert-consultation",
+          categoryTitle: "Talk to an Expert",
+          answers: {
+            requirement: expertForm.message.trim(),
+            name,
+            email,
+            phone,
+          },
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.message || "Failed to submit. Please try again.");
+      }
+      setExpertStatus({
+        type: "success",
+        message: "Thank you! Our experts will reach out to you shortly.",
+      });
+      setExpertForm({ name: "", email: "", phone: "", message: "" });
+      setTimeout(() => setExpertOpen(false), 1800);
+    } catch (err) {
+      setExpertStatus({
+        type: "error",
+        message: err?.message || "Failed to submit.",
+      });
+    } finally {
+      setExpertSubmitting(false);
+    }
+  }
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mql = window.matchMedia("(max-width: 767px)");
@@ -245,13 +327,10 @@ export default function GlobalFloatingWidgets() {
             <button
               type="button"
               className="gfw-talk-label"
-              onClick={() =>
-                window.open(
-                  "https://meetings.raceinnovations.in/login",
-                  "_blank",
-                  "noopener,noreferrer"
-                )
-              }
+              onClick={() => {
+                setExpertStatus({ type: "", message: "" });
+                setExpertOpen(true);
+              }}
               aria-label="Talk to expert"
             >
               Talk to Expert
@@ -309,6 +388,168 @@ export default function GlobalFloatingWidgets() {
         onClose={() => setChatbotOpen(false)}
         hideLauncher
       />
+
+      {expertOpen && (
+        <div
+          onClick={() => !expertSubmitting && setExpertOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(15,23,42,0.55)",
+            zIndex: 10001,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "100%",
+              maxWidth: "480px",
+              backgroundColor: "#ffffff",
+              borderRadius: "22px",
+              padding: "26px",
+              maxHeight: "92vh",
+              overflowY: "auto",
+              boxShadow: "0 24px 70px rgba(15,23,42,0.22)",
+            }}
+          >
+            <div className="d-flex justify-content-between align-items-start mb-2">
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: "22px",
+                  fontWeight: 800,
+                  color: "#0e1b3d",
+                }}
+              >
+                Talk to an Expert
+              </h3>
+              <button
+                type="button"
+                onClick={() => !expertSubmitting && setExpertOpen(false)}
+                disabled={expertSubmitting}
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  fontSize: "28px",
+                  lineHeight: 1,
+                  color: "#6b7280",
+                  cursor: "pointer",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            <p style={{ color: "#56607a", fontSize: "14px", margin: "0 0 14px" }}>
+              Share your details and our experts will get back to you with
+              personalised guidance and recommendations.
+            </p>
+
+            {expertStatus.message ? (
+              <div
+                style={{
+                  marginBottom: "14px",
+                  padding: "10px 12px",
+                  borderRadius: "10px",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  color: expertStatus.type === "success" ? "#166534" : "#b91c1c",
+                  backgroundColor:
+                    expertStatus.type === "success" ? "#dcfce7" : "#fee2e2",
+                  border:
+                    expertStatus.type === "success"
+                      ? "1px solid #bbf7d0"
+                      : "1px solid #fecaca",
+                }}
+              >
+                {expertStatus.message}
+              </div>
+            ) : null}
+
+            <form onSubmit={handleExpertSubmit} className="row g-3">
+              <div className="col-12">
+                <label className="form-label fw-semibold">Name *</label>
+                <input
+                  className="form-control"
+                  name="name"
+                  value={expertForm.name}
+                  onChange={handleExpertChange}
+                  disabled={expertSubmitting}
+                  required
+                />
+              </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label fw-semibold">Email *</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  name="email"
+                  value={expertForm.email}
+                  onChange={handleExpertChange}
+                  disabled={expertSubmitting}
+                  required
+                />
+              </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label fw-semibold">Phone *</label>
+                <input
+                  type="tel"
+                  className="form-control"
+                  name="phone"
+                  value={expertForm.phone}
+                  onChange={handleExpertChange}
+                  disabled={expertSubmitting}
+                  inputMode="tel"
+                  required
+                />
+              </div>
+              <div className="col-12">
+                <label className="form-label fw-semibold">
+                  How can we help?{" "}
+                  <span className="text-muted">(optional)</span>
+                </label>
+                <textarea
+                  className="form-control"
+                  name="message"
+                  rows={3}
+                  value={expertForm.message}
+                  onChange={handleExpertChange}
+                  disabled={expertSubmitting}
+                  placeholder="Tell us briefly what you're looking for…"
+                />
+              </div>
+              <div className="col-12 d-flex justify-content-end gap-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => setExpertOpen(false)}
+                  disabled={expertSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn"
+                  disabled={expertSubmitting}
+                  style={{
+                    backgroundColor: BRAND,
+                    color: "#ffffff",
+                    fontWeight: 800,
+                    minWidth: "150px",
+                    borderRadius: "12px",
+                  }}
+                >
+                  {expertSubmitting ? "Submitting…" : "Submit"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <style>{`
         .gfw-wrapper {
