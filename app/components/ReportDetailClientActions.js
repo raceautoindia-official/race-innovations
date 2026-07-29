@@ -86,6 +86,8 @@ export default function ReportDetailClientActions({ report }) {
     name: "",
     email: "",
     phone: "",
+    preferredDate: "",
+    preferredTime: "",
     message: "",
   });
   const [numPages, setNumPages] = useState(0);
@@ -381,6 +383,13 @@ export default function ReportDetailClientActions({ report }) {
       });
       return;
     }
+    if (!expertForm.preferredDate || !expertForm.preferredTime) {
+      setExpertStatus({
+        type: "error",
+        message: "Please choose your preferred date and time to connect.",
+      });
+      return;
+    }
 
     setExpertSubmitting(true);
     try {
@@ -393,6 +402,8 @@ export default function ReportDetailClientActions({ report }) {
           answers: {
             report: report?.title || "",
             requirement: expertForm.message.trim(),
+            preferredDate: expertForm.preferredDate,
+            preferredTime: expertForm.preferredTime,
             name,
             email,
             phone,
@@ -405,9 +416,16 @@ export default function ReportDetailClientActions({ report }) {
       }
       setExpertStatus({
         type: "success",
-        message: "Thank you! Our experts will reach out to you shortly.",
+        message: "Thank you! Our experts will connect with you at your chosen time.",
       });
-      setExpertForm({ name: "", email: "", phone: "", message: "" });
+      setExpertForm({
+        name: "",
+        email: "",
+        phone: "",
+        preferredDate: "",
+        preferredTime: "",
+        message: "",
+      });
       setTimeout(() => setIsExpertOpen(false), 1800);
     } catch (err) {
       setExpertStatus({
@@ -564,9 +582,10 @@ export default function ReportDetailClientActions({ report }) {
             backgroundColor: "rgba(15,23,42,0.55)",
             zIndex: 9999,
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "center",
-            padding: "20px",
+            padding: "96px 20px 24px",
+            overflowY: "auto",
           }}
         >
           <div
@@ -577,7 +596,7 @@ export default function ReportDetailClientActions({ report }) {
               backgroundColor: "#ffffff",
               borderRadius: "22px",
               padding: "26px",
-              maxHeight: "92vh",
+              maxHeight: "calc(100vh - 120px)",
               overflowY: "auto",
               boxShadow: "0 24px 70px rgba(15,23,42,0.2)",
             }}
@@ -677,6 +696,45 @@ export default function ReportDetailClientActions({ report }) {
                   required
                 />
               </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label fw-semibold">
+                  Preferred Date *
+                </label>
+                <input
+                  type="date"
+                  className="form-control"
+                  name="preferredDate"
+                  value={expertForm.preferredDate}
+                  onChange={handleExpertChange}
+                  disabled={expertSubmitting}
+                  min={new Date().toISOString().split("T")[0]}
+                  required
+                />
+              </div>
+              <div className="col-12 col-md-6">
+                <label className="form-label fw-semibold">
+                  Preferred Time *
+                </label>
+                <select
+                  className="form-select"
+                  name="preferredTime"
+                  value={expertForm.preferredTime}
+                  onChange={handleExpertChange}
+                  disabled={expertSubmitting}
+                  required
+                >
+                  <option value="">Select a time slot</option>
+                  <option value="Morning (9:00 AM – 12:00 PM)">
+                    Morning (9:00 AM – 12:00 PM)
+                  </option>
+                  <option value="Afternoon (12:00 PM – 4:00 PM)">
+                    Afternoon (12:00 PM – 4:00 PM)
+                  </option>
+                  <option value="Evening (4:00 PM – 7:00 PM)">
+                    Evening (4:00 PM – 7:00 PM)
+                  </option>
+                </select>
+              </div>
               <div className="col-12">
                 <label className="form-label fw-semibold">
                   How can we help? <span className="text-muted">(optional)</span>
@@ -729,9 +787,10 @@ export default function ReportDetailClientActions({ report }) {
             backgroundColor: "rgba(15, 23, 42, 0.55)",
             zIndex: 9999,
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "center",
-            padding: "20px",
+            padding: "96px 20px 24px",
+            overflowY: "auto",
           }}
         >
           <div
@@ -743,7 +802,7 @@ export default function ReportDetailClientActions({ report }) {
               borderRadius: "22px",
               padding: "26px",
               boxShadow: "0 20px 60px rgba(15, 23, 42, 0.18)",
-              maxHeight: "90vh",
+              maxHeight: "calc(100vh - 120px)",
               overflowY: "auto",
             }}
           >

@@ -309,9 +309,10 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
           backgroundColor: "rgba(15, 23, 42, 0.58)",
           zIndex: 10000,
           display: "flex",
-          alignItems: "center",
+          alignItems: "flex-start",
           justifyContent: "center",
-          padding: "20px",
+          padding: "96px 20px 24px",
+          overflowY: "auto",
         }}
       >
         <div
@@ -323,7 +324,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
             borderRadius: "24px",
             padding: "28px",
             boxShadow: "0 24px 70px rgba(15, 23, 42, 0.18)",
-            maxHeight: "92vh",
+            maxHeight: "calc(100vh - 120px)",
             overflowY: "auto",
           }}
         >
