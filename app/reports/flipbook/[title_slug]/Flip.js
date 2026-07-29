@@ -93,23 +93,8 @@ export default function Flip() {
       viewport.height - topArea - bottomToolbar - stageVerticalPadding
     );
 
-    // Mobile shows a single page; desktop shows the two-page spread.
-    if (isMobile) {
-      const singleScale = Math.min(
-        availableWidth / formatSize.width,
-        availableHeight / formatSize.height
-      );
-
-      const singleWidth = Math.floor(formatSize.width * singleScale);
-      const singleHeight = Math.floor(formatSize.height * singleScale);
-
-      return {
-        width: singleWidth,
-        height: singleHeight,
-        usePortrait: true,
-      };
-    }
-
+    // Two-page spread with the flip animation on every device (same behavior
+    // as desktop) so the page turn is clearly visible on mobile too.
     const spreadScale = Math.min(
       availableWidth / (formatSize.width * 2),
       availableHeight / formatSize.height
@@ -151,21 +136,8 @@ export default function Flip() {
     if (title_slug) fetchFlipbook();
   }, [title_slug]);
 
-const nextPage = () => {
-  const pf = book.current?.pageFlip?.();
-  if (!pf) return;
-  // In portrait (mobile) single-page mode the animated flip is unreliable,
-  // so use the library's index-based turn there; keep the animated flip on
-  // desktop spreads.
-  if (isMobile) pf.turnToNextPage?.();
-  else pf.flipNext();
-};
-const prevPage = () => {
-  const pf = book.current?.pageFlip?.();
-  if (!pf) return;
-  if (isMobile) pf.turnToPrevPage?.();
-  else pf.flipPrev();
-};
+const nextPage = () => book.current?.pageFlip?.()?.flipNext();
+const prevPage = () => book.current?.pageFlip?.()?.flipPrev();
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -334,10 +306,10 @@ const prevPage = () => {
                   autoSize={false}
                   clickEventForward={false}
                   useMouseEvents={true}
-                  swipeDistance={30}
-                  showPageCorners={!isMobile}
-                  disableFlipByClick={true}
-                  flippingTime={850}
+                  swipeDistance={20}
+                  showPageCorners={true}
+                  disableFlipByClick={false}
+                  flippingTime={800}
                   onFlip={onFlip}
                   className="premium-flipbook"
                   style={{ margin: "0 auto" }}
