@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -24,7 +23,6 @@ function uniqueClean(values) {
 }
 
 export default function LbiReportsClient() {
-  const router = useRouter();
 
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -210,7 +208,13 @@ export default function LbiReportsClient() {
                   <button
                     type="button"
                     className="btn px-4 py-3"
-                    onClick={() => router.push("/contact")}
+                    onClick={() =>
+                      window.open(
+                        "https://meetings.raceinnovations.in/login",
+                        "_blank",
+                        "noopener,noreferrer"
+                      )
+                    }
                     style={{
                       backgroundColor: "#ffffff",
                       color: "#2f45bf",

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import ReportChatbot from "./ReportChatbot";
 
 const BRAND = "#2f45bf";
@@ -9,7 +9,6 @@ const WHATSAPP_GREEN = "#25d366";
 
 export default function GlobalFloatingWidgets() {
   const pathname = usePathname();
-  const router = useRouter();
   const isAdminRoute = (pathname || "").startsWith("/admin");
 
   const [expanded, setExpanded] = useState(false);
@@ -246,7 +245,13 @@ export default function GlobalFloatingWidgets() {
             <button
               type="button"
               className="gfw-talk-label"
-              onClick={() => router.push("/contact")}
+              onClick={() =>
+                window.open(
+                  "https://meetings.raceinnovations.in/login",
+                  "_blank",
+                  "noopener,noreferrer"
+                )
+              }
               aria-label="Talk to expert"
             >
               Talk to Expert
