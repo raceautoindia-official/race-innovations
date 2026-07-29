@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { sendEmail, sendBulkEmails } from "../../../lib/awsclient";
+import crypto from "crypto";
+import { sendEmail } from "../../../lib/awsclient";
+import db from "../../../lib/db";
 
 // All assistant enquiries go to the existing enquiry inbox(es).
 const TEAM_RECIPIENTS = [
@@ -11,6 +13,37 @@ const TEAM_RECIPIENTS = [
 const CONFIRMATION_FROM =
   process.env.REPORT_CONFIRMATION_FROM ||
   "Race Innovations <no-reply@raceautoindia.com>";
+
+const SITE = (
+  process.env.NEXT_PUBLIC_SITE_URL || "https://raceinnovations.in"
+).replace(/\/+$/, "");
+
+let meetingTableEnsured = false;
+async function ensureMeetingTable() {
+  if (meetingTableEnsured) return;
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS meeting_requests (
+        id BIGINT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255),
+        email VARCHAR(255),
+        phone VARCHAR(50),
+        category_title VARCHAR(255),
+        report VARCHAR(500),
+        requirement TEXT,
+        preferred_date VARCHAR(50),
+        preferred_time VARCHAR(100),
+        status VARCHAR(20) NOT NULL DEFAULT 'pending',
+        token VARCHAR(64),
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        responded_at DATETIME NULL
+      )
+    `);
+    meetingTableEnsured = true;
+  } catch (err) {
+    console.error("ensureMeetingTable failed:", err);
+  }
+}
 
 const FIELD_LABELS = {
   need: "What they need",
@@ -65,6 +98,33 @@ export async function POST(req) {
       );
     }
 
+    // Record the request so the team can approve / reject it from the email.
+    const token = crypto.randomBytes(24).toString("hex");
+    let requestId = null;
+    try {
+      await ensureMeetingTable();
+      const [result] = await db.query(
+        `INSERT INTO meeting_requests
+          (name, email, phone, category_title, report, requirement,
+           preferred_date, preferred_time, status, token)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+        [
+          name,
+          email,
+          phone,
+          categoryTitle,
+          String(answers.report || ""),
+          String(answers.requirement || ""),
+          String(answers.preferredDate || ""),
+          String(answers.preferredTime || ""),
+          token,
+        ]
+      );
+      requestId = result?.insertId || null;
+    } catch (dbErr) {
+      console.error("meeting_requests insert failed:", dbErr);
+    }
+
     // Order the answer rows sensibly (category-specific fields first, then contact).
     const order = [
       "need",
@@ -96,18 +156,31 @@ export async function POST(req) {
       )
       .join("");
 
+    const actionBlock = requestId
+      ? `<div style="margin-top:18px;">
+           <a href="${SITE}/api/meeting-response?id=${requestId}&token=${token}&action=approve"
+              style="display:inline-block;background:#16a34a;color:#ffffff;text-decoration:none;font-weight:bold;padding:11px 22px;border-radius:8px;margin-right:10px;">&#10003; Approve Meeting</a>
+           <a href="${SITE}/api/meeting-response?id=${requestId}&token=${token}&action=reject"
+              style="display:inline-block;background:#dc2626;color:#ffffff;text-decoration:none;font-weight:bold;padding:11px 22px;border-radius:8px;">&#10007; Reject</a>
+         </div>
+         <p style="font-size:12px;color:#6b7280;margin-top:8px;">Clicking a button records the decision and emails it to the customer.</p>`
+      : "";
+
     const adminHtml = `
       <h3 style="margin:0 0 10px;">New Assistant Enquiry — ${esc(categoryTitle)}</h3>
       <table style="border-collapse:collapse;font-size:14px;">${rows}</table>
+      ${actionBlock}
     `;
 
-    // Notify the team (existing enquiry recipients).
+    // Notify the team (sent via sendEmail so the Approve/Reject links are not
+    // rewritten by SES click-tracking).
     try {
-      await sendBulkEmails(
-        TEAM_RECIPIENTS,
-        `New Enquiry (${categoryTitle}) — ${name}`,
-        adminHtml
-      );
+      await sendEmail({
+        to: TEAM_RECIPIENTS,
+        subject: `New Enquiry (${categoryTitle}) — ${name}`,
+        html: adminHtml,
+        from: CONFIRMATION_FROM,
+      });
     } catch (adminErr) {
       console.error("chatbot-enquiry admin email failed:", adminErr);
     }
