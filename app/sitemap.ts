@@ -136,7 +136,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/intellect",
     "/connect",
     "/intellect/lbi",
-    "/logistics",
     "/it",
     "/accounting-and-legal",
     "/corporate-profile",

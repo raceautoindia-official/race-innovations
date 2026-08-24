@@ -28,11 +28,12 @@ const geistMono = Geist_Mono({
 export const metadata = {
   metadataBase: new URL("https://raceinnovations.in"),
   title: {
-    default: "RACE Innovations | Automotive Intelligence & ODC Reports",
+    default:
+      "RACE Innovations | Route Survey Reports for ODC (Over-Dimensional Cargo)",
     template: "%s | RACE Innovations",
   },
   description:
-    "Automotive market intelligence, EV insights, OEM benchmarking, ODC route survey & LBI reports from RACE Innovations.",
+    "Automotive market intelligence, EV insights, OEM benchmarking, ODC (Over-Dimensional Cargo) route survey & LBI reports from RACE Innovations.",
   applicationName: "RACE Innovations",
   authors: [{ name: "RACE Innovations" }],
   generator: "Next.js",
@@ -40,6 +41,8 @@ export const metadata = {
     "RACE Innovations",
     "automotive market intelligence",
     "ODC route survey",
+    "ODC route survey reports",
+    "over-dimensional cargo route survey",
     "LBI reports",
     "OEM benchmarking",
     "EV intelligence",

@@ -15,7 +15,6 @@ function getAreaOfInterestForPath(pathname) {
     return 'IT Services';
   }
   if (path.startsWith('/intellect/lbi')) return 'LBI Route Survey';
-  if (path.startsWith('/logistics')) return 'ODC Logistics';
   if (
     path.startsWith('/market-report') ||
     path.startsWith('/reports') ||
@@ -229,7 +228,7 @@ export default function EnquiryForm() {
                             <option>Investors</option>
                             <option>Funding</option>
                             <option>IT Services</option>
-                            <option>ODC Logistics</option>
+                            <option>ODC Route Survey</option>
                             <option>Corporate Profile</option>
                             <option>General Enquiry</option>
                           </select>

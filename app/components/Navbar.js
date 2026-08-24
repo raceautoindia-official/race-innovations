@@ -303,22 +303,16 @@ const Navbar = () => {
               >
                 <Link
                   className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
-                  href="/logistics"
+                  href="/intellect/lbi"
                   id="logisticsDropdown"
                   role="button"
                   aria-expanded="false"
                   style={{ color: "#293BB1", whiteSpace: "nowrap" }}
                 >
-                  ODC Logistics and Route Survey
+                  ODC Route Survey and Reports
                 </Link>
 
                 <ul className="dropdown-menu" aria-labelledby="logisticsDropdown">
-                  <li>
-                    <Link className="dropdown-item" href="/logistics">
-                      ODC Logistics
-                    </Link>
-                  </li>
-
                   <li>
                     <Link className="dropdown-item" href="/intellect/lbi">
                       LBI Route Survey
@@ -601,23 +595,13 @@ const Navbar = () => {
                       fontWeight: 700,
                     }}
                   >
-                    ODC Logistics and Route Survey
+                    ODC Route Survey and Reports
                   </button>
 
                   <ul
                     className="dropdown-menu mobile-dropdown-menu"
                     aria-labelledby="logisticsDropdownMobile"
                   >
-                    <li>
-                      <Link
-                        className="dropdown-item"
-                        href="/logistics"
-                        onClick={handleOffcanvasHide}
-                      >
-                        ODC Logistics
-                      </Link>
-                    </li>
-
                     <li>
                       <Link
                         className="dropdown-item"

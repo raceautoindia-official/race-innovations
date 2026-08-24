@@ -1227,7 +1227,7 @@ export default function HomePage() {
                     <option>Investors</option>
                     <option>Funding</option>
                     <option>IT Services</option>
-                    <option>ODC Logistics</option>
+                    <option>ODC Route Survey</option>
                   </select>
                 </div>
 

@@ -1,11 +1,12 @@
 import Home from "./Home/home.js";
 
 export const metadata = {
-  // Title: 58 chars (safely under Google's ~60-char truncation point).
-  title: "RACE Innovations | Automotive Intelligence & ODC Reports",
-  // Description: 156 chars (within Google's 150–160 sweet spot).
+  // Clarifies ODC = Over-Dimensional Cargo route survey reports.
+  title:
+    "RACE Innovations | Route Survey Reports for ODC (Over-Dimensional Cargo)",
+  // Description within Google's 150–160 sweet spot; spells out ODC for SEO.
   description:
-    "Automotive market intelligence, EV insights, OEM benchmarking, ODC route survey & LBI reports from RACE Innovations — research for OEMs & investors.",
+    "Automotive market intelligence, EV insights, OEM benchmarking, ODC (Over-Dimensional Cargo) route survey & LBI reports from RACE Innovations — research for OEMs & investors.",
   keywords: [
     "RACE Innovations",
     "automotive market intelligence",
@@ -15,6 +16,8 @@ export const metadata = {
     "OEM benchmarking",
     "vehicle sales forecast",
     "ODC route survey",
+    "ODC route survey reports",
+    "over-dimensional cargo route survey",
     "ODC route feasibility study",
     "LBI reports",
     "Location Based Intelligence",
@@ -28,7 +31,7 @@ export const metadata = {
   },
   openGraph: {
     title:
-      "RACE Innovations | Automotive Market Intelligence & ODC Logistics",
+      "RACE Innovations | Route Survey Reports for ODC (Over-Dimensional Cargo)",
     description:
       "Automotive market intelligence, ODC route survey, LBI reports, EV intelligence, OEM benchmarking and forecast insights from RACE Innovations.",
     url: "https://raceinnovations.in/",
