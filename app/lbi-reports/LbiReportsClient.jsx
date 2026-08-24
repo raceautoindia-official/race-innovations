@@ -3,6 +3,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import Pagination from "../components/common/Pagination";
+
+const REPORTS_PER_PAGE = 6;
 
 const LBI_CATEGORY_OPTIONS = [
   "ODC Route Feasibility Study Report",
@@ -31,6 +34,7 @@ export default function LbiReportsClient() {
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedRegion, setSelectedRegion] = useState("All");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [rawCategoryValues, setRawCategoryValues] = useState([]);
   const [rawRegionValues, setRawRegionValues] = useState([]);
@@ -127,6 +131,21 @@ export default function LbiReportsClient() {
       return matchCategory && matchRegion && matchSearch;
     });
   }, [reports, searchText, selectedCategory, selectedRegion]);
+
+  // Reset to the first page whenever the filters change.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchText, selectedCategory, selectedRegion]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredReports.length / REPORTS_PER_PAGE)
+  );
+
+  const paginatedReports = useMemo(() => {
+    const start = (currentPage - 1) * REPORTS_PER_PAGE;
+    return filteredReports.slice(start, start + REPORTS_PER_PAGE);
+  }, [filteredReports, currentPage]);
 
   return (
     <>
@@ -396,8 +415,9 @@ export default function LbiReportsClient() {
                 </p>
               </div>
             ) : (
-              <div className="row g-4 justify-content-center">
-                {filteredReports.map((report) => {
+              <>
+                <div className="row g-4 justify-content-center">
+                {paginatedReports.map((report) => {
                   const slug = report?.slug || "";
                   const href = slug ? `/lbi-reports/${slug}` : "#";
                   const cover =
@@ -552,7 +572,18 @@ export default function LbiReportsClient() {
                     </div>
                   );
                 })}
-              </div>
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="mt-5">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={(p) => setCurrentPage(p)}
+                    />
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
