@@ -1,4 +1,5 @@
 import React from "react";
+import FaqAccordion from "./FaqAccordion";
 
 const FAQS = [
   {
@@ -577,41 +578,7 @@ export default function MarketReportSEO() {
               Frequently Asked Questions
             </h2>
 
-            <div className="d-flex flex-column gap-3">
-              {FAQS.map((faq, idx) => (
-                <article
-                  key={idx}
-                  style={{
-                    border: "1px solid #e5ebf7",
-                    borderRadius: "14px",
-                    padding: "16px 18px",
-                    backgroundColor: "#fafbfe",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: "1.02rem",
-                      fontWeight: 800,
-                      color: "#1f2f63",
-                      marginBottom: "8px",
-                      lineHeight: 1.35,
-                    }}
-                  >
-                    {faq.question}
-                  </h3>
-                  <p
-                    style={{
-                      color: "#475467",
-                      fontSize: "0.96rem",
-                      lineHeight: 1.65,
-                      margin: 0,
-                    }}
-                  >
-                    {faq.answer}
-                  </p>
-                </article>
-              ))}
-            </div>
+            <FaqAccordion faqs={FAQS} />
           </div>
         </div>
       </div>
