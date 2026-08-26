@@ -295,53 +295,6 @@ const breadcrumbJsonLd = {
   ],
 };
 
-const faqJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: [
-    {
-      "@type": "Question",
-      name: "What are automotive market reports?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Automotive market reports provide insights into vehicle sales, market trends, OEM performance, forecast outlook, EV adoption, powertrain shifts and segment-wise automotive industry developments.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Does RACE Innovations provide country-wise automotive market reports?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Yes, RACE Innovations provides country-wise automotive market reports covering key global markets, vehicle segments, OEM performance and forecast insights for India, USA, Germany, Japan, Brazil, South Africa, Vietnam, Indonesia, Thailand, Malaysia, Mexico and more.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Does RACE Innovations provide automotive forecast reports?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Yes, RACE Innovations provides automotive forecast reports with forward-looking market insights, vehicle sales forecasts, segment outlooks and OEM-level trend analysis.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Does RACE Innovations cover EV market intelligence?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Yes. RACE EV intelligence reports cover electric vehicle adoption, OEM EV portfolios, alternative powertrain shifts, charging infrastructure and country-wise EV market forecast.",
-      },
-    },
-    {
-      "@type": "Question",
-      name: "Are commercial vehicle and passenger vehicle reports available?",
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: "Yes. Commercial vehicle market reports cover trucks, buses and LCVs while passenger vehicle market reports cover SUVs, sedans and hatchbacks with segment-level forecasts and OEM activity.",
-      },
-    },
-  ],
-};
-
 export default async function Page() {
   const marketReports = await getAllMarketReports().catch(() => []);
   const activeMarketReports = (marketReports || [])
@@ -369,10 +322,6 @@ export default async function Page() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       <script
         type="application/ld+json"

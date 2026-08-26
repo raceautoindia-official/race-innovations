@@ -20,6 +20,7 @@ import {
   FaHeadset,
   FaCheckCircle,
   FaArrowRight,
+  FaChevronDown,
 } from "react-icons/fa";
 import {
   isValidIndianMobile,
@@ -156,6 +157,124 @@ const PRODUCTS = [
   },
 ];
 
+const IT_FAQS = [
+  {
+    question: "What IT products and software solutions does RACE Innovations offer?",
+    answer:
+      "RACE Innovations offers a range of business software products including a Video Calling App, Project Management App, Mobile App Development, Bale Management App, Lead Generation Tool, Forecasting Tool, E-commerce Websites, Media Platform, Attendance App, Skin & Hair Analyzer App, Newsletter App, Email Marketing Tool, Client Portfolio Websites and IT Support Platform.",
+  },
+  {
+    question: "What is the RACE Innovations Project Management App?",
+    answer:
+      "The Project Management App helps businesses plan, organize and monitor projects from one platform. Teams can create tasks, assign responsibilities, manage timelines, collaborate with team members and track project progress to improve on-time delivery.",
+  },
+  {
+    question: "How can a project management tool improve team productivity?",
+    answer:
+      "A project management tool provides better visibility over tasks, owners, deadlines and project progress. It helps teams coordinate work, reduce missed deadlines, improve collaboration and manage multiple projects through centralized dashboards, task boards and timelines.",
+  },
+  {
+    question:
+      "What is the Attendance App and how does it help businesses manage employees?",
+    answer:
+      "The Attendance App is a digital attendance and workforce management solution that supports employee check-in and check-out, location-based attendance, biometric options, leave management, shift management and automated attendance reporting.",
+  },
+  {
+    question:
+      "Can the Attendance App support field employees and multiple work locations?",
+    answer:
+      "Yes. The Attendance App can support businesses managing employees across offices, project sites and field locations through digital attendance and location-based workforce tracking. This helps organizations improve attendance visibility and reduce manual attendance processes.",
+  },
+  {
+    question: "What features are available in the Video Calling App?",
+    answer:
+      "The Video Calling App provides secure online video communication for teams and businesses. It supports HD group video calls, screen sharing and secure communication, making it suitable for remote meetings, customer support, internal collaboration and online discussions.",
+  },
+  {
+    question: "Does RACE Innovations develop custom Android and iOS mobile apps?",
+    answer:
+      "Yes. RACE Innovations provides custom mobile app development for Android and iOS. The service can cover application planning, UI/UX design, development, launch and ongoing support, with applications tailored to specific business processes and requirements.",
+  },
+  {
+    question: "What is the Lead Generation Tool and how does it help sales teams?",
+    answer:
+      "The Lead Generation Tool helps businesses capture, qualify and manage potential customers through the sales funnel. It supports lead capture, lead scoring, automated follow-ups, sales funnel automation and conversion analytics to help sales teams identify and convert better opportunities.",
+  },
+  {
+    question: "Can the Lead Generation Tool automate sales follow-ups?",
+    answer:
+      "Yes. The Lead Generation Tool supports automated follow-ups and sales funnel automation. This can help businesses maintain consistent communication with prospects, manage larger lead volumes and reduce the risk of potential opportunities being missed.",
+  },
+  {
+    question: "What does the Forecasting Tool do?",
+    answer:
+      "The Forecasting Tool uses historical business data to generate demand, sales and market forecasts. It includes interactive dashboards and scenario-planning capabilities that can help businesses evaluate possible future outcomes and make more informed planning decisions.",
+  },
+  {
+    question: "Can the Forecasting Tool be used for sales and demand forecasting?",
+    answer:
+      "Yes. The Forecasting Tool is designed to support sales forecasting, demand forecasting and market trend analysis. Businesses can use historical information, dashboards and scenario planning to support budgeting, inventory planning, capacity planning and strategic decision-making.",
+  },
+  {
+    question: "What is the Bale Management App?",
+    answer:
+      "The Bale Management App is an inventory and logistics management solution designed to track bales from storage through dispatch. It can monitor weight, grade, storage location, stock levels and logistics activity while providing real-time operational reports.",
+  },
+  {
+    question: "Does RACE Innovations develop e-commerce websites?",
+    answer:
+      "Yes. RACE Innovations develops full-featured e-commerce websites with product catalogues, shopping carts, secure checkout, payment gateway integration and order management. The websites can be designed to support scalable online sales operations.",
+  },
+  {
+    question: "What is the Media Platform offered by RACE Innovations?",
+    answer:
+      "The Media Platform enables organizations to host, publish and manage video, audio and article content. It can include content management, user accounts, playlists, streaming capabilities and features designed to improve audience engagement.",
+  },
+  {
+    question: "What is the AI-powered Skin & Hair Analyzer App?",
+    answer:
+      "The Skin & Hair Analyzer App uses AI-powered photo analysis to assess skin and hair conditions. It can provide personalized care, product and routine recommendations while allowing users to monitor progress over time.",
+  },
+  {
+    question: "What is the Newsletter App and what features does it provide?",
+    answer:
+      "The Newsletter App helps businesses create, schedule and distribute newsletters to subscriber lists. It includes drag-and-drop newsletter templates, subscriber management and open-and-click tracking to help organizations manage and measure newsletter communication.",
+  },
+  {
+    question:
+      "What is the Email Marketing Tool and how does it support marketing campaigns?",
+    answer:
+      "The Email Marketing Tool helps businesses plan, automate and monitor email campaigns. It supports audience segmentation, automated and drip campaigns, A/B testing and campaign performance analytics to help improve customer communication and marketing effectiveness.",
+  },
+  {
+    question: "Does RACE Innovations build SEO-friendly business and portfolio websites?",
+    answer:
+      "Yes. RACE Innovations develops responsive, fast and SEO-friendly portfolio and business websites designed to showcase company services, projects, capabilities and brand information while improving the organization's professional online presence.",
+  },
+  {
+    question:
+      "What is the IT Support Platform and how does it improve helpdesk management?",
+    answer:
+      "The IT Support Platform is a helpdesk and ticket-management solution designed to help organizations manage technical and customer-support requests. It includes ticketing, SLA tracking, a knowledge base and multi-channel support to help teams resolve issues more efficiently.",
+  },
+  {
+    question:
+      "Can RACE Innovations customize software products according to our business requirements?",
+    answer:
+      "Yes. RACE Innovations develops software solutions tailored to how businesses operate. Depending on the requirement, solutions can be customized around workflows, users, dashboards, integrations, reporting and operational processes. Businesses can also request a demo or submit an enquiry to discuss their specific software requirements.",
+  },
+];
+
+const itFaqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: IT_FAQS.map((f) => ({
+    "@type": "Question",
+    name: f.question,
+    acceptedAnswer: { "@type": "Answer", text: f.answer },
+  })),
+};
+
 const CONTACT_MODES = ["Email", "Phone", "WhatsApp"];
 
 const EMPTY_FORM = {
@@ -172,6 +291,7 @@ export default function ItProducts() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [status, setStatus] = useState({ type: "", message: "" });
+  const [openFaq, setOpenFaq] = useState(0);
   const formRef = useRef(null);
 
   function handleChange(e) {
@@ -249,6 +369,10 @@ export default function ItProducts() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itFaqJsonLd) }}
+      />
       <Navbar />
 
       <div className="main-content itp-page">
@@ -317,6 +441,37 @@ export default function ItProducts() {
               </article>
             );
           })}
+        </section>
+
+        {/* FAQ */}
+        <section className="itp-faq" aria-label="IT products frequently asked questions">
+          <div className="itp-section-head">
+            <span className="itp-kicker">FAQs</span>
+            <h2 className="itp-section-title">Frequently Asked Questions</h2>
+            <span className="itp-section-rule" aria-hidden="true" />
+          </div>
+
+          <div className="itp-faq-list">
+            {IT_FAQS.map((faq, idx) => {
+              const open = openFaq === idx;
+              return (
+                <div className={`itp-faq-item${open ? " open" : ""}`} key={idx}>
+                  <button
+                    type="button"
+                    className="itp-faq-q"
+                    onClick={() => setOpenFaq(open ? -1 : idx)}
+                    aria-expanded={open}
+                  >
+                    <span>{faq.question}</span>
+                    <FaChevronDown className="itp-faq-chev" aria-hidden="true" />
+                  </button>
+                  <div className="itp-faq-a">
+                    <p>{faq.answer}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </section>
 
         {/* Enquiry form */}
@@ -742,6 +897,69 @@ export default function ItProducts() {
           opacity: 0.7;
           cursor: default;
           transform: none;
+        }
+
+        /* FAQ */
+        .itp-faq {
+          margin-top: 56px;
+        }
+        .itp-faq-list {
+          max-width: 860px;
+          margin: 34px auto 0;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .itp-faq-item {
+          background: #fff;
+          border: 1px solid #e6ebf5;
+          border-radius: 16px;
+          overflow: hidden;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .itp-faq-item.open {
+          border-color: #c2ccf3;
+          box-shadow: 0 10px 26px rgba(20, 30, 70, 0.06);
+        }
+        .itp-faq-q {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          text-align: left;
+          background: transparent;
+          border: none;
+          padding: 18px 22px;
+          cursor: pointer;
+          font-size: 15.5px;
+          font-weight: 700;
+          color: #0e1b3d;
+          line-height: 1.4;
+        }
+        .itp-faq-chev {
+          flex-shrink: 0;
+          color: #2f45bf;
+          font-size: 14px;
+          transition: transform 0.25s ease;
+        }
+        .itp-faq-item.open .itp-faq-chev {
+          transform: rotate(180deg);
+        }
+        .itp-faq-a {
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s ease;
+        }
+        .itp-faq-item.open .itp-faq-a {
+          max-height: 520px;
+        }
+        .itp-faq-a p {
+          margin: 0;
+          padding: 0 22px 20px;
+          color: #56607a;
+          font-size: 14.5px;
+          line-height: 1.7;
         }
 
         @media (max-width: 992px) {
