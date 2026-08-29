@@ -119,17 +119,17 @@ export async function POST(req) {
     try {
       const linkBlock = viewLink
         ? `<p style="margin:0 0 8px 0;">
-             Your requested free report is now available to view. Please use the
+             Your requested report is now available to view. Please use the
              link below to access the report:
            </p>
            <p style="margin:0 0 18px 0;">
              <a href="${escapeHtml(viewLink)}" target="_blank"
                 style="display:inline-block;background:#2f45bf;color:#ffffff;
                        text-decoration:none;font-weight:bold;padding:12px 22px;
-                       border-radius:10px;">View Free Report</a>
+                       border-radius:10px;">View Report</a>
            </p>`
         : `<p style="margin:0 0 18px 0;">
-             Your requested free report will be shared at this email address
+             Your requested report will be shared at this email address
              shortly.
            </p>`;
 
@@ -171,7 +171,7 @@ export async function POST(req) {
 
       await sendEmail({
         to: customer_email,
-        subject: "Your Requested Free Report Access Link",
+        subject: "Your Requested Report Access Link",
         html,
         from: CONFIRMATION_FROM,
         // No reply-to — this is a no-reply automated email.

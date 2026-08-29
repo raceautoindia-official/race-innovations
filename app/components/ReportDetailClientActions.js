@@ -144,8 +144,8 @@ export default function ReportDetailClientActions({ report }) {
 
   const samplePdfUrl = report?.samplePdf || report?.sample_pdf || "";
 
-  // A report priced 0 (or with no price) is offered free — the modal collects
-  // details and opens the report instead of taking payment.
+  // A report priced 0 (or with no price) is offered on request — the modal
+  // collects details and emails the access link instead of taking payment.
   const reportPrice =
     Number(
       String(report?.price ?? report?.amount ?? 0).replace(/[^0-9.]/g, "")
@@ -452,7 +452,7 @@ export default function ReportDetailClientActions({ report }) {
             minHeight: "58px",
           }}
         >
-          {isFreeReport ? "Get Free Report" : "Buy Now"}
+          {isFreeReport ? "Request Report" : "Buy Now"}
         </button>
 
         <button

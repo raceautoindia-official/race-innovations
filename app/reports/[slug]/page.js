@@ -138,6 +138,13 @@ export default async function ReportDetailPage({ params }) {
     samplePdf: report.samplePdf || report.sample_pdf || "",
   };
 
+  // A report with price 0 (or no price) is offered on request — the price
+  // block shows "To be Requested" and the CTA emails the access link.
+  const reportPriceNumeric =
+    Number(String(report.price ?? report.amount ?? 0).replace(/[^0-9.]/g, "")) ||
+    0;
+  const isRequestOnly = reportPriceNumeric <= 0;
+
   // Structured data — helps LLM search engines (ChatGPT search, Claude,
   // Perplexity, Google AI Overviews) understand this is an authoritative
   // automotive report so they can cite it when answering market questions.
@@ -721,24 +728,35 @@ export default async function ReportDetailPage({ params }) {
                         {report.title}
                       </h3>
 
-                      <div
-                        style={{
-                          color: "#7a869b",
-                          fontSize: "0.82rem",
-                          textTransform: "uppercase",
-                          marginBottom: "4px",
-                        }}
-                      >
-                        Starting From
-                      </div>
-
-                      {!!(report.currency || report.price) && (
+                      {isRequestOnly ? (
                         <div
                           className="fw-bold mb-3"
-                          style={{ color: "#1f2f63", fontSize: "2.3rem" }}
+                          style={{ color: "#1f2f63", fontSize: "1.7rem" }}
                         >
-                          {report.currency || ""} {report.price || ""}
+                          To be Requested
                         </div>
+                      ) : (
+                        <>
+                          <div
+                            style={{
+                              color: "#7a869b",
+                              fontSize: "0.82rem",
+                              textTransform: "uppercase",
+                              marginBottom: "4px",
+                            }}
+                          >
+                            Starting From
+                          </div>
+
+                          {!!(report.currency || report.price) && (
+                            <div
+                              className="fw-bold mb-3"
+                              style={{ color: "#1f2f63", fontSize: "2.3rem" }}
+                            >
+                              {report.currency || ""} {report.price || ""}
+                            </div>
+                          )}
+                        </>
                       )}
 
                       <div className="mb-3">

@@ -116,7 +116,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
       setStatus({
         type: "success",
         message:
-          "Thank you! We've emailed you a link to access your free report.",
+          "Thank you! We've emailed you a link to access this report.",
       });
       setTimeout(() => {
         onClose?.();
@@ -338,7 +338,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
                   fontWeight: 800,
                 }}
               >
-                {isFree ? "Get Your Free Report" : "Buy Report"}
+                {isFree ? "Request This Report" : "Buy Report"}
               </h3>
               <p
                 style={{
@@ -348,7 +348,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
                 }}
               >
                 {isFree
-                  ? "Fill in your details to receive this report for free."
+                  ? "Fill in your details and we'll email you the report access link."
                   : "Complete payment to purchase this report."}
               </p>
             </div>
@@ -410,7 +410,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
               }}
             >
               {isFree
-                ? "FREE"
+                ? "To be Requested"
                 : `$${amount.toLocaleString("en-US", {
                     minimumFractionDigits: 2,
                   })}`}
@@ -522,7 +522,7 @@ export default function BuyNowModal({ report, isOpen, onClose }) {
               {loading
                 ? "Processing..."
                 : isFree
-                ? "Get Free Report"
+                ? "Request Report"
                 : "Proceed to Pay"}
             </button>
           </div>
