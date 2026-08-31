@@ -79,8 +79,14 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
+        // Old account bucket — existing image URLs stored in the DB point here.
         protocol: "https",
         hostname: "raceautonextjs-bucket.s3.ap-south-1.amazonaws.com",
+      },
+      {
+        // New account bucket — new uploads are served from here.
+        protocol: "https",
+        hostname: "raceautonextjs-backup.s3.ap-south-1.amazonaws.com",
       },
     ],
     minimumCacheTTL: 31536000,

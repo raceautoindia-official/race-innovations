@@ -86,6 +86,10 @@ export default function RootLayout({ children }) {
           rel="dns-prefetch"
           href="https://raceautonextjs-bucket.s3.ap-south-1.amazonaws.com"
         />
+        <link
+          rel="dns-prefetch"
+          href="https://raceautonextjs-backup.s3.ap-south-1.amazonaws.com"
+        />
         <link rel="dns-prefetch" href="https://wa.me" />
         <link rel="dns-prefetch" href="https://mail.google.com" />
 
