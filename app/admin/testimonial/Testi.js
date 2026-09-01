@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; 
 import Image from "next/image";
+import { s3Url } from "../../../lib/s3url";
 function Testi() {
   const [testimonials, setTestimonials] = useState([]);
   const router = useRouter(); 
@@ -64,7 +65,7 @@ function Testi() {
                   <div className="card p-3 text-center" style={cardStyle}>
                     <p>{testimonial.description}</p>
                     <div className="d-flex flex-column align-items-center">
-                    <img src={`${process.env.NEXT_PUBLIC_S3_BUCKET_URL}${testimonial.image_url}`} alt={testimonial.name} style={imageStyle} />
+                    <img src={s3Url(testimonial.image_url)} alt={testimonial.name} style={imageStyle} />
 
 
                       <h3 style={{ fontWeight: "bold", fontSize: "1.1rem" }}>

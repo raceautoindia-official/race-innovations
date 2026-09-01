@@ -15,6 +15,7 @@ import { PDFDocument } from "pdf-lib";
 import { toast } from "react-toastify";
 import axios from "axios";
 import PageViewTracker from "../../../components/PageViewTracker";
+import { s3Url } from "../../../../lib/s3url";
 import "./flip.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -123,7 +124,7 @@ export default function Flip() {
           return;
         }
 
-        const fullUrl = `${process.env.NEXT_PUBLIC_S3_BUCKET_URL}${data.content}`;
+        const fullUrl = s3Url(data.content);
         setPdfUrl(fullUrl);
         setShowDownload(data.download !== 0);
         setPageFormat(data.page_format || "a4-landscape");

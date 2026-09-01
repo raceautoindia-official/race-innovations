@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { s3Url } from "../../../lib/s3url";
 import { usePathname } from "next/navigation";
 import { ToastContainer, toast } from "react-toastify";
 
@@ -177,7 +178,7 @@ function Client() {
                 }}
               >
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_S3_BUCKET_URL}${image.image_url}`}
+                  src={s3Url(image.image_url)}
                   alt="Client"
                   width={400}
                   height={400}

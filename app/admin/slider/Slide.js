@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { toast, ToastContainer } from "react-toastify";
+import { s3Url } from "../../../lib/s3url";
 
 function Slide() {
   const [sliderImages, setSliderImages] = useState([]);
@@ -92,7 +93,7 @@ function Slide() {
             {sliderImages.map((image) => (
               <div key={image.id} className="col-md-4 text-center">
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_S3_BUCKET_URL}${image.image_url}`}
+                  src={s3Url(image.image_url)}
                   alt="Slider Image"
                   width={400}
                   height={400}

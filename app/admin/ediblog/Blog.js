@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { s3Url } from "../../../lib/s3url";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 
@@ -70,7 +71,7 @@ function Blog() {
               <div className="row align-items-center">
                 <div className="col-md-3 d-flex justify-content-center">
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_S3_BUCKET_URL}${blog.thumbnail_image}`}
+                    src={s3Url(blog.thumbnail_image)}
                     alt="Thumbnail"
                     width={120}
                     height={120}
