@@ -84,10 +84,6 @@ export default function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://unpkg.com" />
         <link
           rel="dns-prefetch"
-          href="https://raceautonextjs-bucket.s3.ap-south-1.amazonaws.com"
-        />
-        <link
-          rel="dns-prefetch"
           href="https://raceautonextjs-backup.s3.ap-south-1.amazonaws.com"
         />
         <link rel="dns-prefetch" href="https://wa.me" />

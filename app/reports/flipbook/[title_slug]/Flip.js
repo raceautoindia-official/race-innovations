@@ -48,6 +48,8 @@ export default function Flip() {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [isVerifyPassword, setIsVerifyPassword] = useState(false);
+  // "" when idle, otherwise the button label while the PDF is being built.
+  const [downloadProgress, setDownloadProgress] = useState("");
 
   const [currentPage, setCurrentPage] = useState(1);
   const [viewport, setViewport] = useState({
@@ -193,28 +195,38 @@ const prevPage = () => book.current?.pageFlip?.()?.flipPrev();
   };
 
   const flattenPdf = async () => {
+    let pdf = null;
+    setDownloadProgress("Preparing...");
     try {
       const loadingTask = pdfjs.getDocument(pdfUrl);
-      const pdf = await loadingTask.promise;
+      pdf = await loadingTask.promise;
       const pdfDoc = await PDFDocument.create();
 
+      // One canvas reused for every page: creating a canvas per page exhausts
+      // the canvas memory limit on iOS Safari for long reports.
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Canvas context not available");
+
       for (let i = 1; i <= pdf.numPages; i++) {
+        setDownloadProgress(`Preparing ${i}/${pdf.numPages}`);
         const page = await pdf.getPage(i);
         const viewport = page.getViewport({ scale: 2 });
-
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        if (!context) throw new Error("Canvas context not available");
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
         await page.render({ canvasContext: context, viewport }).promise;
+        page.cleanup();
 
-        const imageDataUrl = canvas.toDataURL("image/jpeg", 1.0);
-        const imageBytes = await fetch(imageDataUrl).then((res) =>
-          res.arrayBuffer()
+        const jpegBlob = await new Promise((resolve, reject) =>
+          canvas.toBlob(
+            (b) => (b ? resolve(b) : reject(new Error("Page render failed"))),
+            "image/jpeg",
+            1.0
+          )
         );
+        const imageBytes = await jpegBlob.arrayBuffer();
 
         const embeddedImage = await pdfDoc.embedJpg(imageBytes);
         const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
@@ -225,6 +237,8 @@ const prevPage = () => book.current?.pageFlip?.()?.flipPrev();
           height: viewport.height,
         });
       }
+      canvas.width = 0;
+      canvas.height = 0;
 
       const pdfBytes = await pdfDoc.save();
       const blob = new Blob([pdfBytes], { type: "application/pdf" });
@@ -236,12 +250,17 @@ const prevPage = () => book.current?.pageFlip?.()?.flipPrev();
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Revoking straight after click() cancels the download in Safari
+      // (WebKitBlobResource error), so give the browser time to read the blob.
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
 
       toast.success("PDF downloaded successfully");
     } catch (err) {
       console.error("Flatten error:", err);
       toast.error("Failed to download PDF");
+    } finally {
+      pdf?.destroy();
+      setDownloadProgress("");
     }
   };
 
@@ -376,12 +395,13 @@ const prevPage = () => book.current?.pageFlip?.()?.flipPrev();
           {showDownload ? (
             <button
               onClick={openModal}
-              className="flipbook-download-btn"
+              className={`flipbook-download-btn ${downloadProgress ? "disabled" : ""}`}
+              disabled={!!downloadProgress}
               title="Download PDF"
               type="button"
             >
               <IoDownloadOutline />
-              <span>Download</span>
+              <span>{downloadProgress || "Download"}</span>
             </button>
           ) : (
             <button
