@@ -11,7 +11,6 @@ import {
   IoLockClosedOutline,
   IoClose,
 } from "react-icons/io5";
-import { PDFDocument } from "pdf-lib";
 import { toast } from "react-toastify";
 import axios from "axios";
 import PageViewTracker from "../../../components/PageViewTracker";
@@ -194,59 +193,42 @@ const prevPage = () => book.current?.pageFlip?.()?.flipPrev();
     }
   };
 
-  const flattenPdf = async () => {
-    let pdf = null;
+  // Downloads the uploaded PDF as-is. (It used to re-render every page as an
+  // image, which produced ~500 MB files for 400+ page reports and never
+  // finished.) Fetched as a blob because <a download> is ignored for
+  // cross-origin S3 URLs and would just open the PDF in a tab.
+  const downloadPdf = async () => {
     setDownloadProgress("Preparing...");
     try {
-      const loadingTask = pdfjs.getDocument(pdfUrl);
-      pdf = await loadingTask.promise;
-      const pdfDoc = await PDFDocument.create();
+      // no-store: the viewer has already cached parts of this file via range
+      // requests, and Chrome's cache can refuse a full read of such an entry
+      // (net::ERR_CACHE_OPERATION_NOT_SUPPORTED).
+      const res = await fetch(pdfUrl, { cache: "no-store" });
+      if (!res.ok || !res.body) throw new Error(`HTTP ${res.status}`);
 
-      // One canvas reused for every page: creating a canvas per page exhausts
-      // the canvas memory limit on iOS Safari for long reports.
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      if (!context) throw new Error("Canvas context not available");
-
-      for (let i = 1; i <= pdf.numPages; i++) {
-        setDownloadProgress(`Preparing ${i}/${pdf.numPages}`);
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale: 2 });
-
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        await page.render({ canvasContext: context, viewport }).promise;
-        page.cleanup();
-
-        const jpegBlob = await new Promise((resolve, reject) =>
-          canvas.toBlob(
-            (b) => (b ? resolve(b) : reject(new Error("Page render failed"))),
-            "image/jpeg",
-            1.0
-          )
-        );
-        const imageBytes = await jpegBlob.arrayBuffer();
-
-        const embeddedImage = await pdfDoc.embedJpg(imageBytes);
-        const newPage = pdfDoc.addPage([viewport.width, viewport.height]);
-        newPage.drawImage(embeddedImage, {
-          x: 0,
-          y: 0,
-          width: viewport.width,
-          height: viewport.height,
-        });
+      const total = Number(res.headers.get("Content-Length")) || 0;
+      const reader = res.body.getReader();
+      const chunks = [];
+      let received = 0;
+      let lastPercent = -1;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
+        received += value.length;
+        const percent = total ? Math.floor((received / total) * 100) : -1;
+        if (percent !== lastPercent) {
+          lastPercent = percent;
+          setDownloadProgress(`Downloading ${percent}%`);
+        }
       }
-      canvas.width = 0;
-      canvas.height = 0;
 
-      const pdfBytes = await pdfDoc.save();
-      const blob = new Blob([pdfBytes], { type: "application/pdf" });
+      const blob = new Blob(chunks, { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
 
       const a = document.createElement("a");
       a.href = url;
-      a.download = "flipbook.pdf";
+      a.download = `${title_slug || "flipbook"}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -256,17 +238,16 @@ const prevPage = () => book.current?.pageFlip?.()?.flipPrev();
 
       toast.success("PDF downloaded successfully");
     } catch (err) {
-      console.error("Flatten error:", err);
+      console.error("PDF download error:", err);
       toast.error("Failed to download PDF");
     } finally {
-      pdf?.destroy();
       setDownloadProgress("");
     }
   };
 
   useEffect(() => {
     if (isVerifyPassword && showDownload && pdfUrl) {
-      flattenPdf();
+      downloadPdf();
       setIsVerifyPassword(false);
     }
   }, [isVerifyPassword, showDownload, pdfUrl]);
