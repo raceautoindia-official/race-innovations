@@ -555,6 +555,25 @@
     0 4px 14px rgba(0, 0, 0, 0.4);
 }
 
+/* Open book: page edges on the outer side of each half. */
+.fb-phone .fb-book:not(.is-single) .stf__item.--right {
+  box-shadow:
+    1px 0 0 #f2f2f2,
+    2px 0 0 #a9a9a9,
+    3px 0 0 #ececec,
+    4px 0 0 #9a9a9a,
+    5px 0 0 #e2e2e2;
+}
+
+.fb-phone .fb-book:not(.is-single) .stf__item.--left {
+  box-shadow:
+    -1px 0 0 #f2f2f2,
+    -2px 0 0 #a9a9a9,
+    -3px 0 0 #ececec,
+    -4px 0 0 #9a9a9a,
+    -5px 0 0 #e2e2e2;
+}
+
 /* Spine shading on the binding side of each page. */
 .fb-phone .stf__item .fb-page-inner {
   position: relative;

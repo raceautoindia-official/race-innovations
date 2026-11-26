@@ -89,8 +89,9 @@ function EdgeIcon({ direction }) {
 // plain gray with thin arrows in the side margins and a slim page bar.
 const isPhone = (vp) => vp.touch && Math.min(vp.w, vp.h) <= 600;
 
-// Picks one page or a two-page spread, whichever shows bigger pages, and
-// sizes the page to fill the space between the top and bottom bars.
+// Picks one page or a two-page spread and sizes the page to fill the space
+// between the top and bottom bars. Desktop picks whichever shows bigger
+// pages; phones open like a book, two pages side by side after the cover.
 function computeLayout(vp, aspect, viewMode) {
   if (isPhone(vp)) {
     const bottom = 50 + vp.safeBottom;
@@ -103,7 +104,9 @@ function computeLayout(vp, aspect, viewMode) {
     };
     const single = fit(1);
     const double = fit(2);
-    const spread = double.w >= 160 && double.w >= single.w * 0.75;
+    // Below this a spread is too small to make out even with zoom at hand.
+    const canDouble = double.w >= 110;
+    const spread = canDouble && viewMode !== "single";
     const page = spread ? double : single;
     return {
       phone: true,
@@ -112,7 +115,7 @@ function computeLayout(vp, aspect, viewMode) {
       side,
       compact: false,
       spread,
-      canToggle: false,
+      canToggle: canDouble,
       pageW: page.w,
       pageH: page.h,
     };
@@ -1120,6 +1123,11 @@ export default function Flip() {
             {[
               { label: "Pages", icon: <IoGridOutline />, run: () => setThumbsOpen(true) },
               { label: "Zoom", icon: <MdOutlineZoomIn />, run: openZoom },
+              layout.canToggle
+                ? spread
+                  ? { label: "Single page", icon: <IoDocumentOutline />, run: () => setViewMode("single") }
+                  : { label: "Two pages", icon: <IoBookOutline />, run: () => setViewMode("double") }
+                : null,
               showDownload
                 ? {
                     label: downloadProgress || "Download PDF",
