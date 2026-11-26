@@ -31,9 +31,8 @@ import {
   IoDocumentOutline,
   IoGridOutline,
   IoShareSocialOutline,
-  IoArrowForward,
 } from "react-icons/io5";
-import { MdFirstPage, MdLastPage, MdOutlineZoomIn } from "react-icons/md";
+import { MdOutlineZoomIn } from "react-icons/md";
 import { toast } from "react-toastify";
 import axios from "axios";
 import PageViewTracker from "../../../components/PageViewTracker";
@@ -57,25 +56,65 @@ const ZOOM_LEVELS = [1, 1.5, 2, 3, 4];
 // Keeps zoomed canvases under iOS Safari's ~16.7 MP canvas limit.
 const MAX_CANVAS_PIXELS = 16_000_000;
 
-// Phones held upright get the mobile magazine layout: the page fills the
-// screen edge to edge and the controls float over it, shown on tap.
-const isPhonePortrait = (vp) => vp.touch && vp.w <= 700 && vp.h > vp.w;
+// Tall, thin chevron of classic flipbook readers (phone layout).
+function ThinChevron({ direction }) {
+  return (
+    <svg viewBox="0 0 24 48" width="24" height="48" aria-hidden="true">
+      <path
+        d={direction === "left" ? "M19 4 4 24l15 20" : "M5 4l15 20L5 44"}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+// "|<" / ">|": jump to the first or last page (phone layout).
+function EdgeIcon({ direction }) {
+  const left = direction === "left";
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+        <path d={left ? "M6 5v14" : "M18 5v14"} />
+        <path d={left ? "M17 5l-7 7 7 7" : "M7 5l7 7-7 7"} />
+      </g>
+    </svg>
+  );
+}
+
+// Phones (either orientation) get the classic flipbook look: the book on
+// plain gray with thin arrows in the side margins and a slim page bar.
+const isPhone = (vp) => vp.touch && Math.min(vp.w, vp.h) <= 600;
 
 // Picks one page or a two-page spread, whichever shows bigger pages, and
 // sizes the page to fill the space between the top and bottom bars.
 function computeLayout(vp, aspect, viewMode) {
-  if (isPhonePortrait(vp)) {
-    const w = Math.floor(Math.min(vp.w, vp.h * aspect));
+  if (isPhone(vp)) {
+    const bottom = 50 + vp.safeBottom;
+    const side = 40;
+    const availW = Math.max(160, vp.w - side * 2);
+    const availH = Math.max(160, vp.h - bottom - 24);
+    const fit = (cols) => {
+      const w = Math.floor(Math.min(availW / cols, availH * aspect));
+      return { w, h: Math.floor(w / aspect) };
+    };
+    const single = fit(1);
+    const double = fit(2);
+    const spread = double.w >= 160 && double.w >= single.w * 0.75;
+    const page = spread ? double : single;
     return {
       phone: true,
       top: 0,
-      bottom: 0,
-      side: 0,
+      bottom,
+      side,
       compact: false,
-      spread: false,
+      spread,
       canToggle: false,
-      pageW: w,
-      pageH: Math.floor(w / aspect),
+      pageW: page.w,
+      pageH: page.h,
     };
   }
 
@@ -373,7 +412,7 @@ function ThumbnailSheet({ numPages, activeIndices, aspect, vpW, onPick, onClose 
     <div className="fb-thumbs" role="dialog" aria-label="Pages">
       <div className="fb-thumbs-bar">
         <span className="fb-thumbs-title">Pages</span>
-        <button type="button" className="fbm-icon" onClick={onClose} aria-label="Close pages">
+        <button type="button" className="fb-icon-btn" onClick={onClose} aria-label="Close pages">
           <IoClose />
         </button>
       </div>
@@ -434,11 +473,10 @@ export default function Flip() {
   const [zoomLevel, setZoomLevel] = useState(2);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [canFullscreen, setCanFullscreen] = useState(false);
-  // Phone layout: controls are hidden until the page is tapped.
-  const [chromeOpen, setChromeOpen] = useState(false);
   const [thumbsOpen, setThumbsOpen] = useState(false);
+  // Phone layout: the "•••" menu, and the page number turned into an input.
+  const [moreOpen, setMoreOpen] = useState(false);
   const [pageInput, setPageInput] = useState(null);
-  const tapTimer = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -609,9 +647,7 @@ export default function Flip() {
     else document.documentElement.requestFullscreen?.().catch(() => {});
   };
 
-  // Double-tap (touch) or double-click opens the zoom view. On phones a
-  // single tap shows or hides the controls (once it's clear it wasn't the
-  // first half of a double-tap).
+  // Double-tap (touch) or double-click opens the zoom view.
   // Zoom and thumbnails are portalled out of the stage, but React still
   // bubbles their events through it.
   const fromOverlay = (e) => !!e.target.closest?.(".fb-zoom, .fb-thumbs");
@@ -630,18 +666,13 @@ export default function Flip() {
     const moved = Math.hypot(t.clientX - tap.x, t.clientY - tap.y);
     const now = Date.now();
     if (moved > 12 || now - tap.at > 300) return;
-    clearTimeout(tapTimer.current);
     if (now - tap.last < 320) {
       tapRef.current.last = 0;
       openZoom();
     } else {
       tapRef.current.last = now;
-      if (layout?.phone) {
-        tapTimer.current = setTimeout(() => setChromeOpen((open) => !open), 320);
-      }
     }
   };
-  useEffect(() => () => clearTimeout(tapTimer.current), []);
 
   const sharePage = async () => {
     const url = window.location.href;
@@ -861,7 +892,7 @@ export default function Flip() {
             {ready ? (
               <RenderWindow.Provider value={renderWindow}>
                 <div
-                  className="fb-book"
+                  className={`fb-book${spread ? "" : " is-single"}`}
                   style={{
                     width: spread ? layout.pageW * 2 : layout.pageW,
                     height: layout.pageH,
@@ -937,9 +968,6 @@ export default function Flip() {
           </Document>
         ) : null}
 
-        {ready && phone ? (
-          <div className="fb-hint">Tap for menu · Double-tap to zoom</div>
-        ) : null}
 
         {!ready && !loadError && !notFound ? (
           <div className="fb-status">
@@ -966,7 +994,52 @@ export default function Flip() {
           </div>
         ) : null}
 
-        {ready && layout.side > 8 ? (
+        {ready && phone ? (
+          <>
+            {!atStart ? (
+              <button
+                type="button"
+                className="fbp-arrow fbp-arrow-left"
+                onClick={prevPage}
+                aria-label="Previous page"
+              >
+                <ThinChevron direction="left" />
+              </button>
+            ) : null}
+            {!atEnd ? (
+              <button
+                type="button"
+                className="fbp-arrow fbp-arrow-right"
+                onClick={nextPage}
+                aria-label="Next page"
+              >
+                <ThinChevron direction="right" />
+              </button>
+            ) : null}
+            {!atStart ? (
+              <button
+                type="button"
+                className="fbp-jump fbp-jump-left"
+                onClick={() => goToIndex(0)}
+                aria-label="First page"
+              >
+                <EdgeIcon direction="left" />
+              </button>
+            ) : null}
+            {!atEnd ? (
+              <button
+                type="button"
+                className="fbp-jump fbp-jump-right"
+                onClick={() => goToIndex(lastIndex)}
+                aria-label="Last page"
+              >
+                <EdgeIcon direction="right" />
+              </button>
+            ) : null}
+          </>
+        ) : null}
+
+        {ready && !phone && layout.side > 8 ? (
           <>
             <button
               type="button"
@@ -991,137 +1064,97 @@ export default function Flip() {
       </main>
 
       {phone ? (
-        <>
-          <header className="fbm-topbar" data-show={chromeOpen}>
-            <h1 className="fbm-title" title={title}>
-              {title}
-            </h1>
-            <button type="button" className="fbm-icon" onClick={sharePage} aria-label="Share">
-              <IoShareSocialOutline />
+        <nav
+          className="fbp-bar"
+          style={{ height: layout.bottom }}
+          aria-label="Flipbook controls"
+        >
+          {pageInput === null ? (
+            <button
+              type="button"
+              className="fbp-page"
+              onClick={() => setPageInput("")}
+              disabled={!ready}
+              aria-label={`Page ${counterText}. Go to page`}
+            >
+              {counterText}
             </button>
-          </header>
+          ) : (
+            <form className="fbp-page fbp-page-edit" onSubmit={submitPageInput}>
+              <input
+                autoFocus
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={pageInput}
+                onChange={(e) => setPageInput(e.target.value.replace(/\D/g, ""))}
+                onBlur={() => setPageInput(null)}
+                placeholder={`1–${numPages}`}
+                aria-label="Page number"
+              />
+            </form>
+          )}
 
-          <nav className="fbm-panel" data-show={chromeOpen} aria-label="Flipbook controls">
-            <div className="fbm-nav">
-              <button
-                type="button"
-                className="fbm-icon"
-                onClick={() => goToIndex(0)}
-                disabled={!ready || atStart}
-                aria-label="First page"
-              >
-                <MdFirstPage />
-              </button>
-              <button
-                type="button"
-                className="fbm-icon"
-                onClick={prevPage}
-                disabled={!ready || atStart}
-                aria-label="Previous page"
-              >
-                <IoChevronBack />
-              </button>
-              {pageInput === null ? (
-                <button
-                  type="button"
-                  className="fbm-pill"
-                  onClick={() => setPageInput("")}
-                  disabled={!ready}
-                  aria-label={`Page ${counterText}. Go to page`}
-                >
-                  {counterText}
-                </button>
-              ) : (
-                <form className="fbm-pill fbm-pill-edit" onSubmit={submitPageInput}>
-                  <input
-                    autoFocus
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={pageInput}
-                    onChange={(e) => setPageInput(e.target.value.replace(/\D/g, ""))}
-                    onBlur={() => setPageInput(null)}
-                    placeholder={`1–${numPages}`}
-                    aria-label="Page number"
-                  />
-                  <button
-                    type="submit"
-                    className="fbm-go"
-                    onPointerDown={(e) => e.preventDefault()}
-                    aria-label="Go"
-                  >
-                    <IoArrowForward />
-                  </button>
-                </form>
-              )}
-              <button
-                type="button"
-                className="fbm-icon"
-                onClick={nextPage}
-                disabled={!ready || atEnd}
-                aria-label="Next page"
-              >
-                <IoChevronForward />
-              </button>
-              <button
-                type="button"
-                className="fbm-icon"
-                onClick={() => goToIndex(lastIndex)}
-                disabled={!ready || atEnd}
-                aria-label="Last page"
-              >
-                <MdLastPage />
-              </button>
-            </div>
+          {slider("fbp-slider")}
 
-            <div className="fbm-slider-row">{slider("fbm-slider")}</div>
+          <button
+            type="button"
+            className="fbp-more"
+            onClick={() => setMoreOpen((open) => !open)}
+            disabled={!ready}
+            aria-label="More options"
+            aria-expanded={moreOpen}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
 
-            <div className="fbm-actions">
-              <button
-                type="button"
-                className="fbm-icon"
-                onClick={() => setThumbsOpen(true)}
-                disabled={!ready}
-                aria-label="Pages"
-              >
-                <IoGridOutline />
-              </button>
-              <button
-                type="button"
-                className="fbm-icon"
-                onClick={openZoom}
-                disabled={!ready}
-                aria-label="Zoom"
-              >
-                <MdOutlineZoomIn />
-              </button>
-              {showDownload ? (
+          {downloadProgress ? <div className="fbp-progress">{downloadProgress}</div> : null}
+        </nav>
+      ) : null}
+
+      {phone && moreOpen ? (
+        <>
+          <div className="fbp-menu-backdrop" onClick={() => setMoreOpen(false)} />
+          <div className="fbp-menu" role="menu" style={{ bottom: layout.bottom + 6 }}>
+            {[
+              { label: "Pages", icon: <IoGridOutline />, run: () => setThumbsOpen(true) },
+              { label: "Zoom", icon: <MdOutlineZoomIn />, run: openZoom },
+              showDownload
+                ? {
+                    label: downloadProgress || "Download PDF",
+                    icon: <IoDownloadOutline />,
+                    run: openModal,
+                    disabled: !!downloadProgress,
+                  }
+                : { label: "Download locked", icon: <IoLockClosedOutline />, disabled: true },
+              { label: "Share", icon: <IoShareSocialOutline />, run: sharePage },
+              canFullscreen
+                ? {
+                    label: isFullscreen ? "Exit full screen" : "Full screen",
+                    icon: isFullscreen ? <IoContractOutline /> : <IoExpandOutline />,
+                    run: toggleFullscreen,
+                  }
+                : null,
+            ]
+              .filter(Boolean)
+              .map((item) => (
                 <button
+                  key={item.label}
                   type="button"
-                  className="fbm-icon"
-                  onClick={openModal}
-                  disabled={!!downloadProgress}
-                  aria-label={downloadProgress || "Download PDF"}
+                  role="menuitem"
+                  className="fbp-menu-item"
+                  disabled={item.disabled}
+                  onClick={() => {
+                    setMoreOpen(false);
+                    item.run?.();
+                  }}
                 >
-                  <IoDownloadOutline />
+                  {item.icon}
+                  <span>{item.label}</span>
                 </button>
-              ) : (
-                <button type="button" className="fbm-icon" disabled aria-label="Download locked">
-                  <IoLockClosedOutline />
-                </button>
-              )}
-              {canFullscreen ? (
-                <button
-                  type="button"
-                  className="fbm-icon"
-                  onClick={toggleFullscreen}
-                  aria-label={isFullscreen ? "Exit full screen" : "Full screen"}
-                >
-                  {isFullscreen ? <IoContractOutline /> : <IoExpandOutline />}
-                </button>
-              ) : null}
-            </div>
-            {downloadProgress ? <div className="fbm-progress">{downloadProgress}</div> : null}
-          </nav>
+              ))}
+          </div>
         </>
       ) : null}
 

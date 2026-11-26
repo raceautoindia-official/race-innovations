@@ -536,152 +536,155 @@
   backdrop-filter: none;
 }
 
-/* ── Phone layout: page edge to edge, controls float over it on tap ──── */
-.fbm-topbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: calc(50px + env(safe-area-inset-top));
-  padding: env(safe-area-inset-top) 5px 0 10px;
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  background: #333333;
-  z-index: 3;
-  transform: translateY(-100%);
-  transition: transform 0.25s ease;
+/* ── Phone layout: classic flipbook look ─────────────────────────────── */
+/* The book sits on plain gray with a spine shadow and, for a single page,
+   a stack of page edges on the right; thin arrows in the side margins and
+   a see-through page bar at the bottom. */
+.fb-phone .fb-book {
+  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.35));
 }
 
-.fbm-panel {
+.fb-phone .fb-book.is-single {
+  filter: none;
+  box-shadow:
+    1px 0 0 #f2f2f2,
+    2px 0 0 #a9a9a9,
+    3px 0 0 #ececec,
+    4px 0 0 #9a9a9a,
+    5px 0 0 #e2e2e2,
+    0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+/* Spine shading on the binding side of each page. */
+.fb-phone .stf__item .fb-page-inner {
+  position: relative;
+}
+
+.fb-phone .stf__item .fb-page-inner::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 18px;
+  pointer-events: none;
+}
+
+.fb-phone .stf__item.--right .fb-page-inner::after {
+  left: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.08) 30%, transparent);
+}
+
+.fb-phone .stf__item.--left .fb-page-inner::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.08) 30%, transparent);
+}
+
+.fbp-arrow,
+.fbp-jump {
+  position: absolute;
+  z-index: 2;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.62);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.fbp-arrow {
+  top: 50%;
+  width: 40px;
+  height: 72px;
+  margin-top: -36px;
+}
+
+.fbp-arrow-left {
+  left: 0;
+}
+
+.fbp-arrow-right {
+  right: 0;
+}
+
+.fbp-jump {
+  bottom: 14px;
+  width: 40px;
+  height: 40px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.fbp-jump-left {
+  left: 0;
+}
+
+.fbp-jump-right {
+  right: 0;
+}
+
+.fbp-arrow:active,
+.fbp-jump:active {
+  color: #ffffff;
+}
+
+.fbp-bar {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 12px 0 env(safe-area-inset-bottom);
-  background: #333333;
-  border-radius: 20px 20px 0 0;
   z-index: 3;
-  transform: translateY(100%);
-  transition: transform 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 6px env(safe-area-inset-bottom) 6px;
+  box-sizing: border-box;
 }
 
-.fbm-topbar[data-show="true"],
-.fbm-panel[data-show="true"] {
-  transform: none;
-}
-
-.fbm-title {
-  margin: 0;
-  min-width: 0;
-  font-size: 17px;
-  font-weight: 400;
-  line-height: 1.2;
-  color: #ffffff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.fbm-icon {
-  width: 40px;
-  height: 40px;
+.fbp-page {
   flex: 0 0 auto;
-  padding: 0;
+  min-width: 52px;
+  height: 34px;
+  padding: 0 6px;
   border: none;
-  border-radius: 8px;
   background: transparent;
   color: #ffffff;
-  font-size: 25px;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   cursor: pointer;
 }
 
-.fbm-icon:disabled {
-  opacity: 0.35;
-  cursor: default;
+.fbp-page-edit {
+  width: 76px;
+  padding: 0;
 }
 
-.fbm-nav {
-  display: flex;
-  align-items: center;
-  height: 36px;
-  padding: 0 20px;
-}
-
-.fbm-nav .fbm-icon {
-  width: 36px;
-  height: 36px;
-  font-size: 28px;
-}
-
-.fbm-pill {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: 35px;
-  margin: 0 4px;
-  border: none;
-  border-radius: 18px;
-  background: #5c5c5c;
-  color: #dddddd;
-  font-size: 15px;
-  font-variant-numeric: tabular-nums;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.fbm-pill-edit {
-  padding: 0 4px 0 16px;
-  justify-content: space-between;
-  cursor: default;
-}
-
-.fbm-pill-edit input {
-  flex: 1 1 auto;
-  min-width: 0;
-  height: 100%;
-  border: none;
+.fbp-page-edit input {
+  width: 100%;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
   outline: none;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.25);
   color: #ffffff;
   font-size: 16px; /* 16px stops iOS zooming in on focus */
   text-align: center;
   user-select: text;
+  box-sizing: border-box;
 }
 
-.fbm-pill-edit input::placeholder {
-  color: #aaaaaa;
+.fbp-page-edit input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
 }
 
-.fbm-go {
-  width: 30px;
-  height: 30px;
-  flex: 0 0 30px;
-  padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: #ffffff;
-  font-size: 20px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.fbm-slider-row {
-  padding: 14px 24px 13px 10px;
-}
-
-.fbm-slider {
-  display: block;
-  width: 100%;
-  height: 28px;
+.fbp-slider {
+  flex: 1 1 auto;
+  min-width: 60px;
+  height: 24px;
   margin: 0;
   background: transparent;
   -webkit-appearance: none;
@@ -689,55 +692,67 @@
   cursor: pointer;
 }
 
-.fbm-slider:disabled {
+.fbp-slider:disabled {
   opacity: 0.5;
 }
 
-.fbm-slider::-webkit-slider-runnable-track {
-  height: 18px;
-  border-radius: 9px;
-  background: #5c5c5c;
+.fbp-slider::-webkit-slider-runnable-track {
+  height: 2px;
+  background: #ffffff;
 }
 
-.fbm-slider::-webkit-slider-thumb {
+.fbp-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 28px;
-  height: 28px;
-  margin-top: -5px;
+  width: 16px;
+  height: 16px;
+  margin-top: -7px;
   border-radius: 50%;
   background: #eeeeee;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
-.fbm-slider::-moz-range-track {
-  height: 18px;
-  border-radius: 9px;
-  background: #5c5c5c;
+.fbp-slider::-moz-range-track {
+  height: 2px;
+  background: #ffffff;
 }
 
-.fbm-slider::-moz-range-thumb {
-  width: 28px;
-  height: 28px;
+.fbp-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
   border: none;
   border-radius: 50%;
   background: #eeeeee;
 }
 
-.fbm-actions {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  justify-items: center;
+.fbp-more {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: inline-flex;
   align-items: center;
-  height: 59px;
-  padding: 0 20px;
-  border-top: 1px solid #464646;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
 }
 
-.fbm-progress {
+.fbp-more span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffffff;
+}
+
+.fbp-more:disabled {
+  opacity: 0.4;
+}
+
+.fbp-progress {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 8px);
   transform: translateX(-50%);
   padding: 6px 14px;
   border-radius: 999px;
@@ -748,8 +763,50 @@
   white-space: nowrap;
 }
 
-.fb-phone .fb-hint {
-  bottom: calc(26px + env(safe-area-inset-bottom));
+.fbp-menu-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+}
+
+.fbp-menu {
+  position: absolute;
+  right: 8px;
+  z-index: 4;
+  min-width: 190px;
+  padding: 6px 0;
+  border-radius: 10px;
+  background: #333333;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+}
+
+.fbp-menu-item {
+  width: 100%;
+  height: 46px;
+  padding: 0 18px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fbp-menu-item svg {
+  font-size: 21px;
+  flex: 0 0 auto;
+}
+
+.fbp-menu-item:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.fbp-menu-item:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 /* ── Page thumbnails ─────────────────────────────────────────────────── */
