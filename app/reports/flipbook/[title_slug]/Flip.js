@@ -89,9 +89,8 @@ function EdgeIcon({ direction }) {
 // plain gray with thin arrows in the side margins and a slim page bar.
 const isPhone = (vp) => vp.touch && Math.min(vp.w, vp.h) <= 600;
 
-// Picks one page or a two-page spread and sizes the page to fill the space
-// between the top and bottom bars. Desktop picks whichever shows bigger
-// pages; phones follow the Humans of EV reader (see below).
+// Picks one page or a two-page spread, following the Humans of EV reader,
+// and sizes the page to fill the space between the top and bottom bars.
 function computeLayout(vp, aspect, viewMode) {
   if (isPhone(vp)) {
     const bottom = 50 + vp.safeBottom;
@@ -142,10 +141,12 @@ function computeLayout(vp, aspect, viewMode) {
   const double = fit(2);
   const canDouble = double.w >= 220;
 
+  // Like the Humans of EV reader: two pages side by side on a screen wider
+  // than tall, even when one page alone could be drawn bigger.
   let spread;
   if (viewMode === "single" || !canDouble) spread = false;
   else if (viewMode === "double") spread = true;
-  else spread = double.w >= single.w * 0.75;
+  else spread = vp.w > vp.h || double.w >= single.w * 0.75;
 
   const page = spread ? double : single;
   return {
