@@ -117,6 +117,13 @@
   background: #ffffff;
 }
 
+/* Book turned on its side (pages one above the other on an upright phone):
+   each page is drawn upright, then turned to fit its sideways slot. */
+.fb-page-upright {
+  flex: none;
+  transform: rotate(-90deg);
+}
+
 /* page-flip's stylesheet makes every canvas inside the book absolute (for
    its own canvas mode), which collapses the PDF page wrapper to 0x0. */
 .fb-page-inner canvas {
@@ -542,6 +549,11 @@
    a see-through page bar at the bottom. */
 .fb-phone .fb-book {
   filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.35));
+}
+
+/* Drawn before the turn, so this lands below the book on screen. */
+.fb-phone .fb-book.is-turned {
+  filter: drop-shadow(3px 0 10px rgba(0, 0, 0, 0.35));
 }
 
 .fb-phone .fb-book.is-single {

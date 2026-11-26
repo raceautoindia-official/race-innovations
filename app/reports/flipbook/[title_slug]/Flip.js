@@ -105,11 +105,16 @@ function computeLayout(vp, aspect, viewMode) {
     };
     const single = fit(1);
     const double = fit(2);
+    // The open book turned on its side: one page above the other, which on
+    // an upright phone leaves each page far bigger than side by side.
+    const stackW = Math.floor(Math.min(availW, (availH / 2) * aspect));
+    const stacked = { w: stackW, h: Math.floor(stackW / aspect) };
     // Below this a spread is too small to make out even with zoom at hand.
-    const canDouble = double.w >= 110;
-    // Two pages side by side after the cover, as on desktop, in either
-    // orientation. Readers can switch to one bigger page from the menu.
+    const canDouble = Math.max(double.w, stacked.w) >= 110;
+    // Two pages after the cover in either orientation; readers can switch
+    // to one bigger page from the menu.
     const spread = canDouble && viewMode !== "single";
+    const rotated = spread && stacked.w >= double.w * 1.2;
     const page = spread ? double : single;
     return {
       phone: true,
@@ -118,9 +123,13 @@ function computeLayout(vp, aspect, viewMode) {
       side,
       compact: false,
       spread,
+      rotated,
       canToggle: canDouble,
-      pageW: page.w,
-      pageH: page.h,
+      // page-flip lays the book out unrotated, so a rotated page is as wide
+      // as it will look tall on screen.
+      pageW: rotated ? stacked.h : page.w,
+      pageH: rotated ? stacked.w : page.h,
+      renderW: rotated ? stacked.w : page.w,
     };
   }
 
@@ -155,18 +164,31 @@ function computeLayout(vp, aspect, viewMode) {
     side,
     compact,
     spread,
+    rotated: false,
     canToggle: canDouble,
     pageW: page.w,
     pageH: page.h,
+    renderW: page.w,
   };
 }
 
 // Works around page-flip quirks that make single-page (portrait) mode feel
 // broken. Patched once per PageFlip instance.
-function enhancePageFlip(pf) {
+function enhancePageFlip(pf, rotated) {
   if (pf.__fbEnhanced) return;
   pf.__fbEnhanced = true;
   const settings = pf.getSettings();
+
+  // A book turned 90° clockwise: page-flip reads touches against its own
+  // unrotated box, so turn screen positions back into that box. Its top-left
+  // corner sits at the screen's top-right, so a swipe up turns forward.
+  const ui = pf.getUI();
+  if (rotated && ui) {
+    ui.getMousePos = (x, y) => {
+      const rect = ui.distElement.getBoundingClientRect();
+      return { x: y - rect.top, y: rect.right - x };
+    };
+  }
 
   // disableFlipByClick stops a tap on the page from turning it, but it also
   // blocks page-flip's own flipPrev() in portrait mode, and with it the
@@ -218,7 +240,6 @@ function enhancePageFlip(pf) {
   };
 
   // Count slightly slower flicks as swipes (page-flip's default is 250 ms).
-  const ui = pf.getUI();
   if (ui) ui.swipeTimeout = 450;
 }
 
@@ -258,25 +279,35 @@ function useViewport(safeProbeRef) {
 
 // Which pages get a canvas. Only pages near the open one are drawn, so a
 // 400-page report doesn't render 400 canvases up front.
-const RenderWindow = createContext({ from: 0, to: -1, width: 0, dpr: 1, last: 0 });
+// rotH is set when the book is turned on its side: the page is drawn
+// width x rotH and turned back upright inside its sideways slot.
+const RenderWindow = createContext({ from: 0, to: -1, width: 0, rotH: 0, dpr: 1, last: 0 });
 
 const BookPage = forwardRef(function BookPage({ index }, ref) {
-  const { from, to, width, dpr, last } = useContext(RenderWindow);
+  const { from, to, width, rotH, dpr, last } = useContext(RenderWindow);
   const near = index >= from && index <= to;
   const hard = index === 0 || index === last;
+  const page =
+    near && width > 0 ? (
+      <ReactPdfPage
+        pageNumber={index + 1}
+        width={width}
+        devicePixelRatio={dpr}
+        renderTextLayer={false}
+        renderAnnotationLayer={false}
+        loading={<span className="fb-spinner fb-spinner-dark" />}
+      />
+    ) : null;
   return (
     <div ref={ref} className="fb-page" data-density={hard ? "hard" : "soft"}>
       <div className="fb-page-inner">
-        {near && width > 0 ? (
-          <ReactPdfPage
-            pageNumber={index + 1}
-            width={width}
-            devicePixelRatio={dpr}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
-            loading={<span className="fb-spinner fb-spinner-dark" />}
-          />
-        ) : null}
+        {rotH ? (
+          <div className="fb-page-upright" style={{ width, height: rotH }}>
+            {page}
+          </div>
+        ) : (
+          page
+        )}
       </div>
     </div>
   );
@@ -552,6 +583,8 @@ export default function Flip() {
     () => (vp ? computeLayout(vp, pageAspect, viewMode) : null),
     [vp, pageAspect, viewMode]
   );
+  // The book is only drawn once the PDF's own page shape is known.
+  const ready = !!(layout && numPages && aspect);
   const spread = !!layout?.spread;
   const lastIndex = Math.max(0, numPages - 1);
   const start = spread ? spreadStart(currentIndex) : currentIndex;
@@ -578,19 +611,22 @@ export default function Flip() {
     else if (start === lastIndex && numPages % 2 === 0) bookShift = layout.pageW / 2;
   }
 
+  const rotated = !!layout?.rotated;
   const renderWindow = useMemo(
     () => ({
       from: Math.max(0, start - 2),
       to: Math.min(lastIndex, start + 3),
-      width: layout?.pageW || 0,
+      width: layout?.renderW || 0,
+      rotH: rotated ? layout.pageW : 0,
       dpr: typeof window === "undefined" ? 1 : Math.min(window.devicePixelRatio || 1, 2),
       last: lastIndex,
     }),
-    [start, lastIndex, layout?.pageW]
+    [start, lastIndex, layout?.renderW, layout?.pageW, rotated]
   );
 
-  const bookKey = layout
-    ? `${spread ? "d" : "s"}-${layout.pageW}-${layout.pageH}-${numPages}`
+  // Empty until the book is drawn, so the effect below runs once it exists.
+  const bookKey = ready
+    ? `${spread ? (rotated ? "r" : "d") : "s"}-${layout.pageW}-${layout.pageH}-${numPages}`
     : "";
 
   // react-pageflip never tears down its PageFlip instance: it keeps window
@@ -604,7 +640,7 @@ export default function Flip() {
     let frame;
     const enhance = () => {
       const pf = handle?.pageFlip?.();
-      if (pf) enhancePageFlip(pf);
+      if (pf) enhancePageFlip(pf, rotated);
       else if (handle) frame = requestAnimationFrame(enhance);
     };
     enhance();
@@ -616,7 +652,7 @@ export default function Flip() {
       const render = pf.getRender?.();
       if (render) render.render = () => {};
     };
-  }, [bookKey]);
+  }, [bookKey, rotated]);
 
   const pages = useMemo(
     () => Array.from({ length: numPages }, (_, i) => <BookPage key={i} index={i} />),
@@ -823,7 +859,6 @@ export default function Flip() {
     }
   }, [isVerifyPassword, showDownload, pdfUrl]);
 
-  const ready = !!(layout && numPages && aspect);
   const sliderValue = sliderDraft ?? start + 1;
   const phone = !!layout?.phone;
   const counterText = numPages ? `${sliderDraft ?? pageLabel}/${numPages}` : "–";
@@ -900,11 +935,14 @@ export default function Flip() {
             {ready ? (
               <RenderWindow.Provider value={renderWindow}>
                 <div
-                  className={`fb-book${spread ? "" : " is-single"}`}
+                  // Re-mounted when turned, so it doesn't animate a spin.
+                  key={rotated ? "turned" : "flat"}
+                  className={`fb-book${spread ? "" : " is-single"}${rotated ? " is-turned" : ""}`}
                   style={{
                     width: spread ? layout.pageW * 2 : layout.pageW,
                     height: layout.pageH,
-                    transform: `translateX(${bookShift}px)`,
+                    // Turned 90° clockwise: the left page ends up on top.
+                    transform: `${rotated ? "rotate(90deg) " : ""}translateX(${bookShift}px)`,
                   }}
                 >
                   <HTMLFlipBook
