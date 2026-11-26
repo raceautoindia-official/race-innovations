@@ -50,6 +50,8 @@ export default function PdfUpload() {
   const [title, setTitle] = useState("");
   const [password, setPassword] = useState("");
   const [pageFormat, setPageFormat] = useState("");
+  const [watermark, setWatermark] = useState(false);
+  const [preparedFor, setPreparedFor] = useState("");
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
 
@@ -57,6 +59,8 @@ export default function PdfUpload() {
   const [editTitle, setEditTitle] = useState("");
   const [editPwd, setEditPwd] = useState("");
   const [editFormat, setEditFormat] = useState("");
+  const [editWatermark, setEditWatermark] = useState(false);
+  const [editPreparedFor, setEditPreparedFor] = useState("");
   const [showModal, setShowModal] = useState(false);
   const editFileRef = useRef();
 
@@ -90,6 +94,8 @@ export default function PdfUpload() {
     fd.append("title", title);
     fd.append("password", password);
     fd.append("page_format", pageFormat);
+    fd.append("watermark", watermark ? "1" : "0");
+    fd.append("prepared_for", preparedFor);
     try {
       const res = await fetch("/api/flipbook", { method: "POST", body: fd });
       const json = await res.json();
@@ -99,6 +105,8 @@ export default function PdfUpload() {
         setTitle("");
         setPassword("");
         setPageFormat("");
+        setWatermark(false);
+        setPreparedFor("");
         setSelectedFile(null);
       } else {
         toast.error(json.error || "Upload failed");
@@ -116,6 +124,8 @@ export default function PdfUpload() {
     setEditTitle(f.title);
     setEditPwd("");
     setEditFormat(f.page_format || "");
+    setEditWatermark(Number(f.watermark) === 1);
+    setEditPreparedFor(f.prepared_for || "");
     setShowModal(true);
   };
 
@@ -126,6 +136,8 @@ export default function PdfUpload() {
     fd.append("title", editTitle);
     fd.append("password", editPwd);
     fd.append("page_format", editFormat);
+    fd.append("watermark", editWatermark ? "1" : "0");
+    fd.append("prepared_for", editPreparedFor);
     if (editFileRef.current.files[0])
       fd.append("pdf", editFileRef.current.files[0]);
     setUploading(true);
@@ -145,10 +157,10 @@ export default function PdfUpload() {
     }
   };
 
-  const handleDelete = async (content) => {
+  const handleDelete = async (id) => {
     if (!confirm("Delete this file?")) return;
     try {
-      const res = await fetch(`/api/flipbook?filename=${content}`, {
+      const res = await fetch(`/api/flipbook?id=${id}`, {
         method: "DELETE",
       });
       const json = await res.json();
@@ -235,6 +247,41 @@ export default function PdfUpload() {
                 <option value="a4-portrait">A4 Portrait</option>
                 <option value="a4-landscape">A4 Landscape</option>
               </select>
+
+              <div className="form-check mb-2">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="upload-watermark"
+                  checked={watermark}
+                  onChange={(e) => setWatermark(e.target.checked)}
+                />
+                <label
+                  className="form-check-label small fw-semibold"
+                  htmlFor="upload-watermark"
+                >
+                  Add watermark
+                </label>
+              </div>
+              {watermark && (
+                <>
+                  <label className="form-label small fw-semibold">
+                    Prepared for
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control mb-1"
+                    placeholder="Client name, e.g. Praj Industries"
+                    value={preparedFor}
+                    onChange={(e) => setPreparedFor(e.target.value)}
+                  />
+                  <div className="form-text mb-2">
+                    Printed faintly across every page of the flipbook and its
+                    download. Leave blank for &quot;RACE Innovations ·
+                    Confidential&quot;.
+                  </div>
+                </>
+              )}
 
               <label className="form-label small fw-semibold">File</label>
               <input
@@ -327,6 +374,18 @@ export default function PdfUpload() {
                                 <span className="badge bg-light text-dark border">
                                   {f.page_format || "—"}
                                 </span>
+                                {Number(f.watermark) === 1 ? (
+                                  <span
+                                    className="badge bg-info text-dark ms-1"
+                                    title={
+                                      f.prepared_for
+                                        ? `Prepared for ${f.prepared_for}`
+                                        : "RACE Innovations · Confidential"
+                                    }
+                                  >
+                                    Watermarked
+                                  </span>
+                                ) : null}
                               </td>
                               <td className="text-end">
                                 <div className="d-inline-flex flex-wrap gap-2 justify-content-end">
@@ -345,7 +404,7 @@ export default function PdfUpload() {
                                   </button>
                                   <button
                                     className="btn btn-sm btn-danger"
-                                    onClick={() => handleDelete(f.content)}
+                                    onClick={() => handleDelete(f.id)}
                                   >
                                     Delete
                                   </button>
@@ -481,6 +540,41 @@ export default function PdfUpload() {
                   <option value="a4-portrait">A4 Portrait</option>
                   <option value="a4-landscape">A4 Landscape</option>
                 </select>
+
+                <div className="form-check mb-2">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="edit-watermark"
+                    checked={editWatermark}
+                    onChange={(e) => setEditWatermark(e.target.checked)}
+                  />
+                  <label
+                    className="form-check-label small fw-semibold"
+                    htmlFor="edit-watermark"
+                  >
+                    Add watermark
+                  </label>
+                </div>
+                {editWatermark && (
+                  <>
+                    <label className="form-label small fw-semibold">
+                      Prepared for
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control mb-1"
+                      placeholder="Client name, e.g. Praj Industries"
+                      value={editPreparedFor}
+                      onChange={(e) => setEditPreparedFor(e.target.value)}
+                    />
+                    <div className="form-text mb-2">
+                      Printed faintly across every page of the flipbook and its
+                      download. Leave blank for &quot;RACE Innovations ·
+                      Confidential&quot;.
+                    </div>
+                  </>
+                )}
 
                 <label className="form-label small fw-semibold">
                   Replace file (optional)

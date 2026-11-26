@@ -198,10 +198,15 @@ import { NextResponse } from "next/server";
 import db from "../../../lib/db";
 import { v4 as uuidv4 } from "uuid";
 import { s3Client } from "../../../lib/s3Client";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import bcrypt from "bcryptjs";
 import libre from "libreoffice-convert";
 import path from "path";
+import { watermarkPdf } from "../../../lib/pdf-watermark";
+import {
+  ensureFlipbookColumns,
+  toPublicFlipbook,
+} from "../../../lib/flipbook-service";
 
 // Helpers
 function generateSlug(title) {
@@ -213,13 +218,40 @@ function generateSlug(title) {
     .replace(/-+/g, "-");
 }
 
+async function readS3Object(key) {
+  const res = await s3Client.send(
+    new GetObjectCommand({ Bucket: process.env.AWS_S3_BUCKET_NAME, Key: key })
+  );
+  return res.Body.transformToByteArray();
+}
+
+async function uploadWatermarkedCopy(stampedBytes) {
+  const key = `uploads/pdfs/${uuidv4()}.pdf`;
+  await s3Client.send(
+    new PutObjectCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: key,
+      Body: Buffer.from(stampedBytes),
+      ContentType: "application/pdf",
+    })
+  );
+  return key;
+}
+
+function watermarkFailed(err) {
+  return NextResponse.json(
+    { error: `Couldn't add the watermark to this PDF: ${err.message}` },
+    { status: 400 }
+  );
+}
+
 export const config = { api: { bodyParser: false } };
 
 // ── GET ────────────────────────────────────────────────────────────────────────
 export async function GET() {
   try {
     const [rows] = await db.query("SELECT * FROM pdf");
-    return NextResponse.json(rows, { status: 200 });
+    return NextResponse.json(rows.map(toPublicFlipbook), { status: 200 });
   } catch (error) {
     console.error("Error fetching PDFs:", error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
@@ -234,6 +266,8 @@ export async function POST(req) {
     const title = formData.get("title");
     const password = formData.get("password");
     const page_format = formData.get("page_format");
+    const watermark = formData.get("watermark") === "1";
+    const preparedFor = String(formData.get("prepared_for") || "").trim();
 
     if (!file || typeof file === "string") {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -256,6 +290,17 @@ export async function POST(req) {
       mime = "application/pdf";
     }
 
+    // Stamp before uploading anything, so a PDF that can't be stamped
+    // (e.g. an encrypted one) doesn't leave an orphaned upload behind.
+    let stamped = null;
+    if (watermark) {
+      try {
+        stamped = await watermarkPdf(buffer, preparedFor);
+      } catch (err) {
+        return watermarkFailed(err);
+      }
+    }
+
     // Prepare S3 key
     const uuidName = `${uuidv4()}${ext}`;
     const s3Key = `uploads/pdfs/${uuidName}`;
@@ -269,14 +314,26 @@ export async function POST(req) {
         ContentType: mime,
       })
     );
+    const watermarkedKey = stamped ? await uploadWatermarkedCopy(stamped) : null;
 
     // Insert DB record
+    await ensureFlipbookColumns();
     const slug = generateSlug(title);
     const hashed = password ? bcrypt.hashSync(password, 10) : null;
     await db.query(
-      `INSERT INTO pdf (content, title, title_slug, password, page_format)
-       VALUES (?, ?, ?, ?, ?)`,
-      [s3Key, title, slug, hashed, page_format]
+      `INSERT INTO pdf (content, title, title_slug, password, page_format,
+                        watermark, prepared_for, watermarked_content)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        s3Key,
+        title,
+        slug,
+        hashed,
+        page_format,
+        watermark ? 1 : 0,
+        preparedFor || null,
+        watermarkedKey,
+      ]
     );
 
     return NextResponse.json({ message: "File uploaded!" }, { status: 201 });
@@ -300,15 +357,40 @@ export async function PUT(req) {
       return NextResponse.json({ error: "Missing id or title" }, { status: 400 });
     }
 
+    await ensureFlipbookColumns();
+    const [[existing]] = await db.query(
+      `SELECT content, watermark, prepared_for, watermarked_content
+       FROM pdf WHERE id = ?`,
+      [id]
+    );
+    if (!existing) {
+      return NextResponse.json({ error: "Flipbook not found" }, { status: 404 });
+    }
+
+    // Fields not sent (e.g. by an older admin page) keep their saved values.
+    const watermarkField = formData.get("watermark");
+    const watermark =
+      watermarkField === null
+        ? Number(existing.watermark) === 1
+        : watermarkField === "1";
+    const preparedForField = formData.get("prepared_for");
+    const preparedFor =
+      preparedForField === null
+        ? existing.prepared_for || ""
+        : String(preparedForField).trim();
+
     const slug = generateSlug(title);
     const updates = [];
     const params = [title, slug];
 
-    // Handle new file if provided
+    // Read the new file if provided (uploaded after stamping, below)
+    let buffer = null;
+    let ext = "";
+    let mime = "";
     if (file && typeof file !== "string") {
-      let buffer = Buffer.from(await file.arrayBuffer());
-      let ext = path.extname(file.name).toLowerCase();
-      let mime = file.type;
+      buffer = Buffer.from(await file.arrayBuffer());
+      ext = path.extname(file.name).toLowerCase();
+      mime = file.type;
 
       if ([".ppt", ".pptx", ".pps", ".ppsx"].includes(ext)) {
         buffer = await new Promise((resolve, reject) => {
@@ -320,7 +402,26 @@ export async function PUT(req) {
         ext = ".pdf";
         mime = "application/pdf";
       }
+    }
 
+    // Re-stamp when the file, the client name or the setting changed.
+    let stamped = null;
+    const needsStamp =
+      watermark &&
+      (buffer ||
+        Number(existing.watermark) !== 1 ||
+        !existing.watermarked_content ||
+        (existing.prepared_for || "") !== preparedFor);
+    if (needsStamp) {
+      const source = buffer || (await readS3Object(existing.content));
+      try {
+        stamped = await watermarkPdf(source, preparedFor);
+      } catch (err) {
+        return watermarkFailed(err);
+      }
+    }
+
+    if (buffer) {
       const uuidName = `${uuidv4()}${ext}`;
       const s3Key = `uploads/pdfs/${uuidName}`;
 
@@ -336,6 +437,16 @@ export async function PUT(req) {
       updates.push("content = ?");
       params.push(s3Key);
     }
+
+    // Handle watermark
+    if (stamped) {
+      updates.push("watermarked_content = ?");
+      params.push(await uploadWatermarkedCopy(stamped));
+    } else if (!watermark) {
+      updates.push("watermarked_content = NULL");
+    }
+    updates.push("watermark = ?", "prepared_for = ?");
+    params.push(watermark ? 1 : 0, preparedFor || null);
 
     // Handle password change
     if (password) {
@@ -371,12 +482,19 @@ export async function PUT(req) {
 export async function DELETE(req) {
   try {
     const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
     const filename = searchParams.get("filename");
-    if (!filename) {
-      return NextResponse.json({ error: "Filename required" }, { status: 400 });
+    if (!id && !filename) {
+      return NextResponse.json({ error: "id or filename required" }, { status: 400 });
     }
 
-    await db.query("DELETE FROM pdf WHERE content = ?", [filename]);
+    // By id: the public list shows the stamped copy's key, not the
+    // original's, for watermarked flipbooks.
+    if (id) {
+      await db.query("DELETE FROM pdf WHERE id = ?", [id]);
+    } else {
+      await db.query("DELETE FROM pdf WHERE content = ?", [filename]);
+    }
 
     return NextResponse.json({ message: "Deleted!" }, { status: 200 });
   } catch (error) {
