@@ -91,11 +91,13 @@ const isPhone = (vp) => vp.touch && Math.min(vp.w, vp.h) <= 600;
 
 // Picks one page or a two-page spread and sizes the page to fill the space
 // between the top and bottom bars. Desktop picks whichever shows bigger
-// pages; phones open like a book, two pages side by side after the cover.
+// pages; phones follow the Humans of EV reader (see below).
 function computeLayout(vp, aspect, viewMode) {
   if (isPhone(vp)) {
     const bottom = 50 + vp.safeBottom;
-    const side = 40;
+    // Nearly edge to edge: when the page fills the width, the arrows sit
+    // over its edges instead of taking space beside it.
+    const side = 8;
     const availW = Math.max(160, vp.w - side * 2);
     const availH = Math.max(160, vp.h - bottom - 24);
     const fit = (cols) => {
@@ -106,7 +108,10 @@ function computeLayout(vp, aspect, viewMode) {
     const double = fit(2);
     // Below this a spread is too small to make out even with zoom at hand.
     const canDouble = double.w >= 110;
-    const spread = canDouble && viewMode !== "single";
+    // One page on an upright phone, two side by side once the screen is
+    // wider than tall. Readers can switch either way from the menu.
+    const spread =
+      canDouble && (viewMode === "double" || (viewMode !== "single" && vp.w > vp.h));
     const page = spread ? double : single;
     return {
       phone: true,
