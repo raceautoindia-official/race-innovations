@@ -1,18 +1,9 @@
 import React from 'react';
 import Flip from './Flip';
-import Navbar from '../../../components/Navbar';
-import Footer from '../../../components/Footer';
 
-
-
+// Full-screen reader: no site navbar (it has its own top bar with the logo).
 const Home = () => {
-  return (
-    <>
-    <Navbar/>
-    <Flip/>
-   
-    </>
-  );
+  return <Flip />;
 };
 
 export default Home;
