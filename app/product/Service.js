@@ -31,8 +31,8 @@ function Service() {
         }}
         className="mt-5"
       >
-        <span style={{ color: "black" }}>Our Product Research</span>
-        <span style={{ color: "#293BB1", marginLeft: "9px" }}>Reports Cover </span>
+        <span style={{ color: "black" }}>Our Product Research</span>{" "}
+        <span style={{ color: "#293BB1", marginLeft: "4px" }}>Reports Cover</span>
       </motion.h4>
 
       {/* Content */}
@@ -47,7 +47,7 @@ function Service() {
           >
             <Image
               src="/images/change-1.webp"
-              alt="Prototype"
+              alt="Prototype and concept evaluation"
               width={800}
               height={600}
               className="img-fluid rounded shadow-sm"
@@ -60,8 +60,8 @@ function Service() {
               }}
               className="mt-3"
             >
-              <span style={{ color: "black" }}>Prototype &</span>
-              <span style={{ color: "#293BB1", marginLeft: "9px" }}>
+              <span style={{ color: "black" }}>Prototype &</span>{" "}
+              <span style={{ color: "#293BB1", marginLeft: "4px" }}>
                 Concept Evaluation
               </span>
             </h6>
@@ -83,8 +83,8 @@ function Service() {
                 whiteSpace: "nowrap",
               }}
             >
-              <span style={{ color: "black" }}>Product Feature</span>
-              <span style={{ color: "#293BB1", marginLeft: "9px" }}>
+              <span style={{ color: "black" }}>Product Feature</span>{" "}
+              <span style={{ color: "#293BB1", marginLeft: "4px" }}>
                 Benchmarking
               </span>
             </h6>
@@ -93,7 +93,7 @@ function Service() {
             </p>
             <Image
               src="/images/cha-3.webp"
-              alt="Benchmarking"
+              alt="Product feature benchmarking"
               width={800}
               height={400}
               className="img-fluid rounded shadow-sm mt-4"

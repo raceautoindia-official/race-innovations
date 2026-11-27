@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Pagination from "../components/common/Pagination";
+import { buildLbiListing } from "./lbiListData";
 
 const REPORTS_PER_PAGE = 6;
 
@@ -25,10 +26,14 @@ function uniqueClean(values) {
   return Array.from(new Set(values.map(clean).filter(Boolean)));
 }
 
-export default function LbiReportsClient() {
+// initialReports comes from the server page, so the report cards and their
+// links are in the first HTML. It is null only when the server could not
+// reach the database; the list is then fetched here.
+export default function LbiReportsClient({ initialReports = null }) {
+  const hasInitialReports = Array.isArray(initialReports);
 
-  const [reports, setReports] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [reports, setReports] = useState(initialReports || []);
+  const [loading, setLoading] = useState(!hasInitialReports);
   const [errorMessage, setErrorMessage] = useState("");
 
   const [searchText, setSearchText] = useState("");
@@ -36,10 +41,9 @@ export default function LbiReportsClient() {
   const [selectedRegion, setSelectedRegion] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [rawCategoryValues, setRawCategoryValues] = useState([]);
-  const [rawRegionValues, setRawRegionValues] = useState([]);
-
   useEffect(() => {
+    if (hasInitialReports) return undefined;
+
     let active = true;
 
     async function load() {
@@ -58,33 +62,18 @@ export default function LbiReportsClient() {
 
         const json = await res.json();
         const raw = Array.isArray(json?.data) ? json.data : [];
-
-        // Accept any truthy isActive variant (boolean true, 1, "1") and also
-        // pass through rows where isActive is explicitly missing — only block
-        // rows where isActive is explicitly false / 0.
-        const activeOnly = raw.filter((item) => {
-          if (item?.isActive === false) return false;
-          if (item?.isActive === 0) return false;
-          if (item?.isActive === "0") return false;
-          return true;
-        });
+        const listed = buildLbiListing(raw);
 
         if (!active) return;
 
-        if (raw.length > 0 && activeOnly.length === 0) {
+        if (raw.length > 0 && listed.length === 0) {
           console.warn(
             "[LBI] Reports loaded but all flagged inactive. Check isActive on the admin form.",
             raw
           );
         }
 
-        setReports(activeOnly);
-        setRawCategoryValues(
-          uniqueClean(activeOnly.map((r) => r.category || ""))
-        );
-        setRawRegionValues(
-          uniqueClean(activeOnly.map((r) => r.region || r.country || ""))
-        );
+        setReports(listed);
       } catch (err) {
         console.error("LBI reports load error:", err);
         if (active) {
@@ -100,16 +89,22 @@ export default function LbiReportsClient() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [hasInitialReports]);
 
   const categories = useMemo(
-    () => ["All", ...uniqueClean([...LBI_CATEGORY_OPTIONS, ...rawCategoryValues])],
-    [rawCategoryValues]
+    () => [
+      "All",
+      ...uniqueClean([
+        ...LBI_CATEGORY_OPTIONS,
+        ...reports.map((r) => r.category || ""),
+      ]),
+    ],
+    [reports]
   );
 
   const regions = useMemo(
-    () => ["All", ...uniqueClean(rawRegionValues)],
-    [rawRegionValues]
+    () => ["All", ...uniqueClean(reports.map((r) => r.region || r.country || ""))],
+    [reports]
   );
 
   const filteredReports = useMemo(() => {
@@ -142,10 +137,9 @@ export default function LbiReportsClient() {
     Math.ceil(filteredReports.length / REPORTS_PER_PAGE)
   );
 
-  const paginatedReports = useMemo(() => {
-    const start = (currentPage - 1) * REPORTS_PER_PAGE;
-    return filteredReports.slice(start, start + REPORTS_PER_PAGE);
-  }, [filteredReports, currentPage]);
+  const pageStartIndex = (currentPage - 1) * REPORTS_PER_PAGE;
+  const isOnCurrentPage = (index) =>
+    index >= pageStartIndex && index < pageStartIndex + REPORTS_PER_PAGE;
 
   return (
     <>
@@ -257,6 +251,20 @@ export default function LbiReportsClient() {
           style={{ paddingTop: "44px", paddingBottom: "64px" }}
         >
           <div className="container-fluid px-4 px-md-5 px-lg-5">
+            <h2
+              className="text-center"
+              style={{
+                color: "#0b1220",
+                fontSize: "clamp(1.4rem, 2vw, 1.9rem)",
+                fontWeight: 800,
+                lineHeight: 1.2,
+                margin: "0 auto 24px",
+                maxWidth: "1120px",
+              }}
+            >
+              Browse ODC Route Survey and LBI Reports
+            </h2>
+
             {/* Filters */}
             <div
               className="row justify-content-center mb-4"
@@ -267,6 +275,7 @@ export default function LbiReportsClient() {
                   type="text"
                   className="form-control"
                   placeholder="Search LBI reports..."
+                  aria-label="Search LBI reports"
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   style={{
@@ -281,6 +290,7 @@ export default function LbiReportsClient() {
               <div className="col-6 col-md-3">
                 <select
                   className="form-select"
+                  aria-label="Filter by category"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   style={{
@@ -303,6 +313,7 @@ export default function LbiReportsClient() {
               <div className="col-6 col-md-3">
                 <select
                   className="form-select"
+                  aria-label="Filter by region"
                   value={selectedRegion}
                   onChange={(e) => setSelectedRegion(e.target.value)}
                   style={{
@@ -417,9 +428,23 @@ export default function LbiReportsClient() {
             ) : (
               <>
                 <div className="row g-4 justify-content-center">
-                {paginatedReports.map((report) => {
+                {filteredReports.map((report, index) => {
                   const slug = report?.slug || "";
-                  const href = slug ? `/lbi-reports/${slug}` : "#";
+                  // Link straight to the canonical report URL
+                  // (/lbi-reports/{slug} only redirects there).
+                  const href = slug ? `/reports/${slug}` : "#";
+
+                  if (!isOnCurrentPage(index)) {
+                    // Reports on other pages stay in the HTML as plain
+                    // links (hidden until their page is selected) so
+                    // crawlers can reach every report from this listing.
+                    return (
+                      <div key={report.id || slug} hidden>
+                        <a href={href}>{report.title}</a>
+                      </div>
+                    );
+                  }
+
                   const cover =
                     report?.sampleImage ||
                     report?.image ||
@@ -585,6 +610,62 @@ export default function LbiReportsClient() {
                 )}
               </>
             )}
+          </div>
+        </section>
+
+        {/* About: adapted from the LBI route survey page copy
+            (app/intellect/lbi/Video.js). */}
+        <section style={{ paddingBottom: "64px" }}>
+          <div className="container-fluid px-4 px-md-5 px-lg-5">
+            <div
+              className="text-center"
+              style={{ maxWidth: "880px", margin: "0 auto" }}
+            >
+              <h2
+                style={{
+                  color: "#0b1220",
+                  fontSize: "clamp(1.4rem, 2vw, 1.9rem)",
+                  fontWeight: 800,
+                  lineHeight: 1.2,
+                  marginBottom: "16px",
+                }}
+              >
+                About LBI Route Survey Reports
+              </h2>
+              <p
+                style={{
+                  color: "#475569",
+                  fontSize: "1rem",
+                  lineHeight: 1.7,
+                  marginBottom: "12px",
+                }}
+              >
+                Location Based Intelligence (LBI) reports support the
+                hindrance-free movement of over-dimensional and heavy cargo.
+                RACE Innovations&apos; engineering and civil experts survey
+                each route to identify the shortest feasible path, check load
+                securing and vehicle stability, and assess bridge capacity and
+                road-filling requirements together with the associated civil
+                costs, so cargo can move safely and economically.
+              </p>
+              <p
+                style={{
+                  color: "#475569",
+                  fontSize: "1rem",
+                  lineHeight: 1.7,
+                  margin: 0,
+                }}
+              >
+                Planning a movement on a route that isn&apos;t listed here?{" "}
+                <a
+                  href="/intellect/lbi"
+                  style={{ color: "#2f45bf", fontWeight: 700 }}
+                >
+                  See our LBI route survey service
+                </a>
+                .
+              </p>
+            </div>
           </div>
         </section>
 

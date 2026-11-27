@@ -46,6 +46,7 @@ function Manage() {
               href="https://www.facebook.com/kh.rajesh"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="M.P. Rajesh Khanna on Facebook"
             >
               <FaFacebook size={30} className="ms-3 text-primary" />
             </a>
@@ -53,6 +54,7 @@ function Manage() {
               href="https://www.linkedin.com/in/rajesh-kh-96086411/"
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="M.P. Rajesh Khanna on LinkedIn"
             >
               <FaLinkedin size={30} className="ms-3 text-primary" />
             </a>
@@ -69,7 +71,7 @@ function Manage() {
           transition={{ duration: 0.3, ease: "easeOut", delay: 0.2 }}
         >
           <h2 className="h1">
-            <span style={{ color: "black", marginRight: "10px" }}>Message</span>
+            <span style={{ color: "black" }}>Message</span>{" "}
             <span style={{ color: "#293BB1" }}>from the MD</span>
           </h2>
           <p>

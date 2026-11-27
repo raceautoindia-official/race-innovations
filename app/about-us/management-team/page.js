@@ -1,40 +1,27 @@
-export const metadata = {
-    title: "Race Innovations",
-    description: "Race Innovations is a global leader in technology solutions, with a strong presence across multiple countries and headquarters in India.",
-    keywords: "Race Innovations, technology solutions, global innovation, AI, automation, digital transformation",
-    robots: "index, follow",
-    openGraph: {
-      title: "Race Innovations - Transforming Industries",
-      description: "Race Innovations provides cutting-edge technology solutions, AI-driven automation, and digital transformation services to businesses worldwide.",
-      url: "https://raceinnovations.in",
-      siteName: "Race Innovations",
-      images: [
-        {
-          url: "/images/logo.jpg", 
-          width: 1200,
-          height: 630,
-          alt: "Race Innovations",
-        },
-      ],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      site: "@raceinnovation",
-      title: "Race Innovations",
-      description: "Join Race Innovations in pioneering AI, automation, and digital transformation on a global scale.",
-      images: ["https://raceinnovations.in/assets/og-image.jpg"],
-    },
-    alternates: {
-      canonical: "https://raceinnovations.in",
-    },
-  };
 import About from "./Home.js";
+import JsonLd from "../../components/JsonLd";
+import { pageMetadata, breadcrumbJsonLd } from "../../../lib/seo";
 
+const description =
+  "Meet the management of RACE Innovations and read Managing Director M.P. Rajesh Khanna's message on India's automotive, construction and mining sectors.";
+
+export const metadata = pageMetadata({
+  path: "/about-us/management-team",
+  title: "Management Team & Message from the MD",
+  description,
+});
+
+const jsonLd = [
+  breadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Management Team", path: "/about-us/management-team" },
+  ]),
+];
 
 export default function Page() {
  return(
   <main>
+   <JsonLd data={jsonLd} />
    <About/>
   </main>
  )

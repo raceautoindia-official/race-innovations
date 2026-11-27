@@ -1,16 +1,20 @@
-import PostClient from "./PostClient";
+// /blog/{slug} is the older URL for blog posts. It showed the same `posts`
+// rows (same slug, via /api/posts/{slug}) as /web-blog/{slug}, so it was a
+// duplicate of every post. It now permanently redirects (308) to the canonical
+// /web-blog/{slug}, leaving one URL per post.
 
-export default async function Post({ params }) {
-  // ✅ Next 15: params can be async
+import { permanentRedirect } from "next/navigation";
+
+export default async function LegacyBlogPostRedirect({ params }) {
   const { slug } = await params;
+  const raw = String((Array.isArray(slug) ? slug[0] : slug) || "").trim();
 
-  const base = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-  const res = await fetch(`${base}/api/posts/${slug}`, { cache: "no-store" });
+  let decoded = raw;
+  try {
+    decoded = decodeURIComponent(raw);
+  } catch {
+    // keep the raw value
+  }
 
-  if (!res.ok) return <div className="p-6">Post not found</div>;
-
-  const data = await res.json();
-  const post = data?.post || data; // supports either {post:{...}} or {...}
-
-  return <PostClient post={post} />;
+  permanentRedirect(decoded ? `/web-blog/${encodeURIComponent(decoded)}` : "/web-blog");
 }

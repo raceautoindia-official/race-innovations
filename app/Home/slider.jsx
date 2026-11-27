@@ -14,23 +14,53 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 
+// The slide artwork is up to 6000px wide, and with sizes="100vw" Next.js
+// would offer (and use as the fallback src) a 3840px variant. Nothing on
+// screen needs more than 1920px, so cap every width we ask the optimizer for.
+const HERO_MAX_WIDTH = 1920;
+const heroLoader = ({ src, width, quality }) =>
+  `/_next/image?url=${encodeURIComponent(src)}&w=${Math.min(
+    width,
+    HERO_MAX_WIDTH
+  )}&q=${quality || 75}`;
+
 export default function ResponsiveSwiper() {
+  // Alt text repeats the words printed on each slide, since that text only
+  // exists inside the image.
   const desktopImages = [
-    { src: "/images/accounting-5.webp", alt: "Accounting and finance team analyzing reports" },
-    { src: "/images/connect.webp", alt: "Business professionals connecting and networking" },
-    { src: "/images/intellect.webp", alt: "Artificial intelligence and machine learning concept" },
-    { src: "/images/survey.webp", alt: "Surveyor using equipment for land measurement" },
-    { src: "/images/ban-1.webp", alt: "Legal and law professionals discussing case files" },
-    { src: "/images/technic 1.webp", alt: "Technician working on advanced technical solutions" },
+    {
+      src: "/images/accounting-5.webp",
+      alt: "Empowering your business: expert accounting and financial outsourcing for your business success",
+    },
+    {
+      src: "/images/connect.webp",
+      alt: "Seamless market entry: connecting global vision with India's opportunities",
+    },
+    {
+      src: "/images/intellect.webp",
+      alt: "Insightful research, reliable solutions: empowering decisions, driving growth and enabling business opportunities",
+    },
+    {
+      src: "/images/survey.webp",
+      alt: "Precision in every journey: expert route surveys and tailored solutions for seamless cargo transportation",
+    },
+    {
+      src: "/images/ban-1.webp",
+      alt: "Secure your business future: trusted corporate legal solutions for companies",
+    },
+    {
+      src: "/images/technic 1.webp",
+      alt: "Engineering excellence for every industry: innovating solutions, driving success",
+    },
   ];
 
   const mobileImages = [
-    { src: "/images/mo-1.webp", alt: "Accounting mobile" },
-    { src: "/images/mo-2.webp", alt: "Connect mobile" },
-    { src: "/images/mo-3.webp", alt: "Intellect mobile" },
-    { src: "/images/mo-4.webp", alt: "Survey mobile" },
+    { src: "/images/mo-1.webp", alt: "Seamless market entry" },
+    { src: "/images/mo-2.webp", alt: "Insightful research, reliable solutions" },
+    { src: "/images/mo-3.webp", alt: "Engineering excellence for every industry" },
+    { src: "/images/mo-4.webp", alt: "Secure your business future" },
 
-    { src: "/images/mo-6.webp", alt: "Technic mobile" },
+    { src: "/images/mo-6.webp", alt: "Precision in every journey: route surveys" },
   ];
 
   const [isMobile, setIsMobile] = useState(false);
@@ -64,8 +94,7 @@ export default function ResponsiveSwiper() {
           border: 0,
         }}
       >
-        RACE Innovations — Automotive Market Intelligence, ODC Route Survey
-        &amp; Strategic Consulting
+        RACE Innovations: Automotive Market Intelligence and ODC Route Surveys
       </h1>
 
       <Swiper
@@ -93,13 +122,17 @@ export default function ResponsiveSwiper() {
               }}
             >
               <Image
+                loader={heroLoader}
                 src={img.src}
                 alt={img.alt}
                 width={isMobile ? 365 : 1920}
                 height={isMobile ? 680 : 644}
                 quality={60}
+                // Only the first slide is visible on load; the rest lazy-load.
                 priority={index === 0}
-                sizes={isMobile ? "365px" : "(min-width: 768px) 100vw"}
+                // Desktop slides are full width; mobile slides are a fixed
+                // 365px card.
+                sizes={isMobile ? "365px" : "100vw"}
                 style={{
                   objectFit: "cover",
                   borderRadius: "8px",

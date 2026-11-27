@@ -36,11 +36,11 @@ function Offerings() {
           >
             {[
               "Trained engineering resources",
-              "Assist to reduce product development cycle",
-              "Help to deliver right products to market",
+              "Help reduce the product development cycle",
+              "Help deliver the right products to market",
               "Use of latest engineering tools & techniques",
               "Voice of Customer (VOC) & Quality Function Deployment (QFD)",
-              "Lesser workload on client internal R&D resources",
+              "Less workload on clients' internal R&D resources",
             ].map((feature, index) => (
               <motion.li
                 key={index}
@@ -70,7 +70,8 @@ function Offerings() {
             src="/images/offerings.png"
             width={1100}
             height={500}
-            alt="Offerings"
+            alt="Technic offerings: syndicated and ready product reports, customised reports and product-specific strategies (VOC and QFD), manufacturing support, and quality and training support"
+            sizes="(min-width: 768px) 50vw, 100vw"
             style={{
               width: "100%",
               height: "auto",

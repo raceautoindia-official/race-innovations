@@ -50,7 +50,7 @@ function Legal() {
           the experience to understand your specific needs and become a trusted
           advisor to your business. With services ranging from employment law to
           international trade law, whatever support your business requires to be
-          successful on the international stage, an RACE member firm can help.
+          successful on the international stage, a RACE member firm can help.
         </p>
       </motion.div>
 
@@ -64,7 +64,7 @@ function Legal() {
         transition={{ duration: 0.3, delay: 0.1 }}
       >
         <h2 className="text-center h1">
-          <span style={{ color: "black", marginRight: "10px" }}>Key</span>
+          <span style={{ color: "black" }}>Key</span>{" "}
           <span style={{ color: "#293BB1" }}>Legal Services</span>
         </h2>
 

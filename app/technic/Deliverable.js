@@ -16,21 +16,21 @@ function Deliverable() {
   return (
     <div className="container" style={{ marginBottom: "100px", textAlign: "justify" }}>
       <h2 style={{ color: "#293bb1" }} className="text-center mb-4 h1">
-        Deliverable
+        Deliverables
       </h2>
       <div className="row justify-content-center">
         {[
           {
             title: "Application & Interface Engineering",
-            description: "Bus & Truck bodies Packaging the vehicle",
+            description: "Bus & truck bodies, vehicle packaging",
           },
           {
-            title: "Validation of Testing",
+            title: "Validation & Testing",
             description: "Proto development & Design Verification",
           },
           {
             title: "Product Engineering",
-            description: "Bus & Truck Chassis & Specialized Vehicles",
+            description: "Bus & truck chassis and specialized vehicles",
           },
         ].map((item, index) => (
           <motion.div

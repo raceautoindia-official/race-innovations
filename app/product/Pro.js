@@ -52,8 +52,8 @@ function Pro() {
                   whiteSpace: "nowrap",
                 }}
               >
-                <span style={{ color: "black" }}>Product</span>
-                <span style={{ color: "black", marginLeft: "15px" }}>
+                <span style={{ color: "black" }}>Product</span>{" "}
+                <span style={{ color: "black", marginLeft: "4px" }}>
                   Report
                 </span>
               </h1>
@@ -70,7 +70,7 @@ function Pro() {
         transition={{ duration: 0.4, delay: 0.3 }}
       >
         <p className="mt-4" style={{ textAlign: "justify" }}>
-          At Race Innovations, we specialize in product research services that
+          At RACE Innovations, we specialize in product research services that
           help OEMs and component manufacturers in the automotive, agriculture
           machinery, and construction equipment sectors build better, smarter,
           and more competitive products.

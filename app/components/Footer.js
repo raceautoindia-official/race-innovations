@@ -67,14 +67,14 @@ const Footer = () => {
               src="/images/rrr.png"
               width={160} 
               height={200}
-              alt="logo"
+              alt="RACE Innovations logo"
               style={{ objectFit: "contain", maxWidth: "100%", height: "auto" }}
             />
           </div>
 
           <div className="col-12 col-md-6">
             <p className="mb-0" style={{ fontSize: "16px" , textAlign: "justify" }}>
-              At Race Innovations, we are passionate about transforming ideas
+              At RACE Innovations, we are passionate about transforming ideas
               into impactful solutions. As trusted consultants, we partner with
               businesses to navigate complex challenges and deliver innovative
               strategies that drive success. Our team excels at designing and
@@ -145,8 +145,9 @@ const Footer = () => {
             <p
               className="mb-1 text-center text-md-start"
               style={{ fontSize: "12px" }}
+              suppressHydrationWarning
             >
-              © 2025 Race Innovationss - All Rights Reserved
+              © {new Date().getFullYear()} RACE Innovations Private Limited - All Rights Reserved
             </p>
 
             {/* Links Section — balance internal vs external link ratio by
@@ -213,7 +214,7 @@ const Footer = () => {
                   className="text-decoration-none text-dark d-block"
                   style={{ fontSize: "12px" }}
                 >
-                  Investor
+                  Investors
                 </Link>
               </div>
               <div className="col-6 col-md-auto mb-2">

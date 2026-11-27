@@ -43,7 +43,7 @@ function Content() {
             `Businesses operating internationally often face complex legal and commercial challenges. Our experienced advisors offer expert guidance, ensuring compliance and mitigating risks. With extensive industry experience, RACE member firms provide customized advice aligned with your organization’s strategic vision.`,
             `Navigating legal issues across borders can be daunting. Our law firm members deliver efficient and seamless solutions, allowing you to focus on core business operations while we handle the legal complexities.`,
             `Having worked across diverse industries, our advisors understand unique business needs and serve as trusted partners. Whether it's employment law, international trade law, or corporate compliance, we provide expert legal counsel for smooth global operations.`,
-            `Whatever support your business requires to thrive on the international stage, an RACE member firm is here to help. Our holistic approach ensures that your business remains competitive, compliant, and well-positioned for global success.`,
+            `Whatever support your business requires to thrive on the international stage, a RACE member firm is here to help. Our holistic approach ensures that your business remains competitive, compliant, and well-positioned for global success.`,
           ].map((text, index) => (
             <p key={index} style={{ textAlign: "justify" }}>{text}</p>
           ))}

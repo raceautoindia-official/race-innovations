@@ -66,7 +66,7 @@ function CareerHome() {
                 height: "auto",
                 objectFit: "contain",
               }}
-              alt="Career Background"
+              alt="Young team collaborating around a laptop in a modern office"
             />
           </motion.div>
         </div>

@@ -114,16 +114,18 @@ function Product() {
           </ul>
         </div>
       )}
-      <motion.h1
-        className="d-flex justify-content-center text-center "
+      {/* Section titles below are H2 styled as .h1: the homepage's only H1
+          is in the slider. */}
+      <motion.h2
+        className="h1 d-flex justify-content-center text-center "
         initial={{ opacity: 0, y: 100 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 1, ease: "easeOut" }}
         viewport={{ once: true }}
       >
-        <span className="me-2" style={{ color: "black" }}>Our</span>
+        <span className="me-2" style={{ color: "black" }}>Our</span>{" "}
         <span style={{ color: "#293BB1" }}>Products</span>
-      </motion.h1>
+      </motion.h2>
       {/* desktop view */}
 
       <div className="container-fluid desktop-view " style={{ background: "black" }}>
@@ -142,16 +144,16 @@ function Product() {
             <div className="container position-relative z-2" >
               <div className="row">
                 <div className="col-lg-6" id="technic">
-                  <motion.h1
+                  <motion.h2
                     style={{ color: '#293BB1' }}
                     initial={{ opacity: 0, y: 100 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, ease: 'easeOut', delay: 0.8 }}
                     viewport={{ once: true }}
-                    className="text-white"
+                    className="h1 text-white"
                   >
                     Technic
-                  </motion.h1>
+                  </motion.h2>
                   <p className="text-white" style={{textAlign: "justify"}} >
                     RACE engineering team is fully equipped to support the clients with various<br />
                     applications and interface engineering enabling the automotive market...
@@ -202,7 +204,7 @@ function Product() {
                 src="/images/hand.png"
                 width={600}
                 height={300}
-                alt="Hand Image"
+                alt="Hand holding a glowing brain, representing market intelligence"
                 className="img-fluid"
               />
             </div>
@@ -212,19 +214,19 @@ function Product() {
             <div className="col-lg-6">
             </div>
             <div className="col-lg-6" id="intellect">
-              <motion.h1
+              <motion.h2
                 style={{ color: '#293BB1' }}
                 initial={{ opacity: 0, y: 100 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, ease: 'easeOut', delay: 0.8 }}
                 viewport={{ once: true }}
-                className="text-white ms-3"
+                className="h1 text-white ms-3"
               >
                 Intellect
-              </motion.h1>
+              </motion.h2>
               <p className="text-white ms-3 mt-4 w-75" style={{textAlign: "justify"}}>
                 “Intellect” is one of the core solution offerings of RACE. Our strong network of market
-                research and consulting team continuously tracks the Indian, global automotive market to
+                research and consulting teams continuously tracks the Indian and global automotive markets to
                 provide clients with rich, extensive insights on market entry strategies, product launch,
                 competitive strategy, mega trends, vehicle/component OEM strategies, regulatory/statutory
                 tracking...
@@ -258,18 +260,18 @@ function Product() {
           </div>
           <div className="row" style={{ minHeight: '60vh' }}>
             <div className="col-lg-3 ms-5" id="legal">
-              <motion.h1
+              <motion.h2
                 style={{ color: '#293BB1' }}
                 initial={{ opacity: 0, y: 100 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, ease: 'easeOut', delay: 0.8 }}
                 viewport={{ once: true }}
-                className="text-white"
+                className="h1 text-white"
               >
                 Legal
-              </motion.h1>
+              </motion.h2>
               <p className="text-white mt-3" style={{textAlign: "justify"}}>
-                Most of the businesses faces many complex legal and commercial pressures when operating internationally that require the guidance of experienced and insightful advisors. Our member ,
+                Most businesses face many complex legal and commercial pressures when operating internationally that require the guidance of experienced and insightful advisors. Our members...
                 <Link href="/accounting-and-legal" style={{ textDecoration: 'none' }}>
                   <span style={{ color: '#0791b0', fontWeight: '500', cursor: 'pointer' }}>
                     Read More
@@ -296,18 +298,18 @@ function Product() {
                   Learn More
                 </Link>
               </motion.button>
-              <motion.h1
+              <motion.h2
                 style={{ color: '#293BB1' }}
                 initial={{ opacity: 0, y: 100 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 1, ease: 'easeOut', delay: 0.8 }}
                 viewport={{ once: true }}
-                className="text-white " id="accounting"
+                className="h1 text-white" id="accounting"
               >
                 Accounting
-              </motion.h1>
+              </motion.h2>
               <p className="text-white mt-3" style={{textAlign: "justify"}}>
-                Global business comes with complex legal and commercial challenges, but you don’t have to face them alone. Our expert law firm members provide seamless, strategic solutions,,..,
+                With an experienced accounts and audit team, RACE has handled taxation activities for major industries and individuals, advising on tax reduction strategies while ensuring compliance...
                 <Link href="/accounting-and-legal" style={{ textDecoration: 'none' }}>
                   <span style={{ color: '#0791b0', fontWeight: '500', cursor: 'pointer' }}>
                     Read More
@@ -340,7 +342,7 @@ function Product() {
                 src="/images/al.png"
                 width={400}
                 height={100}
-                alt="Hand Image"
+                alt="Judge's gavel in front of the scales of justice"
                 className="img-fluid"
                 style={{ maxHeight: '500px' }}
               />
@@ -351,7 +353,7 @@ function Product() {
                 src="/images/accouting.png"
                 width={400}
                 height={100}
-                alt="Hand Image"
+                alt="Accountant using a calculator over financial charts"
                 className="img-fluid"
                 style={{ maxHeight: '600px' }}
               />
@@ -375,8 +377,8 @@ function Product() {
                   <div className="col-lg-6" id="lbi">
                     <h2 className="fw-bold">LBI-Route Survey For<br />Over Dimensional Cargo (ODC)</h2>
                     <p className="mt-3" style={{textAlign: "justify"}}>
-                      Location Based Intelligence emphasis on facilitating hindrance-free movement of goods by conducting route surveys by a team of experts.
-                      LBI team expertise in providing reports with recommendations which help the users to move freely without any difficulties. LBI uses...
+                      Location-Based Intelligence emphasizes facilitating hindrance-free movement of goods by conducting route surveys by a team of experts.
+                      The LBI team specializes in providing reports with recommendations that help users move freely without any difficulties. LBI uses...
                       <Link href="/intellect/lbi" style={{ textDecoration: 'none' }}>
                         <span style={{ color: '#0791b0', fontWeight: '500', cursor: 'pointer' }}>
                           Read More

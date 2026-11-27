@@ -41,13 +41,14 @@ function Notify() {
             transition={{ duration: 0.4 }}
           >
             <h2 className="fw-bold h1">Get Notified</h2>
-            <p>Signup to receive occasional updates.</p>
+            <p>Sign up to receive occasional updates.</p>
 
             <div className="mb-3 d-flex flex-column flex-sm-row align-items-stretch">
               <input
                 type="email"
                 className="form-control"
                 placeholder="Enter your email"
+                aria-label="Email address"
                 style={{
                   borderRadius: "30px",
                   flex: "1 1 auto",
@@ -88,7 +89,7 @@ function Notify() {
               src="/images/mail.webp"
               width={300}
               height={300}
-              alt="Mail Icon"
+              alt=""
               style={{ objectFit: "contain", maxWidth: "100%", height: "auto" }}
             />
           </motion.div>

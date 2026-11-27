@@ -8,30 +8,31 @@ import "swiper/css/autoplay";
 import Image from "next/image";
 
 const ClientSection = () => {
+  // Client names are taken from the logo artwork.
   const images = [
-    "/images/tata.webp",
-    "/images/image 53.webp",
-    "/images/image 47.webp",
-    "/images/image 49.webp",
-    "/images/image 43.webp",
-    "/images/rsb.webp",
-    "/images/pentar.webp",
-    "/images/jsw-logo.webp",
-    "/images/renew-bg.webp",
-    "/images/eil.webp",
-    "/images/lo.webp",
-    "/images/road.webp",
-    "/images/asho.webp",
-    "/images/db.webp",
-    "/images/so.webp",
-    "/images/yusen.webp",
-    "/images/mahi.webp",
-    "/images/frost.webp",
-    "/images/bc.webp",
-    "/images/toshiba.webp",
-    "/images/t.webp",
-    "/images/image 45.webp",
-    "/images/bus.webp",
+    { src: "/images/tata.webp", alt: "Tata Steel logo" },
+    { src: "/images/image 53.webp", alt: "Gamesa logo" },
+    { src: "/images/image 47.webp", alt: "Schmitz Cargobull logo" },
+    { src: "/images/image 49.webp", alt: "Parveen Travels logo" },
+    { src: "/images/image 43.webp", alt: "Vedanta logo" },
+    { src: "/images/rsb.webp", alt: "RSB logo" },
+    { src: "/images/pentar.webp", alt: "Pentar Kloft Retarder logo" },
+    { src: "/images/jsw-logo.webp", alt: "JSW Steel logo" },
+    { src: "/images/renew-bg.webp", alt: "ReNew Power logo" },
+    { src: "/images/eil.webp", alt: "Engineers India Limited (EIL) logo" },
+    { src: "/images/lo.webp", alt: "VE Commercial Vehicles logo" },
+    { src: "/images/road.webp", alt: "Premier Roadlines logo" },
+    { src: "/images/asho.webp", alt: "Ashok Leyland logo" },
+    { src: "/images/db.webp", alt: "DB Schenker logo" },
+    { src: "/images/so.webp", alt: "Allison Transmission logo" },
+    { src: "/images/yusen.webp", alt: "Yusen Logistics logo" },
+    { src: "/images/mahi.webp", alt: "Mahindra logo" },
+    { src: "/images/frost.webp", alt: "Frost & Sullivan logo" },
+    { src: "/images/bc.webp", alt: "Boston Consulting Group (BCG) logo" },
+    { src: "/images/toshiba.webp", alt: "Toshiba logo" },
+    { src: "/images/t.webp", alt: "NTC Group logo" },
+    { src: "/images/image 45.webp", alt: "Telma logo" },
+    { src: "/images/bus.webp", alt: "MG Bus & Coach logo" },
   ];
 
   return (
@@ -52,13 +53,16 @@ const ClientSection = () => {
             992: { slidesPerView: 5, slidesPerGroup: 1 },
           }}
         >
-          {images.map((src, index) => (
+          {images.map((logo, index) => (
             <SwiperSlide key={index} className="text-center">
+              {/* Fixed 220px logo: without a sizes prop Next.js offers just a
+                  1x (256px) and 2x (640px) file, and next/image lazy-loads it. */}
               <Image
-                src={src}
+                src={logo.src}
                 width={220}
                 height={190}
-                alt={`Partner ${index + 1}`}
+                loading="lazy"
+                alt={logo.alt}
                 style={{
                   borderRadius: "20px",
                   objectFit: "contain",

@@ -12,6 +12,13 @@ const nextConfig = {
         destination: "https://raceinnovations.in/:path*",
         permanent: true,
       },
+      // There's no /reports index page (only /reports/{slug}); send it to
+      // the report listing instead of a 404.
+      {
+        source: "/reports",
+        destination: "/market-report",
+        permanent: true,
+      },
     ];
   },
 
@@ -90,6 +97,9 @@ const nextConfig = {
       },
     ],
     minimumCacheTTL: 31536000,
+    // Largest generated width is 1920px (Next's default goes up to 3840px,
+    // which made the homepage download 6000px slide artwork at 3840px).
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
   },
 
   // Smaller bundles → faster TTFB → better audit score.

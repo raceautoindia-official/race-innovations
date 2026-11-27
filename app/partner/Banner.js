@@ -67,14 +67,21 @@ function Banner() {
             modules={[Pagination, Autoplay, FreeMode]}
             className="mySwiper mt-3"
           >
-            {["/images/b-1.png", "/images/b-2.png", "/images/b-3.png", "/images/b-4.png", "/images/b-5.png"].map((src, index) => (
+            {[
+              { src: "/images/b-1.png", alt: "RACE Innovations financing solutions" },
+              { src: "/images/b-2.png", alt: "Individual home loan funding" },
+              { src: "/images/b-3.png", alt: "Corporate funding offerings" },
+              { src: "/images/b-4.png", alt: "Individual home loan funding for families" },
+              { src: "/images/b-5.png", alt: "Corporate funding offerings for businesses" },
+            ].map((slide, index) => (
               <SwiperSlide key={index}>
                 <Image
-                  src={src}
+                  src={slide.src}
                   width={800}
                   height={400}
                   style={{ width: "100%", height: "100%", borderRadius: "10px", objectFit: "cover" }}
-                  alt={`Banner Slide ${index + 1}`}
+                  alt={slide.alt}
+                  priority={index === 0}
                 />
               </SwiperSlide>
             ))}
@@ -86,8 +93,9 @@ function Banner() {
           className="col-md-4 mt-3 p-4 d-flex flex-column align-items-center justify-content-between"
           style={{ backgroundColor: "#d8dbea", borderRadius: "15px", height: "64vh" }}
         >
-          <Image src="/images/calendar.png" width={250} height={200} className="mt-3" style={{ width: "85%", height: "auto", objectFit: "contain" }} alt="Automotive" />
-          <h4 className="text-center mt-3" style={{ color: "#4a78d4" }}>Race Financing Solutions</h4>
+          <Image src="/images/calendar.png" width={250} height={200} className="mt-3" style={{ width: "85%", height: "auto", objectFit: "contain" }} alt="" />
+          {/* The page's H1, styled exactly like the previous h4. */}
+          <h1 className="h4 text-center mt-3" style={{ color: "#4a78d4" }}>RACE Financing Solutions</h1>
           <div className="w-75">
             <select
               value={productType}

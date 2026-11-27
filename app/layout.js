@@ -10,6 +10,15 @@ import NewsletterPopup from './components/NewsletterPopup';
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from 'react-toastify';
 import 'core-js/full/promise/with-resolvers';
+import JsonLd from './components/JsonLd';
+import {
+  SITE_URL,
+  SITE_NAME,
+  TWITTER_HANDLE,
+  DEFAULT_SHARE_IMAGE,
+  organizationJsonLd,
+  websiteJsonLd,
+} from '../lib/seo';
 
 
 const geistSans = Geist({
@@ -22,52 +31,31 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Global defaults — individual pages (page.jsx in each route) override these
-// with their own metadata. metadataBase makes every relative URL in a page's
-// metadata (canonical, OG images) resolve against this domain automatically.
+// Global defaults. Every public page sets its own title, description and
+// canonical with pageMetadata() from lib/seo.js. There is deliberately no
+// canonical here: an inherited one made inner pages point at the homepage.
+// metadataBase makes relative URLs in metadata resolve against the domain.
 export const metadata = {
-  metadataBase: new URL("https://raceinnovations.in"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default:
-      "RACE Innovations | Route Survey Reports for ODC (Over-Dimensional Cargo)",
+    default: "RACE Innovations | Automotive Research & ODC Route Surveys",
     template: "%s | RACE Innovations",
   },
   description:
-    "Automotive market intelligence, EV insights, OEM benchmarking, ODC (Over-Dimensional Cargo) route survey & LBI reports from RACE Innovations.",
-  applicationName: "RACE Innovations",
-  authors: [{ name: "RACE Innovations" }],
-  generator: "Next.js",
-  keywords: [
-    "RACE Innovations",
-    "automotive market intelligence",
-    "ODC route survey",
-    "ODC route survey reports",
-    "over-dimensional cargo route survey",
-    "LBI reports",
-    "OEM benchmarking",
-    "EV intelligence",
-    "automotive forecast reports",
-  ],
+    "Automotive market intelligence and ODC route surveys from Chennai: market and EV reports, OEM benchmarking and over-dimensional cargo route studies.",
+  applicationName: SITE_NAME,
+  authors: [{ name: SITE_NAME }],
   robots: "index, follow",
   openGraph: {
-    siteName: "RACE Innovations",
+    siteName: SITE_NAME,
     type: "website",
     locale: "en_IN",
-    images: [
-      {
-        url: "/images/logo.jpg",
-        width: 1200,
-        height: 630,
-        alt: "RACE Innovations",
-      },
-    ],
+    images: [DEFAULT_SHARE_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    site: "@raceinnovation",
-  },
-  alternates: {
-    canonical: "https://raceinnovations.in/",
+    site: TWITTER_HANDLE,
+    images: [DEFAULT_SHARE_IMAGE.url],
   },
 };
 
@@ -94,6 +82,7 @@ export default function RootLayout({ children }) {
       </head>
 
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
       <ToastContainer />
         {children}
         <BootstrapClient/>

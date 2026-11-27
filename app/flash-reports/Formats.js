@@ -63,7 +63,7 @@ function Formats() {
         variants={slideFromBottom}
         transition={{ delay: 0.1 }}
       >
-        At Race Innovationss, we offer Flash Reports in quarterly, monthly,
+        At RACE Innovations, we offer Flash Reports in quarterly, monthly,
         half-yearly, and yearly formats to keep you updated on the latest market
         intelligence at the frequency that best suits your needs.
       </motion.p>

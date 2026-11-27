@@ -10,9 +10,11 @@ import {
 
 const CONSENT_EVENT = "race-cookie-consent-changed";
 
-// Set these in .env.local to enable real tracking. If left empty, the
-// corresponding script block simply doesn't render.
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "";
+// Google Analytics 4 measurement ID (public: it ships to every browser).
+// NEXT_PUBLIC_GA_ID in .env overrides it. Loads only after the visitor
+// accepts analytics cookies.
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID || "G-LSCG3VZTPK";
+// Set in .env to enable the Meta pixel; left empty, it doesn't render.
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || "";
 
 export default function ConsentScripts() {

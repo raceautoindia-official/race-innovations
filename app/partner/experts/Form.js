@@ -12,7 +12,7 @@ function Form() {
             height={500} 
             className="w-100"
             style={{ height: "100%", objectFit: "cover", borderRadius: "30px" }}
-            alt="Automotive"
+            alt="Laptop showing a funding page next to a calculator"
           />
         </div>
         <div className="col-12 col-md-5 h-100 d-flex align-items-center">
@@ -20,9 +20,10 @@ function Form() {
             className="card p-4 w-100 h-100"
             style={{ boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)", borderRadius: "40px" }}
           >
-            <h4 className="text-center mb-4">
+            {/* The page's H1, styled exactly like the previous h4. */}
+            <h1 className="h4 text-center mb-4">
               Please share your details to get a call from our Loan Experts
-            </h4>
+            </h1>
 
             <div className="row gy-2">
               <div className="col-12 col-md-6 mt-4">
@@ -61,7 +62,7 @@ function Form() {
                 <input type="checkbox" id="declaration" className="me-2 mt-1" required />
                 <label htmlFor="declaration" className="form-label small" style={{ fontSize: "9px" }}>
                   I declare that the information I have provided is accurate & complete to the best of my knowledge.
-                  I hereby authorize Race Innovationss and its affiliates to call, email, send a text through Short Messaging Service (SMS) and/or WhatsApp in relation to any of their products.
+                  I hereby authorize RACE Innovations and its affiliates to call, email, send a text through Short Messaging Service (SMS) and/or WhatsApp in relation to any of their products.
                   The consent herein shall override any registration for DNC/NDNC.
                 </label>
               </div>

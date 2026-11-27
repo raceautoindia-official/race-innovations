@@ -31,12 +31,13 @@ function Mission() {
             variants={fadeInUpVariants}
             transition={{ duration: 0.3, delay: 0.05 }}
           >
+            {/* The page's only H1. */}
             <h1
               className="ms-md-4"
               style={{ fontSize: "clamp(2rem, 5vw, 3rem)", whiteSpace: "nowrap" }}
             >
-              <span style={{ color: "black" }}>Who we</span>
-              <span style={{ color: "#293BB1", marginLeft: "15px" }}>Are</span>
+              <span style={{ color: "black" }}>Who We</span>{" "}
+              <span style={{ color: "#293BB1", marginLeft: "4px" }}>Are</span>
             </h1>
           </motion.div>
 
@@ -54,7 +55,9 @@ function Mission() {
               height={400}
               className="ms-md-5"
               style={{ width: "100%", height: "auto", objectFit: "contain" }}
-              alt="Who We Are"
+              alt="Team of consultants working together at a meeting table"
+              // Above the fold on this page: load it first.
+              priority
             />
           </motion.div>
 

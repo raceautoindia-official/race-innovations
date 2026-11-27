@@ -53,6 +53,49 @@ function It() {
   ];
 
   
+  // Names shown in the logos, used as alt text.
+  const logoNames = {
+    "/images/react.png": "React",
+    "/images/next.png": "Next.js",
+    "/images/ai.png": "Adobe Illustrator",
+    "/images/figma.png": "Figma",
+    "/images/pr.png": "Adobe Premiere Pro",
+    "/images/xd.png": "Adobe XD",
+    "/images/wordpress.png": "WordPress",
+    "/images/apple.png": "Apple iOS",
+    "/images/android.png": "Android",
+    "/images/au.png": "Adobe Audition",
+    "/images/laravel.png": "Laravel",
+    "/images/ae.png": "Adobe After Effects",
+    "/images/shopify.png": "Shopify",
+    "/images/ps.png": "Adobe Photoshop",
+    "/images/node.png": "Node.js",
+    "/images/spring.png": "Spring",
+    "/images/php.png": "PHP",
+    "/images/python.png": "Python",
+    "/images/mysql.png": "MySQL",
+    "/images/postgresql.png": "PostgreSQL",
+    "/images/mongo.png": "MongoDB",
+    "/images/oracle.png": "Oracle",
+    "/images/aws.png": "Amazon Web Services",
+    "/images/azure.png": "Microsoft Azure",
+    "/images/google.png": "Google Cloud",
+    "/images/github.png": "GitHub",
+    "/images/ubuntu.png": "Ubuntu",
+    "/images/gts.png": "GTS Integrated Solutions",
+    "/images/lightstorm.png": "Lightstorm",
+    "/images/meridien.png": "Meridien Group",
+    "/images/haptik.png": "Haptik Cloud",
+    "/images/united.png": "United Telecoms Limited",
+    "/images/papaya.png": "Pappaya Cloud",
+    "/images/redhat.png": "Red Hat",
+    "/images/jio.png": "Jio",
+  };
+  // The logo strips repeat the list once for the endless scroll; the copy is
+  // hidden from screen readers so each logo is announced once.
+  const logoAlt = (src, index, count) =>
+    index < count ? `${logoNames[src] || "Partner"} logo` : "";
+
   const itPdfUrl = "/pdf/it-profile.pdf";
 
   return (
@@ -99,7 +142,8 @@ function It() {
               className="d-flex flex-column align-items-end text-end w-100"
               style={{ paddingBottom: "110px" }}
             >
-              <h3 className="text-white">CUSTOMIZED IT SOLUTIONS</h3>
+              {/* The page's H1, styled exactly like the previous h3. */}
+              <h1 className="h3 text-white">CUSTOMIZED IT SOLUTIONS</h1>
 
               {[
                 {
@@ -151,7 +195,7 @@ function It() {
             >
               <a
                 href={itPdfUrl}
-                download="/pdf/it-profile.pdf"
+                download="RACE-Innovations-IT-Profile.pdf"
                 className="text-decoration-none"
                 style={{
                   display: "inline-flex",
@@ -182,7 +226,7 @@ function It() {
                 </span>
 
                 <span style={{ lineHeight: 1.1 }}>
-                   IT Profile
+                   IT Profile{" "}
                   <span
                     style={{
                       display: "block",
@@ -221,8 +265,8 @@ function It() {
           className="ms-md-4"
           style={{ fontSize: "clamp(1rem, 5vw, 2.7rem)", whiteSpace: "nowrap" }}
         >
-          <span style={{ color: "black" }}>Tools &</span>
-          <span style={{ color: "#293BB1" }} className="ms-3">
+          <span style={{ color: "black" }}>Tools &</span>{" "}
+          <span style={{ color: "#293BB1" }} className="ms-1">
             Technology
           </span>
         </h2>
@@ -231,7 +275,7 @@ function It() {
       <div className="scroll-container mt-4">
         <div className="scroll-content scroll-left">
           {images.concat(images).map((img, index) => (
-            <img key={`left-${index}`} src={img} alt="Tech Logo" className="scroll-img" />
+            <img key={`left-${index}`} src={img} alt={logoAlt(img, index, images.length)} loading="lazy" decoding="async" className="scroll-img" />
           ))}
         </div>
       </div>
@@ -239,7 +283,7 @@ function It() {
       <div className="scroll-container">
         <div className="scroll-content scroll-right">
           {Rightimages.concat(Rightimages).map((img, index) => (
-            <img key={`right-${index}`} src={img} alt="Tech Logo" className="scroll-img" />
+            <img key={`right-${index}`} src={img} alt={logoAlt(img, index, Rightimages.length)} loading="lazy" decoding="async" className="scroll-img" />
           ))}
         </div>
       </div>
@@ -250,8 +294,8 @@ function It() {
           className="ms-md-4"
           style={{ fontSize: "clamp(1rem, 5vw, 2.7rem)", whiteSpace: "nowrap" }}
         >
-          <span style={{ color: "black" }}>Infrastructure &</span>
-          <span style={{ color: "#293BB1" }} className="ms-3">
+          <span style={{ color: "black" }}>Infrastructure &</span>{" "}
+          <span style={{ color: "#293BB1" }} className="ms-1">
             Collaboration
           </span>
         </h2>
@@ -260,7 +304,7 @@ function It() {
       <div className="scroll-container">
         <div className="scroll-content scroll-left">
           {image.concat(image).map((img, index) => (
-            <img key={`infra-${index}`} src={img} alt="Infra Logo" className="h-30 w-40" />
+            <img key={`infra-${index}`} src={img} alt={logoAlt(img, index, image.length)} loading="lazy" decoding="async" className="h-30 w-40" />
           ))}
         </div>
       </div>

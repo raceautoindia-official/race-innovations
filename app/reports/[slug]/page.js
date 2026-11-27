@@ -1,4 +1,4 @@
-import React from "react";
+import React, { cache } from "react";
 import { notFound } from "next/navigation";
 import { getReportBySlug, getAllReports } from "../../../lib/report-service";
 import Navbar from "../../components/Navbar";
@@ -6,33 +6,99 @@ import Footer from "../../components/Footer";
 import ReportDetailClientActions from "../../components/ReportDetailClientActions";
 import ReportAIQuestionBox from "../../components/ReportAIQuestionBox";
 import PageViewTracker from "../../components/PageViewTracker";
+import JsonLd from "../../components/JsonLd";
+import {
+  SITE_NAME,
+  SITE_URL,
+  DEFAULT_SHARE_IMAGE,
+  absoluteUrl,
+  breadcrumbJsonLd,
+  pageMetadata,
+} from "../../../lib/seo";
+
+// generateMetadata and the page both need the report: one query per request.
+const getReport = cache((slug) => getReportBySlug(slug));
+
+async function readSlug(params) {
+  const { slug: rawSlug } = await params;
+  try {
+    return decodeURIComponent(rawSlug || "");
+  } catch {
+    return rawSlug || "";
+  }
+}
+
+function cleanText(value) {
+  return String(value ?? "").replace(/\s+/g, " ").trim();
+}
+
+// Trim to `max` characters at a word boundary.
+function clip(text, max) {
+  const t = cleanText(text);
+  if (t.length <= max) return t;
+  const cut = t.slice(0, max - 1);
+  const lastSpace = cut.lastIndexOf(" ");
+  const base = lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut;
+  return `${base.replace(/[\s,;:.\-–—|]+$/, "")}…`;
+}
+
+// Admin-entered meta titles sometimes already end with the brand; the root
+// title template adds it, so strip it here to avoid "… | RACE Innovations |
+// RACE Innovations".
+function stripBrand(title) {
+  return cleanText(title).replace(/\s*[|\-–—:]\s*RACE Innovations\s*$/i, "");
+}
+
+function reportCanonicalPath(report, slug) {
+  return `/reports/${encodeURIComponent(report.slug || slug)}`;
+}
+
+function reportImageUrl(report) {
+  const src =
+    report.sampleImage ||
+    report.sample_image ||
+    report.image ||
+    report.coverImage ||
+    report.cover_image ||
+    "";
+  return src ? absoluteUrl(src) : "";
+}
 
 export async function generateMetadata({ params }) {
-  const slug = decodeURIComponent(params.slug || "");
-  const report = await getReportBySlug(slug);
+  const slug = await readSlug(params);
+  const report = await getReport(slug);
   if (!report) return {};
-  const canonicalUrl = `https://raceinnovations.in/reports/${encodeURIComponent(
-    report.slug || slug
-  )}`;
 
-  return {
-    title: report.metaTitle || report.title,
-    description: report.metaDescription || report.description,
-    robots: "index, follow",
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    keywords: [
-      "AUTOMOTIVE INDUSTRY REPORTS",
-      "AUTOMOTIVE INDUSTRY FORECAST",
-      "MARKET REPORTS",
-      "LATEST EDITION",
-      "AUTOMOBILE INDUSTRY",
-      "AUTOMOTIVE MARKET",
-      "AUTOMOTIVE TRENDS",
-      "AUTOMOTIVE INDUSTRY TRENDS",
-    ],
-  };
+  const isLbi = isLbiReport(report);
+  const pageTitle =
+    stripBrand(report.metaTitle) || stripBrand(report.title) || "Report";
+  // The template adds " | RACE Innovations"; leave it off when the result
+  // would run past ~60 characters and be cut off in search results.
+  const fitsWithBrand = `${pageTitle} | ${SITE_NAME}`.length <= 60;
+
+  const geography = cleanText(report.geography || report.region || report.country);
+  const fallbackDescription = `${cleanText(report.title)}: ${
+    isLbi ? "Location Based Intelligence report" : "automotive market report"
+  }${geography ? ` covering ${geography}` : ""} from RACE Innovations. See the scope and request a sample.`;
+
+  const image = reportImageUrl(report);
+
+  return pageMetadata({
+    path: reportCanonicalPath(report, slug),
+    title: pageTitle,
+    absoluteTitle: !fitsWithBrand,
+    description: clip(
+      report.metaDescription ||
+        report.description ||
+        report.heroDescription ||
+        fallbackDescription,
+      155
+    ),
+    ...(image ? { image } : {}),
+    // Inactive reports are left out of the listings and the sitemap; keep
+    // them out of search results too.
+    noindex: !report.isActive,
+  });
 }
 
 const LBI_CATEGORY_FALLBACK = [
@@ -113,9 +179,9 @@ function computeRelatedReports(currentReport, allReports) {
 }
 
 export default async function ReportDetailPage({ params }) {
-  const slug = decodeURIComponent(params.slug || "");
+  const slug = await readSlug(params);
   const [report, allReports] = await Promise.all([
-    getReportBySlug(slug),
+    getReport(slug),
     getAllReports().catch(() => []),
   ]);
 
@@ -148,47 +214,32 @@ export default async function ReportDetailPage({ params }) {
   // Structured data — helps LLM search engines (ChatGPT search, Claude,
   // Perplexity, Google AI Overviews) understand this is an authoritative
   // automotive report so they can cite it when answering market questions.
-  const canonicalUrl = `https://raceinnovations.in/reports/${encodeURIComponent(
-    report.slug || ""
-  )}`;
+  const canonicalPath = reportCanonicalPath(report, slug);
+  const canonicalUrl = absoluteUrl(canonicalPath);
   const reportImageAbs =
-    imageSrc && imageSrc.startsWith("http")
-      ? imageSrc
-      : imageSrc
-      ? `https://raceinnovations.in${imageSrc.startsWith("/") ? "" : "/"}${imageSrc}`
-      : "https://raceinnovations.in/images/logo.jpg";
+    reportImageUrl(report) || absoluteUrl(DEFAULT_SHARE_IMAGE.url);
 
+  // Organization comes from the root layout and is referenced by @id.
   const reportJsonLd = {
     "@context": "https://schema.org",
     "@type": "Report",
-    headline: report.title,
+    "@id": `${canonicalUrl}#report`,
+    headline: cleanText(report.title).slice(0, 110),
     name: report.title,
-    description:
+    description: cleanText(
       report.metaDescription ||
-      report.heroDescription ||
-      report.description ||
-      `${report.title} — ${reportIsLbi ? "Location Based Intelligence report" : "Automotive market report"} published by RACE Innovations.`,
+        report.heroDescription ||
+        report.description ||
+        `${report.title}: ${reportIsLbi ? "Location Based Intelligence report" : "automotive market report"} published by RACE Innovations.`
+    ),
     url: canonicalUrl,
+    mainEntityOfPage: canonicalUrl,
     image: reportImageAbs,
     inLanguage: "en",
-    isAccessibleForFree: false,
-    datePublished: report.publishedAt || report.published_at || undefined,
-    dateModified:
-      report.updatedAt || report.updated_at || report.publishedAt || undefined,
-    author: {
-      "@type": "Organization",
-      name: "RACE Innovations",
-      url: "https://raceinnovations.in",
-    },
-    publisher: {
-      "@type": "Organization",
-      name: "RACE Innovations",
-      url: "https://raceinnovations.in",
-      logo: {
-        "@type": "ImageObject",
-        url: "https://raceinnovations.in/images/logo.jpg",
-      },
-    },
+    datePublished: report.createdAt || undefined,
+    dateModified: report.updatedAt || report.createdAt || undefined,
+    author: { "@id": `${SITE_URL}/#organization` },
+    publisher: { "@id": `${SITE_URL}/#organization` },
     about: [report.category, report.geography || report.region]
       .filter(Boolean)
       .map((s) => String(s)),
@@ -196,41 +247,26 @@ export default async function ReportDetailPage({ params }) {
       report.title,
       report.category,
       report.geography || report.region,
-      "automotive market report",
-      "automotive industry report",
-      "RACE Innovations",
+      ...(reportIsLbi
+        ? ["Location Based Intelligence report", "ODC route survey"]
+        : ["automotive market report", "automotive industry report"]),
     ]
       .filter(Boolean)
       .join(", "),
   };
 
-  const reportBreadcrumbJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://raceinnovations.in" },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: reportIsLbi ? "LBI Reports" : "Market Reports",
-        item: `https://raceinnovations.in${browseAllHref}`,
-      },
-      { "@type": "ListItem", position: 3, name: report.title, item: canonicalUrl },
-    ],
-  };
+  const reportBreadcrumbJsonLd = breadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    {
+      name: reportIsLbi ? "LBI Reports" : "Market Reports",
+      path: browseAllHref,
+    },
+    { name: report.title, path: canonicalPath },
+  ]);
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(reportJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(reportBreadcrumbJsonLd),
-        }}
-      />
+      <JsonLd data={[reportJsonLd, reportBreadcrumbJsonLd]} />
       <PageViewTracker
         contentType="report"
         slug={report.slug}

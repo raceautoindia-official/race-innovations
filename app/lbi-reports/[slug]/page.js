@@ -1,38 +1,16 @@
-import { redirect } from "next/navigation";
-import { getReportBySlug } from "../../../lib/report-service";
+import { permanentRedirect } from "next/navigation";
 
-export async function generateMetadata({ params }) {
-  const slug = decodeURIComponent(params?.slug || "");
-  const report = await getReportBySlug(slug);
-  if (!report) return {};
-
-  return {
-    title: report.metaTitle || `${report.title} | LBI Report - RACE Innovations`,
-    description:
-      report.metaDescription ||
-      report.description ||
-      "Location Based Intelligence report from RACE Innovations.",
-    keywords: [
-      "LBI report",
-      "Location Based Intelligence",
-      "ODC route survey",
-      "logistics intelligence",
-      "RACE Innovations",
-      report.title,
-      report.category,
-      report.region,
-    ].filter(Boolean),
-    alternates: {
-      canonical: `https://raceinnovations.in/lbi-reports/${slug}`,
-    },
-  };
-}
-
-// LBI report detail reuses the same renderer as market reports — slugs are
-// unique per report and the existing /reports/[slug] page already handles
-// every field the LBI form supports (highlights, sections, deliverables,
-// FAQs, pricing, sample request, related reports).
-export default function LbiReportDetailPage({ params }) {
-  const slug = decodeURIComponent(params?.slug || "");
-  redirect(`/reports/${slug}`);
+// LBI reports live at /reports/{slug} (the same renderer as market reports;
+// slugs are unique across both). This old URL only forwards there with a
+// permanent (308) redirect, so search engines move any signals to the
+// canonical page. No metadata is needed: nothing is rendered here.
+export default async function LbiReportDetailPage({ params }) {
+  const { slug: rawSlug } = await params;
+  let slug = rawSlug || "";
+  try {
+    slug = decodeURIComponent(slug);
+  } catch {
+    // Malformed escape: forward the slug as received.
+  }
+  permanentRedirect(`/reports/${encodeURIComponent(slug)}`);
 }

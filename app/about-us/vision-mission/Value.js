@@ -12,8 +12,8 @@ const fadeInUpVariants = {
 function Value() {
   return (
     <>
-      <motion.h1
-        className=""
+      <motion.h2
+        className="h1"
         style={{
           fontSize: "clamp(2rem, 5vw, 3rem)",
           whiteSpace: "nowrap",
@@ -25,9 +25,9 @@ function Value() {
         variants={fadeInUpVariants}
         transition={{ duration: 0.3 }}
       >
-        <span style={{ color: "black" }}>Race</span>
-        <span style={{ color: "#293BB1", marginLeft: "15px" }}>Values</span>
-      </motion.h1>
+        <span style={{ color: "black" }}>RACE</span>{" "}
+        <span style={{ color: "#293BB1", marginLeft: "4px" }}>Values</span>
+      </motion.h2>
 
       <div
         className="container-fluid"
@@ -80,7 +80,7 @@ function Value() {
                       width={120}
                       height={120}
                       className="img-fluid"
-                      alt={item.title}
+                      alt=""
                     />
                   </div>
                   <div className="col-md-8 d-flex flex-column">
@@ -133,7 +133,7 @@ function Value() {
                       width={120}
                       height={120}
                       className="img-fluid"
-                      alt={item.title}
+                      alt=""
                     />
                   </div>
                   <div className="col-md-8 d-flex flex-column">

@@ -30,14 +30,14 @@ function Intellect() {
           variants={fadeInUp}
           transition={{ delay: 0.1 }}
         >
-          <motion.h1
-            className="mt-5"
+          <motion.h2
+            className="h1 mt-5"
             style={{ color: "#293BB1" }}
             variants={fadeInUp}
             transition={{ delay: 0.1 }}
           >
             Intellect
-          </motion.h1>
+          </motion.h2>
           <motion.h4 className="mt-3" variants={fadeInUp} transition={{ delay: 0.2 }}>
             RACE has a global presence
           </motion.h4>

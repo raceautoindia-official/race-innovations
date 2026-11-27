@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import styles from "../../app/page.module.css";
 // Bootstrap CSS is imported once in app/layout.js — no need to re-import here.
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { FaInstagram, FaFacebook, FaLinkedin, FaYoutube } from "react-icons/fa";
+import { FaInstagram, FaFacebook, FaLinkedin } from "react-icons/fa";
 import { SiX } from "react-icons/si";
 import { FiMenu } from "react-icons/fi";
 import { MdAnalytics, MdDisplaySettings } from "react-icons/md";
@@ -83,6 +83,21 @@ const Navbar = () => {
     }
   };
 
+  // Click / keyboard support for desktop toggles that are buttons rather than
+  // links. A mouse click arrives after hover has already opened the menu, so
+  // it keeps it open; a keyboard press (event.detail === 0) toggles it.
+  const handleDesktopDropdownOpen = (e) => {
+    const toggle = e.currentTarget;
+    const dropdown = toggle.closest(".nav-item.dropdown");
+    const menu = dropdown?.querySelector(".dropdown-menu");
+    if (!dropdown || !menu) return;
+
+    const open = e.detail === 0 ? !menu.classList.contains("show") : true;
+    dropdown.classList.toggle("show", open);
+    menu.classList.toggle("show", open);
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+
   const handleDesktopDropdownLeave = (e) => {
     if (typeof window !== "undefined" && window.innerWidth >= 992) {
       const dropdown = e.currentTarget;
@@ -126,7 +141,7 @@ const Navbar = () => {
       >
         <div className="container-fluid">
           <Link className="navbar-brand d_navlogo" href="/">
-            <Image src="/images/logo_v2.png" alt="Logo" width={180} height={34} />
+            <Image src="/images/logo_v2.png" alt="RACE Innovations logo" width={180} height={34} />
           </Link>
 
           <a
@@ -191,15 +206,19 @@ const Navbar = () => {
                 onMouseEnter={handleDesktopDropdownEnter}
                 onMouseLeave={handleDesktopDropdownLeave}
               >
-                <Link
-                  href="#"
+                {/* No products overview page exists, so this is a plain toggle
+                    (opens on hover, or on click/keyboard) instead of a "#" link. */}
+                <button
+                  type="button"
                   className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                   id="productsDropdown"
-                  role="button"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                  onClick={handleDesktopDropdownOpen}
                   style={{ color: "#293BB1", whiteSpace: "nowrap" }}
                 >
                   Products
-                </Link>
+                </button>
                 <ul className="dropdown-menu" aria-labelledby="productsDropdown">
                   <li>
                     <Link className="dropdown-item" href="/technic">
@@ -231,7 +250,7 @@ const Navbar = () => {
                 onMouseLeave={handleDesktopDropdownLeave}
               >
                 <Link
-                  href="#"
+                  href="/market-report"
                   className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                   id="reportsDropdown"
                   role="button"
@@ -364,7 +383,7 @@ const Navbar = () => {
               <Link className="nav-link me-2 ms-3 mt-2 header_icon" href="/contact">
                 <Image
                   src="/images/phone.png"
-                  alt="Data Icon"
+                  alt="Contact RACE Innovations"
                   width={23}
                   height={23}
                   className="me-2 flex-shrink-0"
@@ -383,7 +402,7 @@ const Navbar = () => {
               <h5 className="offcanvas-title" id="mobileNavLabel">
                 <Image
                   src="/images/l.png"
-                  alt="Logo"
+                  alt="RACE Innovations logo"
                   width={100}
                   height={100}
                   style={{ objectFit: "contain" }}
@@ -435,16 +454,18 @@ const Navbar = () => {
                 </li>
 
                 <li className="nav-item dropdown ms-5">
-                  <Link
-                    href="#"
+                  {/* No products overview page: a real button toggle instead of
+                      a "#" link. */}
+                  <button
+                    type="button"
                     className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                     id="productsDropdownMobile"
-                    role="button"
                     data-bs-toggle="dropdown"
-                    style={{ color: "#293BB1" }}
+                    aria-expanded="false"
+                    style={{ color: "#293BB1", width: "100%", textAlign: "left" }}
                   >
                     Products
-                  </Link>
+                  </button>
                   <ul className="dropdown-menu" aria-labelledby="productsDropdownMobile">
                     <li>
                       <Link className="dropdown-item" onClick={handleOffcanvasHide} href="/technic">
@@ -487,16 +508,19 @@ const Navbar = () => {
                 </li>
 
                 <li className="nav-item dropdown ms-5">
-                  <Link
-                    href="#"
+                  {/* A button, not a link: on mobile a tap must open the submenu
+                      (a Next Link here would navigate away instead). Market
+                      Report is the first submenu item. */}
+                  <button
+                    type="button"
                     className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                     id="reportsDropdownMobile"
-                    role="button"
                     data-bs-toggle="dropdown"
-                    style={{ color: "#293BB1" }}
+                    aria-expanded="false"
+                    style={{ color: "#293BB1", width: "100%", textAlign: "left" }}
                   >
                     Reports
-                  </Link>
+                  </button>
                   <ul className="dropdown-menu" aria-labelledby="reportsDropdownMobile">
                     <li>
                       <Link
@@ -535,7 +559,7 @@ const Navbar = () => {
 
                 <li className="nav-item dropdown ms-5">
                   <Link
-                    href="#"
+                    href="/about-us/investors"
                     className={`nav-link dropdown-toggle menus ${styles.navbarCustom}`}
                     id="investDropdownMobile"
                     role="button"
@@ -649,21 +673,42 @@ const Navbar = () => {
             </div>
 
             <div className="d-flex justify-content-between g-2 px-3 pb-3">
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+              {/* Same profiles as the footer and the Organization schema. */}
+              <a
+                href="https://www.instagram.com/raceinnovations/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="RACE Innovations on Instagram"
+              >
                 <FaInstagram size={35} style={{ color: "#E4405F" }} className="mt-1" />
               </a>
-              <a href="https://x.com/yourhandle" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://x.com/raceinnovations"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="RACE Innovations on X"
+              >
                 <SiX size={32} style={{ color: "#000000" }} className="mt-1" />
               </a>
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://www.facebook.com/raceinnovationspvtltd/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="RACE Innovations on Facebook"
+              >
                 <FaFacebook size={42} style={{ color: "#1877F2" }} />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://www.linkedin.com/company/race-innovations-private-limited/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="RACE Innovations on LinkedIn"
+              >
                 <FaLinkedin size={42} style={{ color: "#0077B5" }} />
               </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
-                <FaYoutube size={44} style={{ color: "#FF0000" }} />
-              </a>
+              {/* YouTube icon removed: it pointed to youtube.com itself, and no
+                  RACE channel URL is known. To restore it, add a link with the
+                  real channel URL and re-import FaYoutube from react-icons/fa. */}
             </div>
           </div>
 
@@ -671,19 +716,19 @@ const Navbar = () => {
             <div className={styles.navigation}>
               <Link href="https://raceautoanalytics.com/" style={{ textDecoration: "none" }}>
                 <div className={styles.navItem}>
-                  <MdAnalytics color={iconColor} size={iconSize} title="Forecast" />
+                  <MdAnalytics color={iconColor} size={iconSize} title="Analytics" />
                   <span className={styles.caption}>Analytics</span>
                 </div>
               </Link>
 
               <Link href="/it" className={styles.navItem}>
-                <MdDisplaySettings color={iconColor} size={iconSize} title="Subscription" />
-                <span className={styles.caption}>It Services</span>
+                <MdDisplaySettings color={iconColor} size={iconSize} title="IT Services" />
+                <span className={styles.caption}>IT Services</span>
               </Link>
 
               <Link href="/contact" style={{ textDecoration: "none" }}>
                 <div className={styles.navItem}>
-                  <HiPhoneOutgoing color={iconColor} size={iconSize} title="Events" />
+                  <HiPhoneOutgoing color={iconColor} size={iconSize} title="Contact" />
                   <span className={styles.caption}>Contact</span>
                 </div>
               </Link>

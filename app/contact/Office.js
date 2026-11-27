@@ -17,9 +17,10 @@ function Office() {
   };
 
   const images = [
-    { src: "/images/group-1.webp", alt: "Office Image 1" },
-    { src: "/images/group-2.webp", alt: "Office Image 2" },
-    { src: "/images/group-3.webp", alt: "Office Image 3" },
+    // The addresses are printed on the photos, so the alt text repeats them.
+    { src: "/images/group-1.webp", alt: "Germany office: Ginsterweg 37, 53757 Sankt Augustin, Germany" },
+    { src: "/images/group-2.webp", alt: "UK office: Briggs House, Thurnham, Lancaster, Lancashire, LA2 0BA, United Kingdom" },
+    { src: "/images/group-3.webp", alt: "Chennai head office: Olympia Platina, SIDCO Industrial Estate, Guindy, Chennai, Tamil Nadu 600032" },
   ];
 
   return (
@@ -33,7 +34,7 @@ function Office() {
       onViewportEnter={() => setHasAnimated(true)}
     >
       <h2 className="text-center" style={{ fontSize: "3rem", whiteSpace: "nowrap" }}>
-        <span style={{ color: "black", marginRight: "10px" }}>Our</span>
+        <span style={{ color: "black" }}>Our</span>{" "}
         <span style={{ color: "#293BB1" }}>Office</span>
       </h2>
 

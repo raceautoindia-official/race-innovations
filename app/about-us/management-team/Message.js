@@ -12,7 +12,7 @@ function Message() {
   return (
     <div className="container mt-1">
       <h2 style={{ fontSize: "3rem", fontWeight: "bold" }}>
-        <span style={{ color: "black", marginRight: "10px" }}>Message</span>
+        <span style={{ color: "black" }}>Message</span>{" "}
         <span style={{ color: "#293BB1" }}>from the MD</span>
       </h2>
 
@@ -40,7 +40,7 @@ function Message() {
         </p>
 
         <p>
-          Race Innovationss was founded with a bold vision—to unlock the full
+          RACE Innovations was founded with a bold vision—to unlock the full
           potential of India’s automotive, agricultural, construction, and
           mining industries. These sectors face numerous challenges, from supply
           chain complexities and regulatory compliance to the need for advanced
@@ -53,7 +53,7 @@ function Message() {
         <p>
           As a trusted partner in the industry, we take pride in delivering
           high-quality, innovative, and reliable solutions tailored to our
-          clients’ needs. Over a decade of growth, Race Innovationss has
+          clients’ needs. Over a decade of growth, RACE Innovations has
           established itself as a recognised leader in automotive and industrial
           consulting. Today, we collaborate with 50+ companies, ranging from
           emerging businesses to global automotive manufacturers, OEMs, fleet

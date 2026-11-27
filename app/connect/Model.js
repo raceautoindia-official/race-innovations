@@ -67,12 +67,12 @@ function Model() {
     {
       number: "01",
       color: "linear-gradient(to right, #007bff, #0056b3)",
-      text: "Engineering resource to support in development, testing, validating new products for different applications.",
+      text: "Engineering resources to support development, testing and validation of new products for different applications.",
     },
     {
       number: "02",
       color: "linear-gradient(to right, #ff9800, #e65100)",
-      text: "Program manager with marketing skill supported by a team of dedicated resources to run the operation.",
+      text: "A program manager with marketing skills, supported by a team of dedicated resources, to run the operation.",
     },
     {
       number: "03",

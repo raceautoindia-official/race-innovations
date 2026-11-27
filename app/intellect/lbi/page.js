@@ -1,40 +1,34 @@
-export const metadata = {
-    title: "Race Innovations",
-    description: "Race Innovations is a global leader in technology solutions, with a strong presence across multiple countries and headquarters in India.",
-    keywords: "Race Innovations, technology solutions, global innovation, AI, automation, digital transformation",
-    robots: "index, follow",
-    openGraph: {
-      title: "Race Innovations - Transforming Industries",
-      description: "Race Innovations provides cutting-edge technology solutions, AI-driven automation, and digital transformation services to businesses worldwide.",
-      url: "https://raceinnovations.in",
-      siteName: "Race Innovations",
-      images: [
-        {
-          url: "/images/logo.jpg", 
-          width: 1200,
-          height: 630,
-          alt: "Race Innovations",
-        },
-      ],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      site: "@raceinnovation",
-      title: "Race Innovations",
-      description: "Join Race Innovations in pioneering AI, automation, and digital transformation on a global scale.",
-      images: ["https://raceinnovations.in/assets/og-image.jpg"],
-    },
-    alternates: {
-      canonical: "https://raceinnovations.in",
-    },
-  };
 import Lbi from "./Home.js";
+import JsonLd from "../../components/JsonLd";
+import { pageMetadata, serviceJsonLd, breadcrumbJsonLd } from "../../../lib/seo";
 
+const description =
+  "ODC route surveys for over-dimensional cargo: shortest feasible route, turning-circle simulation, bridge and gradient checks, and civil cost estimates.";
+
+export const metadata = pageMetadata({
+  path: "/intellect/lbi",
+  title: "ODC Route Survey & LBI Services, India",
+  description,
+});
+
+const jsonLd = [
+  serviceJsonLd({
+    name: "ODC Route Survey (Location Based Intelligence)",
+    serviceType: "Route survey for over-dimensional cargo",
+    description,
+    path: "/intellect/lbi",
+  }),
+  breadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Intellect", path: "/intellect" },
+    { name: "LBI Route Survey", path: "/intellect/lbi" },
+  ]),
+];
 
 export default function Page() {
  return(
   <main>
+   <JsonLd data={jsonLd} />
    <Lbi/>
   </main>
  )

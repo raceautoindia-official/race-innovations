@@ -114,7 +114,8 @@ export default function ContactInfo() {
                   <a href="tel:+914466108114" className="contact-info-link">
                     +91 44 66108114
                   </a>
-                  <span className="contact-info-divider">/</span>
+                  {" "}
+                  <span className="contact-info-divider">/</span>{" "}
                   <a href="tel:+918072098352" className="contact-info-link">
                     +91 8072098352
                   </a>
@@ -154,6 +155,18 @@ export default function ContactInfo() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Office map. loading="lazy" keeps Google Maps from loading until
+            the visitor scrolls near it. */}
+        <div className="contact-map">
+          <iframe
+            title="RACE Innovations office map"
+            src="https://www.google.com/maps?q=Olympia%20Platina%2C%20Guindy%2C%20Chennai%20600032&output=embed"
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+          />
         </div>
       </div>
 
@@ -239,6 +252,23 @@ export default function ContactInfo() {
           line-height: 1.55;
         }
 
+        .contact-map {
+          margin-top: 18px;
+          height: 340px;
+          border: 1px solid #e1e8f7;
+          border-radius: 22px;
+          overflow: hidden;
+          box-shadow: 0 18px 42px rgba(15, 23, 42, 0.06);
+          background: #f7faff;
+        }
+
+        .contact-map iframe {
+          display: block;
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
+
         @media (max-width: 767px) {
           .contact-info-grid {
             grid-template-columns: 1fr;
@@ -247,6 +277,11 @@ export default function ContactInfo() {
 
           .contact-info-card {
             padding: 20px;
+            border-radius: 18px;
+          }
+
+          .contact-map {
+            height: 260px;
             border-radius: 18px;
           }
         }

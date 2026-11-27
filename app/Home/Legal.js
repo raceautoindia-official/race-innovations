@@ -45,16 +45,16 @@ function Legal() {
               </Link>
             </motion.button>
 
-            <motion.h1
+            <motion.h2
               style={{ color: "#293BB1" }}
-              className="mt-4"
+              className="h1 mt-4"
               initial={{ opacity: 0, y: 100 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.3 }}
               viewport={{ once: true }}
             >
               Accounting
-            </motion.h1>
+            </motion.h2>
             <p className="mt-3">
               Global business comes with complex legal and commercial challenges...
             </p>
@@ -158,16 +158,16 @@ function Legal() {
               />
             </div>
 
-            <motion.h1
+            <motion.h2
               style={{ color: "#293BB1" }}
-              className="mt-4"
+              className="h1 mt-4"
               initial={{ opacity: 0, y: 100 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.3 }}
               viewport={{ once: true }}
             >
               Accounting
-            </motion.h1>
+            </motion.h2>
             <p className="mt-3">Global business comes with complex legal and commercial challenges...</p>
             <motion.button
               className="btn btn-outline-primary mt-3"

@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Pagination from "../components/common/Pagination";
 import ReportsCertifications from "../components/ReportsCertifications";
+import { buildMarketListing, uniqueClean } from "./reportListData";
 
 const CATEGORY_OPTIONS = [
   "EV Intelligence",
@@ -49,20 +50,22 @@ const COUNTRY_OPTIONS = [
   "Canada",
 ];
 
-function cleanValue(value) {
-  return String(value ?? "").trim();
-}
-
-function uniqueClean(values) {
-  return Array.from(new Set(values.map((v) => cleanValue(v)).filter(Boolean)));
-}
-
-export default function HomePage() {
-  const [reports, setReports] = useState([]);
-  const [rawCategoryValues, setRawCategoryValues] = useState([]);
-  const [rawCountryValues, setRawCountryValues] = useState([]);
-  const [rawRegionValues, setRawRegionValues] = useState([]);
-  const [loadingReports, setLoadingReports] = useState(true);
+// initialData comes from the server page (buildMarketListing), so the report
+// cards and their links are in the first HTML. It is null only when the
+// server could not reach the database; the list is then fetched here.
+export default function HomePage({ initialData = null }) {
+  const hasInitialData = !!initialData;
+  const [reports, setReports] = useState(initialData?.reports || []);
+  const [rawCategoryValues, setRawCategoryValues] = useState(
+    initialData?.categoryValues || []
+  );
+  const [rawCountryValues, setRawCountryValues] = useState(
+    initialData?.countryValues || []
+  );
+  const [rawRegionValues, setRawRegionValues] = useState(
+    initialData?.regionValues || []
+  );
+  const [loadingReports, setLoadingReports] = useState(!hasInitialData);
   const [reportsError, setReportsError] = useState("");
 
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -93,6 +96,8 @@ export default function HomePage() {
   });
 
   useEffect(() => {
+    if (hasInitialData) return undefined;
+
     let active = true;
 
     async function loadReports() {
@@ -111,85 +116,15 @@ export default function HomePage() {
         }
 
         const json = await res.json();
-        const rawReports = Array.isArray(json?.data) ? json.data : [];
-
-        const allCategoriesFromDb = uniqueClean(
-          rawReports.map((item) => item?.category || "")
+        const listing = buildMarketListing(
+          Array.isArray(json?.data) ? json.data : []
         );
-
-        const allCountriesFromDb = uniqueClean(
-          rawReports.map((item) => item?.country || "")
-        );
-
-        const allRegionsFromDb = uniqueClean(
-          rawReports.map((item) => item?.region || "")
-        );
-
-        const normalized = rawReports
-          .filter((item) => {
-            return (
-              item?.isActive === true ||
-              item?.isActive === 1 ||
-              item?.isActive === "1" ||
-              item?.is_active === true ||
-              item?.is_active === 1 ||
-              item?.is_active === "1"
-            );
-          })
-          .map((item, index) => {
-            const category = cleanValue(item.category || item.badge || "General");
-            const country = cleanValue(item.country || item.geography || "");
-
-            return {
-              id: item.id ?? index + 1,
-              slug: item.slug || "",
-              title: item.title || "Untitled Report",
-              previewTitle: item.previewTitle || item.preview_title || "",
-              company: item.company || "",
-              description: item.description || "",
-              summary:
-                item.previewTitle ||
-                item.preview_title ||
-                item.heroDescription ||
-                item.hero_description ||
-                item.metaDescription ||
-                item.meta_description ||
-                item.description ||
-                "No summary available for this report.",
-              region: item.region || "Other",
-              country,
-              category,
-              geography: country,
-              badge: category,
-              period: item.period || "",
-              accent: item.accent || "#2f45bf",
-              sortOrder: Number(item.sortOrder ?? item.sort_order ?? 0),
-              tags: Array.isArray(item.tags)
-                ? item.tags
-                : Array.isArray(item.tags_json)
-                ? item.tags_json
-                : [],
-              sampleImage:
-                item.sampleImage ||
-                item.sample_image ||
-                item.image ||
-                item.coverImage ||
-                item.cover_image ||
-                "",
-            };
-          })
-          .sort((a, b) => {
-            if (a.sortOrder !== b.sortOrder) {
-              return a.sortOrder - b.sortOrder;
-            }
-            return String(a.title || "").localeCompare(String(b.title || ""));
-          });
 
         if (active) {
-          setRawCategoryValues(allCategoriesFromDb);
-          setRawCountryValues(allCountriesFromDb);
-          setRawRegionValues(allRegionsFromDb);
-          setReports(normalized);
+          setRawCategoryValues(listing.categoryValues);
+          setRawCountryValues(listing.countryValues);
+          setRawRegionValues(listing.regionValues);
+          setReports(listing.reports);
         }
       } catch (error) {
         console.error("Error loading reports:", error);
@@ -212,7 +147,7 @@ export default function HomePage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [hasInitialData]);
 
   const categories = useMemo(() => {
     return [
@@ -273,11 +208,9 @@ export default function HomePage() {
   }, [currentPage]);
 
   const totalPages = Math.ceil(filteredReports.length / reportsPerPage);
-
-  const paginatedReports = useMemo(() => {
-    const startIndex = (currentPage - 1) * reportsPerPage;
-    return filteredReports.slice(startIndex, startIndex + reportsPerPage);
-  }, [filteredReports, currentPage]);
+  const pageStartIndex = (currentPage - 1) * reportsPerPage;
+  const isOnCurrentPage = (index) =>
+    index >= pageStartIndex && index < pageStartIndex + reportsPerPage;
 
   function openEnquiryModal() {
     setEnquiryStatus({ type: "", message: "" });
@@ -486,8 +419,8 @@ export default function HomePage() {
                   lineHeight: "1.6",
                 }}
               >
-                Preset and manually added categories and countries are both
-                available in the filters.
+                Search by keyword, or filter by category, region and country
+                to find the report you need.
               </p>
             </div>
           </div>
@@ -778,7 +711,17 @@ export default function HomePage() {
           ) : filteredReports.length > 0 ? (
             <>
               <div className="row g-4 justify-content-center">
-                {paginatedReports.map((report) => (
+                {filteredReports.map((report, index) =>
+                  !isOnCurrentPage(index) ? (
+                    // Reports on other pages stay in the HTML as plain links
+                    // (hidden until their page is selected) so crawlers can
+                    // reach every report from this listing.
+                    <div key={report.id} hidden>
+                      <a href={report.slug ? `/reports/${report.slug}` : "#"}>
+                        {report.title}
+                      </a>
+                    </div>
+                  ) : (
                   <div key={report.id} className="col-12 col-md-6 col-xl-4">
                     <div
                       style={{
@@ -971,7 +914,8 @@ export default function HomePage() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  )
+                )}
               </div>
 
               {totalPages > 1 && (

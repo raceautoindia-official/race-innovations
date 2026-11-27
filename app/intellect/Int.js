@@ -32,7 +32,7 @@ function Int() {
               objectFit: "contain",
               transition: "transform 0.3s ease-in-out",
             }}
-            alt="Intelligence Image"
+            alt="Intellect: Screening Ideas logo"
           />
         </motion.div>
 
@@ -46,8 +46,8 @@ function Int() {
         >
           <p style={{ textAlign: "justify" }}>
             “Intellect” is one of the core solution offerings of RACE. Our
-            strong network of market research and consulting team continuously
-            tracks the Indian, global automotive market to provide clients with
+            strong network of market research and consulting teams continuously
+            tracks the Indian and global automotive markets to provide clients with
             rich, extensive insights on market entry strategies, product launch,
             competitive strategy, mega trends, vehicle/component OEM strategies,
             regulatory/statutory tracking, customer behavior analysis, and
@@ -66,8 +66,8 @@ function Int() {
         powerful insights that drive growth and success...
       </p>
 
-      <motion.h1
-        className="text-center"
+      <motion.h2
+        className="h1 text-center"
         style={{
           fontSize: "clamp(2rem, 5vw, 3rem)",
           fontWeight: "bold",
@@ -79,7 +79,7 @@ function Int() {
         transition={{ duration: 0.3, delay: 0.1 }}
       >
         Features
-      </motion.h1>
+      </motion.h2>
 
       <motion.div
         className="row text-start"

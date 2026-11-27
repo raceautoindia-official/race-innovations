@@ -38,8 +38,9 @@ function Ttl() {
           <div style={{ position: "relative", width: "100%", height: "400px" }}>
             <Image
               src="/images/ttl.png"
-              alt="TTL Illustration"
+              alt="Hands typing on a laptop with web, support and communication icons"
               fill
+              sizes="(min-width: 992px) 66vw, 100vw"
               className="img-fluid rounded shadow-sm"
               style={{ objectFit: "cover", borderRadius: "10px" }}
             />
@@ -58,7 +59,7 @@ function Ttl() {
             We build AI-powered, SEO-optimized websites designed to grow your
             business. No cookie-cutter solutions—just custom web development
             tailored to your needs. Our expert team handles everything from
-            well-researched SEO-enabled contents, stunning designs to
+            well-researched, SEO-ready content and stunning designs to
             high-performance applications, ensuring a seamless user experience
             and a strong online presence.
           </p>

@@ -1,102 +1,20 @@
 import Home from "./Home/home.js";
+import { pageMetadata } from "../lib/seo";
 
-export const metadata = {
-  // Clarifies ODC = Over-Dimensional Cargo route survey reports.
-  title:
-    "RACE Innovations | Route Survey Reports for ODC (Over-Dimensional Cargo)",
-  // Description within Google's 150–160 sweet spot; spells out ODC for SEO.
+// Company (Organization) and WebSite structured data come from the root
+// layout, so they appear on every page.
+export const metadata = pageMetadata({
+  path: "/",
+  title: "RACE Innovations | Automotive Research & ODC Route Surveys",
+  absoluteTitle: true,
   description:
-    "Automotive market intelligence, EV insights, OEM benchmarking, ODC (Over-Dimensional Cargo) route survey & LBI reports from RACE Innovations — research for OEMs & investors.",
-  keywords: [
-    "RACE Innovations",
-    "automotive market intelligence",
-    "automotive market reports",
-    "automotive forecast reports",
-    "EV intelligence",
-    "OEM benchmarking",
-    "vehicle sales forecast",
-    "ODC route survey",
-    "ODC route survey reports",
-    "over-dimensional cargo route survey",
-    "ODC route feasibility study",
-    "LBI reports",
-    "Location Based Intelligence",
-    "logistics intelligence",
-    "Chennai automotive consulting",
-    "automotive research India",
-  ],
-  robots: "index, follow",
-  alternates: {
-    canonical: "https://raceinnovations.in/",
-  },
-  openGraph: {
-    title:
-      "RACE Innovations | Route Survey Reports for ODC (Over-Dimensional Cargo)",
-    description:
-      "Automotive market intelligence, ODC route survey, LBI reports, EV intelligence, OEM benchmarking and forecast insights from RACE Innovations.",
-    url: "https://raceinnovations.in/",
-    siteName: "RACE Innovations",
-    images: [
-      {
-        url: "/images/logo.jpg",
-        width: 1200,
-        height: 630,
-        alt: "RACE Innovations",
-      },
-    ],
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "@raceinnovation",
-    title: "RACE Innovations",
-    description:
-      "Automotive market intelligence, ODC route survey, LBI reports and forecast insights.",
-  },
-};
-
-const orgJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: "RACE Innovations",
-  url: "https://raceinnovations.in",
-  logo: "https://raceinnovations.in/images/logo.jpg",
-  sameAs: [
-    "https://www.linkedin.com/company/race-innovations-private-limited/",
-    "https://www.facebook.com/raceinnovationspvtltd/",
-    "https://www.instagram.com/raceinnovations/",
-    "https://x.com/raceinnovations",
-  ],
-  contactPoint: [
-    {
-      "@type": "ContactPoint",
-      telephone: "+91-44-66108114",
-      contactType: "customer service",
-      email: "info@raceinnovations.in",
-      areaServed: "IN",
-      availableLanguage: ["en"],
-    },
-  ],
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: "Olympia Platina, Guindy",
-    addressLocality: "Chennai",
-    postalCode: "600032",
-    addressRegion: "TN",
-    addressCountry: "IN",
-  },
-};
+    "Automotive market intelligence and ODC route surveys from Chennai: market and EV reports, OEM benchmarking and over-dimensional cargo route studies.",
+});
 
 export default function Page() {
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }}
-      />
-      <main>
-        <Home />
-      </main>
-    </>
+    <main>
+      <Home />
+    </main>
   );
 }

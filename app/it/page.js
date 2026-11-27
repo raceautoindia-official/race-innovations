@@ -1,40 +1,33 @@
-export const metadata = {
-    title: "Race Innovations",
-    description: "Race Innovations is a global leader in technology solutions, with a strong presence across multiple countries and headquarters in India.",
-    keywords: "Race Innovations, technology solutions, global innovation, AI, automation, digital transformation",
-    robots: "index, follow",
-    openGraph: {
-      title: "Race Innovations - Transforming Industries",
-      description: "Race Innovations provides cutting-edge technology solutions, AI-driven automation, and digital transformation services to businesses worldwide.",
-      url: "https://raceinnovations.in",
-      siteName: "Race Innovations",
-      images: [
-        {
-          url: "/images/logo.jpg", 
-          width: 1200,
-          height: 630,
-          alt: "Race Innovations",
-        },
-      ],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      site: "@raceinnovation",
-      title: "Race Innovations",
-      description: "Join Race Innovations in pioneering AI, automation, and digital transformation on a global scale.",
-      images: ["https://raceinnovations.in/assets/og-image.jpg"],
-    },
-    alternates: {
-      canonical: "https://raceinnovations.in",
-    },
-  };
 import Itpage from "./Home.js";
+import JsonLd from "../components/JsonLd";
+import { pageMetadata, serviceJsonLd, breadcrumbJsonLd } from "../../lib/seo";
 
+const description =
+  "IT services from RACE Innovations: custom SEO-ready websites, TTL and mass communication, CRM and app development, digital marketing, data mining and BI.";
+
+export const metadata = pageMetadata({
+  path: "/it",
+  title: "IT Services: Websites, CRM & Apps",
+  description,
+});
+
+const jsonLd = [
+  serviceJsonLd({
+    name: "IT Services",
+    serviceType: "Website, CRM and app development",
+    description,
+    path: "/it",
+  }),
+  breadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "IT Services", path: "/it" },
+  ]),
+];
 
 export default function Page() {
  return(
   <main>
+   <JsonLd data={jsonLd} />
    <Itpage/>
   </main>
  )

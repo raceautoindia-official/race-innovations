@@ -46,16 +46,19 @@ function Indust() {
 
         {/* Text Section */}
         <div className="col-12 col-md-6 mt-1 text-center text-md-start">
-          <motion.h1
-            className="d-flex justify-content-center justify-content-md-start"
+          {/* Section title: H2 styled as .h1 (the page's only H1 is in the
+              slider). The {" "} keeps "Our Industry" two words in the text;
+              it is not drawn inside the flex row, so the look is unchanged. */}
+          <motion.h2
+            className="h1 d-flex justify-content-center justify-content-md-start"
             initial={{ opacity: 0, y: 100 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut", delay: 0.1 }} // faster
             viewport={{ once: true }}
           >
-            <span className="me-2" style={{ color: "black" }}>Our</span>
+            <span className="me-2" style={{ color: "black" }}>Our</span>{" "}
             <span style={{ color: "#293BB1" }}>Industry</span>
-          </motion.h1>
+          </motion.h2>
 
           <motion.p
             className="text-muted px-3 px-md-0"

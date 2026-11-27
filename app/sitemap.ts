@@ -92,6 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       FROM posts
       WHERE slug IS NOT NULL
         AND slug <> ''
+        AND status = 'published'
       ORDER BY updated_at DESC
       `
     );
@@ -117,7 +118,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const tier2: MetadataRoute.Sitemap = [
     "/market-report",
     "/lbi-reports",
-    "/reports",
     "/web-blog",
   ].map((path) => ({
     url: absUrl(path),
@@ -137,6 +137,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/connect",
     "/intellect/lbi",
     "/it",
+    "/it-products",
+    "/product",
     "/accounting-and-legal",
     "/corporate-profile",
     "/career",

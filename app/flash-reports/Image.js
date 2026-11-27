@@ -66,7 +66,7 @@ function ImageSection() {
         <motion.p className="mt-4" variants={slideFromBottom}>
           In today's fast-moving business environment, timely intelligence is
           the key to staying ahead.{" "}
-          <strong>Race Innovationss Flash Reports</strong> provide quick,
+          <strong>RACE Innovations Flash Reports</strong> provide quick,
           actionable insights to help businesses make informed decisions—faster.
           Designed for executives, investors, and decision-makers, our concise,
           data-driven reports deliver the latest market trends, competitive

@@ -127,14 +127,14 @@ function LoanForm() {
           <div className="row">
             <div className="col-md-6 mb-3">
               <label className="form-label">
-                Promotor Name <span style={{ color: "red" }}>*</span>
+                Promoter Name <span style={{ color: "red" }}>*</span>
               </label>
               <input
                 type="text"
                 value={promotorName}
                 onChange={(e) => setPromotorName(e.target.value)}
                 className="form-control p-2 border rounded shadow-sm"
-                placeholder="Enter Promotor Name"
+                placeholder="Enter Promoter Name"
                 style={{ backgroundColor: "#ecf5fe" }}
                 required
               />

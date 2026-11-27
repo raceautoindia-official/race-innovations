@@ -91,7 +91,7 @@ function Features() {
               height: "80%",
               objectFit: "contain",
             }}
-            alt="Survey Image"
+            alt="Surveyor in high-visibility gear using a total station"
           />
         </motion.div>
       </div>

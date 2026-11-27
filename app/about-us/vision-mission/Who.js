@@ -12,8 +12,8 @@ const fadeInUpVariants = {
 function Who() {
   return (
     <>
-      <motion.h1
-        className="mt-1"
+      <motion.h2
+        className="h1 mt-1"
         style={{
           fontSize: "clamp(2rem, 5vw, 3rem)",
           whiteSpace: "nowrap",
@@ -25,11 +25,11 @@ function Who() {
         variants={fadeInUpVariants}
         transition={{ duration: 0.3 }}
       >
-        <span style={{ color: "black" }}>Race</span>
-        <span style={{ color: "#293BB1", marginLeft: "15px" }}>
-          Accomplishment
+        <span style={{ color: "black" }}>RACE</span>{" "}
+        <span style={{ color: "#293BB1", marginLeft: "4px" }}>
+          Accomplishments
         </span>
-      </motion.h1>
+      </motion.h2>
 
       {/* Background Section */}
       <div
@@ -85,7 +85,7 @@ function Who() {
                     src={`/images/${item.img}`}
                     width={50}
                     height={50}
-                    alt={item.text}
+                    alt=""
                     className="mb-3"
                   />
                   <p>{item.text}</p>
@@ -134,7 +134,7 @@ function Who() {
                     src={`/images/${item.img}`}
                     width={50}
                     height={50}
-                    alt={item.text}
+                    alt=""
                     className="mb-3"
                   />
                   <p>{item.text}</p>

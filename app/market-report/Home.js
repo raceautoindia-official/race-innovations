@@ -8,17 +8,14 @@ import Last from "./Last";
 import MarketReportSEO from "./MarketReportSEO";
 import Why from "../product/Why";
 
-
-
-
-
-
-function Flash() {
+// initialReportData: report list loaded on the server (see page.js), passed
+// to the client listing so the cards are in the first HTML.
+function Flash({ initialReportData = null }) {
   return (
     <>
     <Navbar/>
     <div className="main-content">
-    <Image/>
+    <Image initialData={initialReportData}/>
 
     <Formats/>
     <Last/>

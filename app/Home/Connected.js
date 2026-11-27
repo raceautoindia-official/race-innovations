@@ -22,28 +22,31 @@ function Connected() {
           <div className="row">
             <div className="col-md-6 col-12 p-3">
               <h2 className="text-md-start text-center" style={{ color: "#3848b7" }}>
-                Stay Connected..!
+                Stay Connected!
               </h2>
               <form>
                 <div className="mb-3">
-                  <label className="form-label">Name</label>
+                  <label className="form-label" htmlFor="stay-connected-name">Name</label>
                   <input
+                    id="stay-connected-name"
                     type="text"
                     className="form-control"
                     style={{ border: "1px solid black", borderRadius: "5px" }}
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Email</label>
+                  <label className="form-label" htmlFor="stay-connected-email">Email</label>
                   <input
+                    id="stay-connected-email"
                     type="email"
                     className="form-control"
                     style={{ border: "1px solid black", borderRadius: "5px" }}
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Message</label>
+                  <label className="form-label" htmlFor="stay-connected-message">Message</label>
                   <textarea
+                    id="stay-connected-message"
                     className="form-control"
                     rows="4"
                     style={{ border: "1px solid black", borderRadius: "5px" }}
@@ -63,7 +66,7 @@ function Connected() {
                 Let's Work Together
               </h2>
               <p className="mt-1 text-md-start text-center">
-                Race Innovationss welcomes collaboration to champion diversity, equity, and inclusion.
+                RACE Innovations welcomes collaboration to champion diversity, equity, and inclusion.
                 Together, we'll break barriers, challenge biases, and shape a brighter, more inclusive future for all.
               </p>
               <div className="mt-3">
@@ -76,7 +79,7 @@ function Connected() {
                   <span className="ms-1" style={{ color: "black" }}>
                     +91 44 66108114 / +91 8072098352
                     <br />
-                    +91 9003031527 (Whatsapp)
+                    +91 9003031527 (WhatsApp)
                   </span>
                 </p>
                 <p className="fw-bold text-md-start text-center" style={{ color: "#3848b7" }}>

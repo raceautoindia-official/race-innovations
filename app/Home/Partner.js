@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import "swiper/css";
@@ -9,19 +9,14 @@ import "swiper/css/pagination";
 import Image from "next/image";
 
 const Partner = () => {
+  // Partner names are taken from the logo artwork.
   const images = [
-    "/images/Group 32.webp",
-    "/images/Group 33.webp",
-    "/images/Group 34.webp",
-    "/images/Group 35.webp",
-    "/images/Group 36.webp",
+    { src: "/images/Group 32.webp", alt: "Emporium Cars FZD, Dubai logo" },
+    { src: "/images/Group 33.webp", alt: "Skybed Marine, Nigeria logo" },
+    { src: "/images/Group 34.webp", alt: "Diginext Corp Ltd logo" },
+    { src: "/images/Group 35.webp", alt: "Remco International Ltd, United Kingdom logo" },
+    { src: "/images/Group 36.webp", alt: "ESES, official partner for green project initiatives, Germany logo" },
   ];
-
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   return (
     <>
@@ -34,7 +29,8 @@ const Partner = () => {
         style={{ backgroundColor: "#F5F5F5", padding: "20px" }}
       >
         <div className="partner-ship">
-          {isMounted && (
+          {/* Rendered on the server too (no mount check) so the logos are in
+              the HTML; the Certifications and Clients sliders work the same way. */}
             <Swiper
               spaceBetween={20}
               slidesPerView={"auto"}
@@ -65,27 +61,27 @@ const Partner = () => {
                 },
               }}
             >
-              {[...images, ...images].map((src, index) => (
+              {[...images, ...images].map((logo, index) => (
                 <SwiperSlide
                   key={index}
                   style={{ display: "flex", justifyContent: "center" }}
                 >
                   <Image
-                    src={src}
+                    src={logo.src}
                     width={250}
                     height={250}
+                    loading="lazy"
                     style={{
                       width: "100%",
                       maxWidth: "200px",
                       height: "auto",
                       borderRadius: "20px",
                     }}
-                    alt={`Partner ${index + 1}`}
+                    alt={logo.alt}
                   />
                 </SwiperSlide>
               ))}
             </Swiper>
-          )}
         </div>
       </div>
     </>

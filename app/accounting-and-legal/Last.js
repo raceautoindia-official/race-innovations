@@ -26,10 +26,10 @@ function Last() {
         </h2>
 
         <p style={{ fontSize: "18px", textAlign: "justify" }}>
-          With the experienced account and audit team, we have handled taxation
+          With our experienced accounts and audit team, we have handled taxation
           activities for major industries and individuals. Currently, tax
           regulations are constantly updated, making it challenging for clients
-          to adhere to and operate. RACE has a dedicated team to advise
+          to keep up and stay compliant. RACE has a dedicated team to advise
           individuals and businesses on tax reduction strategies while ensuring
           compliance with regulations.
         </p>
@@ -58,8 +58,8 @@ function Last() {
         transition={{ duration: 0.4, delay: 0.1 }}
       >
         <h2 className="text-center h1">
-          <span style={{ color: "black", marginRight: "10px" }}>Key</span>
-          <span style={{ color: "#293BB1" }}>Accounting Services</span>
+          <span style={{ color: "black" }}>Key</span>{" "}
+          <span style={{ color: "#293BB1" }}>Tax Services</span>
         </h2>
 
         <div className="row">
@@ -70,7 +70,7 @@ function Last() {
               <li>Customs duties</li>
               <li>Employee incentives</li>
               <li>Employment tax</li>
-              <li>Deportee tax & Employee advice</li>
+              <li>Expatriate tax & Employee advice</li>
               <li>International tax planning</li>
             </ul>
           </div>

@@ -49,7 +49,7 @@ function Serve() {
           >
             <Image
               src={item.img}
-              alt={item.title2}
+              alt={`${item.title1} ${item.title2}`}
               width={800}
               height={400}
               className="img-fluid rounded shadow-sm mt-4"
@@ -62,8 +62,8 @@ function Serve() {
               }}
               className="mt-2"
             >
-              <span style={{ color: "black" }}>{item.title1}</span>
-              <span style={{ color: "#293BB1", marginLeft: "9px" }}>{item.title2}</span>
+              <span style={{ color: "black" }}>{item.title1}</span>{" "}
+              <span style={{ color: "#293BB1", marginLeft: "4px" }}>{item.title2}</span>
             </motion.h6>
             <p className="mt-2" style={{ textAlign: "justify" }}>{item.text}</p>
           </motion.div>

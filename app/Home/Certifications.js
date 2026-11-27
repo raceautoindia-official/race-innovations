@@ -8,14 +8,15 @@ import Image from "next/image";
 // Bootstrap CSS comes from the global import in app/layout.js.
 
 function Certifications() {
+  // Names are taken from the badge artwork.
   const images = [
-    "/images/image-33.webp",
-    "/images/image-35.webp",
-    "/images/image-38.webp",
-    "/images/image-39.webp",
-    "/images/iso.webp",
-    "/images/egac.webp",
-    "/images/cmm.webp",
+    { src: "/images/image-33.webp", alt: "Scotland Accredited Services Limited accredited management system certification" },
+    { src: "/images/image-35.webp", alt: "ISO 27001:2022 certified" },
+    { src: "/images/image-38.webp", alt: "MMS certification body logo" },
+    { src: "/images/image-39.webp", alt: "IAF (International Accreditation Forum) Multilateral Recognition Arrangement member mark" },
+    { src: "/images/iso.webp", alt: "ISO 9001:2015 certified" },
+    { src: "/images/egac.webp", alt: "EGAC (Egyptian Accreditation Council) accredited" },
+    { src: "/images/cmm.webp", alt: "CMMI Level 3" },
   ];
 
   return (
@@ -26,8 +27,8 @@ function Certifications() {
           <span style={{ color: "#293BB1" }}>Certifications</span>
         </h2>
         <p>
-          Race Innovationss Pvt. Ltd is ISO27001, ISO9001, and CMMI Level 3
-          Certified Company
+          RACE Innovations Pvt. Ltd. is an ISO 27001, ISO 9001 and CMMI Level 3
+          certified company.
         </p>
       </div>
 
@@ -49,7 +50,7 @@ function Certifications() {
               992: { slidesPerView: 5, spaceBetween: 30 },
             }}
           >
-            {images.map((src, index) => (
+            {images.map((badge, index) => (
               <SwiperSlide key={index} className="d-flex justify-content-center">
                 <div
                   style={{
@@ -64,10 +65,11 @@ function Certifications() {
                   }}
                 >
                   <Image
-                    src={src}
-                    alt={`Certification ${index + 1}`}
+                    src={badge.src}
+                    alt={badge.alt}
                     width={120}
                     height={120}
+                    loading="lazy"
                     style={{
                       objectFit: "contain",
                       width: "100%",

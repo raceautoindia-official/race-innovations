@@ -136,7 +136,7 @@ export default function EnquiryForm() {
           transition={{ duration: 0.6 }}
         >
           <h4 className="text-light mb-0 enquiry-cta-title">
-            Connect with us For Tailored Business Solutions
+            Connect with Us for Tailored Business Solutions
           </h4>
           <button className="btn btn-light enquiry-cta-btn" onClick={handleOpenModal}>
             For More Enquiries

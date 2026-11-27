@@ -138,7 +138,11 @@ function Form() {
         <span style={{ color: "#293BB1" }}>us when you need help!</span>
       </h2>
 
+      {/* Labels are visually hidden (the placeholders stay as the visible
+          prompts), so the fields have real names for crawlers and screen
+          readers without changing the design. Submits to /api/enquiry. */}
       <form
+        aria-label="Contact RACE Innovations"
         className="container bg-white p-3 rounded shadow"
         onSubmit={handleSubmit}
         noValidate
@@ -147,9 +151,14 @@ function Form() {
           {/* Left Column */}
           <div className="col-md-6">
             <div className="mb-3">
+              <label htmlFor="contact-firstName" className="visually-hidden">
+                First name (required)
+              </label>
               <input
+                id="contact-firstName"
                 type="text"
                 name="firstName"
+                autoComplete="given-name"
                 className="form-control"
                 placeholder="First Name *"
                 value={formData.firstName}
@@ -159,9 +168,14 @@ function Form() {
               />
             </div>
             <div className="mb-3">
+              <label htmlFor="contact-email" className="visually-hidden">
+                Email (required)
+              </label>
               <input
+                id="contact-email"
                 type="email"
                 name="email"
+                autoComplete="email"
                 className="form-control"
                 placeholder="Email *"
                 value={formData.email}
@@ -171,9 +185,14 @@ function Form() {
               />
             </div>
             <div className="mb-3">
+              <label htmlFor="contact-organization" className="visually-hidden">
+                Organization
+              </label>
               <input
+                id="contact-organization"
                 type="text"
                 name="organization"
+                autoComplete="organization"
                 className="form-control"
                 placeholder="Organization"
                 value={formData.organization}
@@ -186,9 +205,14 @@ function Form() {
           {/* Right Column */}
           <div className="col-md-6">
             <div className="mb-3">
+              <label htmlFor="contact-lastName" className="visually-hidden">
+                Last name
+              </label>
               <input
+                id="contact-lastName"
                 type="text"
                 name="lastName"
+                autoComplete="family-name"
                 className="form-control"
                 placeholder="Last Name"
                 value={formData.lastName}
@@ -197,9 +221,14 @@ function Form() {
               />
             </div>
             <div className="mb-3">
+              <label htmlFor="contact-phone" className="visually-hidden">
+                Phone number (required)
+              </label>
               <input
+                id="contact-phone"
                 type="tel"
                 name="phone"
+                autoComplete="tel"
                 className="form-control"
                 placeholder="Phone Number *"
                 pattern="^(\+?91[\s-]?)?[6-9]\d{9}$"
@@ -212,9 +241,14 @@ function Form() {
               />
             </div>
             <div className="mb-3">
+              <label htmlFor="contact-location" className="visually-hidden">
+                Location
+              </label>
               <input
+                id="contact-location"
                 type="text"
                 name="location"
+                autoComplete="address-level2"
                 className="form-control"
                 placeholder="Location"
                 value={formData.location}
@@ -227,7 +261,11 @@ function Form() {
           {/* Message */}
           <div className="col-12">
             <div className="mb-3">
+              <label htmlFor="contact-message" className="visually-hidden">
+                Message (required)
+              </label>
               <textarea
+                id="contact-message"
                 name="message"
                 className="form-control"
                 rows={4}

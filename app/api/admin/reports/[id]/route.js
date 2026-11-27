@@ -6,6 +6,7 @@ import {
 } from "../../../../../lib/report-service";
 import { slugify } from "../../../../../lib/report-utils";
 import db from "../../../../../lib/db";
+import { refreshReportPages } from "../../../../../lib/report-cache";
 import {
   notifySearchEngines,
   notifyDeletedUrl,
@@ -180,6 +181,9 @@ export async function PUT(req, { params }) {
 
     const updatedReport = await getReportById(id);
 
+    // The listings and report pages are cached (ISR); show the change now.
+    refreshReportPages(updatedReport?.slug);
+
     // Fire-and-forget search-engine notification — never blocks the response.
     if (updatedReport?.slug) {
       const isLbi =
@@ -187,7 +191,7 @@ export async function PUT(req, { params }) {
       notifySearchEngines([
         `/reports/${updatedReport.slug}`,
         ...(isLbi
-          ? [`/lbi-reports/${updatedReport.slug}`, "/lbi-reports"]
+          ? ["/lbi-reports"]
           : ["/market-report"]),
       ]);
     }
@@ -228,14 +232,11 @@ export async function DELETE(req, { params }) {
 
     await db.query(`DELETE FROM reports WHERE id = ?`, [id]);
 
+    refreshReportPages(existingReport?.slug);
+
     // Tell search engines this URL is gone so it gets dropped from the index.
     if (existingReport?.slug) {
       notifyDeletedUrl(`/reports/${existingReport.slug}`);
-      const isLbi =
-        String(existingReport.reportType || "").toLowerCase() === "lbi";
-      if (isLbi) {
-        notifyDeletedUrl(`/lbi-reports/${existingReport.slug}`);
-      }
     }
 
     return NextResponse.json({

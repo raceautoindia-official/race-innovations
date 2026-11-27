@@ -84,8 +84,9 @@ function Crm() {
           <div style={{ position: "relative", width: "100%", height: "400px" }}>
             <Image
               src="/images/crm.webp"
-              alt="CRM Illustration"
+              alt="Customer relationship management (CRM) concept on a tablet"
               fill
+              sizes="(min-width: 992px) 50vw, 100vw"
               className="img-fluid rounded shadow-sm"
               style={{ objectFit: "cover", borderRadius: "10px" }}
             />

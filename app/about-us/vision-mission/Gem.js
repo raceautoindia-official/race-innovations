@@ -18,8 +18,8 @@ function Gem() {
 
   return (
     <>
-      <motion.h1
-        className=""
+      <motion.h2
+        className="h1"
         style={{
           fontSize: "clamp(2rem, 5vw, 3rem)",
           whiteSpace: "nowrap",
@@ -31,9 +31,9 @@ function Gem() {
         variants={fadeInUpVariants}
         transition={{ duration: 0.3 }}
       >
-        <span style={{ color: "black" }}>GEM</span>
-        <span style={{ color: "#293BB1", marginLeft: "15px" }}>Model</span>
-      </motion.h1>
+        <span style={{ color: "black" }}>GEM</span>{" "}
+        <span style={{ color: "#293BB1", marginLeft: "4px" }}>Model</span>
+      </motion.h2>
 
       <motion.div
         className="container mt-1"

@@ -1,17 +1,19 @@
 import { NextResponse } from "next/server";
 import db from "../../../../lib/db";
+import { refreshBlogPages } from "../../../../lib/report-cache";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function slugify(text = "") {
-  return String(text || "")
+  const s = String(text || "")
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 60);
+    .replace(/-+/g, "-");
+  // At most 60 characters, cut after the last whole word instead of mid-word.
+  return s.length <= 60 ? s : s.slice(0, 61).replace(/-[^-]*$/, "").slice(0, 60);
 }
 
 export async function GET(req) {
@@ -126,6 +128,8 @@ export async function POST(req) {
         tags,
       ]
     );
+
+    refreshBlogPages(slug);
 
     return NextResponse.json({
       success: true,

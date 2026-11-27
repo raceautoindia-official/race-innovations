@@ -27,7 +27,7 @@ function Corporate() {
         </h3>
 
         <p style={{ textAlign: "justify" }}>
-          At Race Innovationss, we are shaping the future of automotive,
+          At RACE Innovations, we are shaping the future of automotive,
           logistics, and engineering solutions.
         </p>
         <p style={{ textAlign: "justify" }}>
@@ -46,7 +46,9 @@ function Corporate() {
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.3, ease: "easeOut", delay: 0.05 }}
           >
-            <h1
+            {/* H2 styled as .h1: the page H1 is "Investors" in the banner. */}
+            <h2
+              className="h1"
               style={{
                 fontSize: "clamp(1rem, 5vw, 2.5rem)",
                 whiteSpace: "nowrap",
@@ -54,7 +56,7 @@ function Corporate() {
             >
               <span style={{ color: "black" }}>Contact</span>
               <span style={{ color: "#293BB1" }}> Details</span>
-            </h1>
+            </h2>
 
             <h4 className="mt-3" style={{ textAlign: "justify" }}>
               <strong>Why Invest in RACE?</strong>
@@ -97,7 +99,7 @@ function Corporate() {
               src="/images/image-80.webp"
               width={700}
               height={500}
-              alt="Corporate Visual"
+              alt="Person using a smartphone at a desk to get in touch"
               style={{
                 width: "1000px",
                 height: "100%",

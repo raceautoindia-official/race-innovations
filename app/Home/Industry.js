@@ -45,16 +45,16 @@ function Industry() {
 
         {/* Text Section */}
         <div className="col-12 col-md-6 text-center text-md-start">
-          <motion.h1
-            className="d-flex justify-content-center justify-content-md-start"
+          <motion.h2
+            className="h1 d-flex justify-content-center justify-content-md-start"
             initial={{ opacity: 0, y: 100 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, ease: "easeOut", delay: 0.1 }}
             viewport={{ once: true }}
           >
-            <span className="me-2" style={{ color: "black" }}>Our</span>
+            <span className="me-2" style={{ color: "black" }}>Our</span>{" "}
             <span style={{ color: "#293BB1" }}>Industry</span>
-          </motion.h1>
+          </motion.h2>
 
           <motion.p
             className="mt-1 px-3 px-md-5 text-start"

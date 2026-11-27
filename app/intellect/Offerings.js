@@ -53,7 +53,7 @@ const offeringsData = [
   },
   {
     icon: TrendingUp,
-    title: "ReForecasting & Business Strategy",
+    title: "Forecasting & Business Strategy",
     text: "Data-backed projections to guide investment and expansion plans.",
   },
   {
@@ -76,8 +76,8 @@ const offeringsData = [
 function Offerings() {
   return (
     <>
-      <motion.h1
-        className="text-center"
+      <motion.h2
+        className="h1 text-center"
         style={{ fontSize: "clamp(2rem, 5vw, 3rem)", whiteSpace: "nowrap" }}
         initial="hidden"
         whileInView="visible"
@@ -85,9 +85,9 @@ function Offerings() {
         variants={fadeInUpVariants}
         transition={{ duration: 0.3 }}
       >
-        <span style={{ color: "black" }}>Race</span>
-        <span style={{ color: "#293BB1", marginLeft: "15px" }}>Offerings</span>
-      </motion.h1>
+        <span style={{ color: "black" }}>RACE</span>{" "}
+        <span style={{ color: "#293BB1", marginLeft: "4px" }}>Offerings</span>
+      </motion.h2>
 
       <div
         className="container-fluid"

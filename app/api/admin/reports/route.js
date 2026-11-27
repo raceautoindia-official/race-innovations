@@ -6,6 +6,7 @@ import {
 } from "../../../../lib/report-service";
 import { slugify } from "../../../../lib/report-utils";
 import db from "../../../../lib/db";
+import { refreshReportPages } from "../../../../lib/report-cache";
 import { notifySearchEngines } from "../../../../lib/seo/indexingPing";
 
 function toJson(value, fallback) {
@@ -187,11 +188,14 @@ export async function POST(req) {
       ]
     );
 
+    // The listings and report pages are cached (ISR); show the change now.
+    refreshReportPages(slug);
+
     // Fire-and-forget search engine notification — never blocks the response.
     notifySearchEngines([
       `/reports/${slug}`,
       ...(reportType === "lbi"
-        ? [`/lbi-reports/${slug}`, "/lbi-reports"]
+        ? ["/lbi-reports"]
         : ["/market-report"]),
     ]);
 

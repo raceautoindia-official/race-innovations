@@ -59,7 +59,9 @@ function Banner() {
                   height: "100%",
                   objectFit: "contain",
                 }}
-                alt="Route Image"
+                alt="Route survey engineers with a total station surveying instrument on site"
+                // Above the fold on this page: load it first.
+                priority
               />
             </motion.div>
           </div>

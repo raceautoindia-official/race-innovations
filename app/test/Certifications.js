@@ -26,7 +26,7 @@ function Certifications() {
           <span style={{ color: "#293BB1" }}>Certifications</span>
         </h1>
         <p>
-          Race Innovationss Pvt. Ltd is ISO27001, ISO9001, and CMMI Level 3
+          RACE Innovations Pvt. Ltd is ISO27001, ISO9001, and CMMI Level 3
           Certified Company
         </p>
       </div>

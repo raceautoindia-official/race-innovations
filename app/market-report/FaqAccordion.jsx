@@ -17,16 +17,21 @@ export default function FaqAccordion({ faqs = [] }) {
         const isOpen = openIdx === idx;
         return (
           <div className={`mr-faq-item${isOpen ? " open" : ""}`} key={idx}>
-            <button
-              type="button"
-              className="mr-faq-q"
-              onClick={() => setOpenIdx(isOpen ? -1 : idx)}
-              aria-expanded={isOpen}
-            >
-              <h3 className="mr-faq-q-text">{faq.question}</h3>
-              <FaChevronDown className="mr-faq-chev" aria-hidden="true" />
-            </button>
-            <div className="mr-faq-a">
+            {/* Heading wraps the button (a heading inside a button is
+                invalid HTML and hides the heading from screen readers). */}
+            <h3 className="mr-faq-h">
+              <button
+                type="button"
+                className="mr-faq-q"
+                onClick={() => setOpenIdx(isOpen ? -1 : idx)}
+                aria-expanded={isOpen}
+                aria-controls={`mr-faq-a-${idx}`}
+              >
+                <span className="mr-faq-q-text">{faq.question}</span>
+                <FaChevronDown className="mr-faq-chev" aria-hidden="true" />
+              </button>
+            </h3>
+            <div className="mr-faq-a" id={`mr-faq-a-${idx}`}>
               <p>{faq.answer}</p>
             </div>
           </div>
@@ -52,6 +57,11 @@ export default function FaqAccordion({ faqs = [] }) {
           border-color: #c9d5f2;
           box-shadow: 0 10px 26px rgba(20, 30, 70, 0.06);
         }
+        .mr-faq-h {
+          margin: 0;
+          font-size: 1.02rem;
+          line-height: 1.35;
+        }
         .mr-faq-q {
           width: 100%;
           display: flex;
@@ -65,6 +75,7 @@ export default function FaqAccordion({ faqs = [] }) {
           cursor: pointer;
         }
         .mr-faq-q-text {
+          display: block;
           margin: 0;
           font-size: 1.02rem;
           font-weight: 800;

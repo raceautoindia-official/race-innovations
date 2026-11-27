@@ -7,6 +7,17 @@ import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
+// "Mr. M Balasubramanian" -> "MB", "Mr. Nagaraj" -> "N".
+function getInitials(name) {
+  return name
+    .replace(/^(Mr|Mrs|Ms|Dr)\.?\s+/i, '')
+    .split(/[\s.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('');
+}
+
 const Testimonial_v2 = () => {
   const testimonials = [
     {
@@ -18,20 +29,22 @@ const Testimonial_v2 = () => {
     {
       name: 'Mr. Oskar Flach',
       position: 'Managing Director - Schmitz Cargobull',
-      text: 'RACE provided us with a holistic perspective on the Indian Trailer market study for semi trailers. This valuable information is unique and helps us venture into the Indian Trailer Market with a strong business strategy.',
+      text: 'RACE provided us with a holistic perspective on the Indian trailer market through its study of semi-trailers. This valuable information is unique and helps us venture into the Indian Trailer Market with a strong business strategy.',
       img: '/images/oscar.jpg',
     },
     {
       name: 'Mr. Sushil Nowal',
       position: 'Vice President, JSW Steel Ltd',
-      text: 'RACE project management team had been quite instrumental in setting up standards and streamlining our outbound logistics at JSW. Their agility and knowledge on the subject helps them to implement programs in a quicker manner.',
-      img: '/images/Mr.-Sushil-Nowal.jpg',
+      text: "RACE's project management team has been quite instrumental in setting up standards and streamlining our outbound logistics at JSW. Their agility and knowledge of the subject help them implement programs quickly.",
+      // Photo file /images/Mr.-Sushil-Nowal.jpg does not exist: show initials.
+      img: null,
     },
     {
       name: 'Mr. GV Rao',
       position: 'Head Strategic Planning, Volvo Group',
-      text: 'RACE had been instrumental in demonstrating their benchmark skills. Their acumen in international markets helped us plan our strategies for the future.',
-      img: '/images/gv.jpg',
+      text: 'RACE has been instrumental in demonstrating their benchmarking skills. Their acumen in international markets helped us plan our strategies for the future.',
+      // Photo file /images/gv.jpg does not exist: show initials.
+      img: null,
     },
     {
       name: 'Mr. Nithin Shrotri',
@@ -42,32 +55,32 @@ const Testimonial_v2 = () => {
     {
       name: 'Mr. Rajive Saharia',
       position: 'ED, Ashok Leyland',
-      text: 'My experience with RACE was quite astonishing. I have never seen such an enthusiastic team with passion to perform. Their reports on CV product benchmarking were quite elusive and supportive to aid strategic decisions.',
+      text: 'My experience with RACE was quite astonishing. I have never seen such an enthusiastic team with passion to perform. Their reports on CV product benchmarking were quite exclusive and supportive in aiding strategic decisions.',
       img: '/images/saha.jpg',
     },
     {
       name: 'Mr. Ranga Prasad',
       position: 'R&D, Daimler India Pvt Ltd',
-      text: 'RACE been recognized as an application engineering company, but been intuited during my interactions with their team. They did a commendable job in execution of our project with sheer professionalism from the start till the end. Their efforts are really commendable.',
-      img: '/images/dummy.png',
+      text: 'RACE is recognized as an application engineering company, and that came through in my interactions with their team. They did a commendable job of executing our project with sheer professionalism from start to finish. Their efforts are really commendable.',
+      img: null, // no photo yet: initials are shown
     },
     {
       name: 'Mr. Prashanth Ahir',
       position: 'General Manager, Bajaj Auto',
       text: "RACE's dedication and in-depth research delivered valuable insights for strategic decisions, completing the project ahead of schedule.",
-      img: '/images/dummy.png',
+      img: null, // no photo yet: initials are shown
     },
     {
       name: 'Mr. M Balasubramanian',
-      position: 'Senior. General Manager – Product Planning at Mahindra & Mahindra',
-      text: 'RACE identified stakeholder needs and market opportunities, providing insights that helped MAHINDRA refine product development, positioning, and strategic pricing.',
-      img: '/images/dummy.png',
+      position: 'Senior General Manager – Product Planning at Mahindra & Mahindra',
+      text: 'RACE identified stakeholder needs and market opportunities, providing insights that helped Mahindra refine product development, positioning, and strategic pricing.',
+      img: null, // no photo yet: initials are shown
     },
     {
       name: 'Mr. Nagaraj',
-      position: 'Manager , Sterlite Copper Ltd',
-      text: 'RACE engineering team with their knowledge on advanced systems had been quite helpful for us to over come bottle necks in our transport system.',
-      img: '/images/dummy.png',
+      position: 'Manager, Sterlite Copper Ltd',
+      text: "RACE's engineering team, with their knowledge of advanced systems, has been very helpful in overcoming bottlenecks in our transport system.",
+      img: null, // no photo yet: initials are shown
     },
     {
       name: 'Mr. A. Sadiq',
@@ -78,7 +91,7 @@ const Testimonial_v2 = () => {
     {
       name: 'Mr. Ashok Chaudhary',
       position: 'Managing Director, Sonu Cargo Movers (P) Ltd',
-      text: 'As a transport company & logistics provider, operating Over Dimensional Cargo (ODC) movement, we are excited on our association with RACE. RACE’s strategic market insights & domain expertise has enabled us to expand our customer base & created better value to our end customers.',
+      text: 'As a transport company & logistics provider, operating Over Dimensional Cargo (ODC) movement, we are excited about our association with RACE. RACE’s strategic market insights & domain expertise have enabled us to expand our customer base & create better value for our end customers.',
       img: '/images/ashok.jpg',
     },
     {
@@ -90,7 +103,7 @@ const Testimonial_v2 = () => {
     {
       name: 'Mr. Velmurugan',
       position: 'Head of Logistics, Gamesa',
-      text: 'RACE market research & analytical tools has helped us to select the best-in class logistics service provider, thereby empowering us to achieve best practices in the logistics vertical and the vendor evaluation report was very informative & useful and largely reduced our logistics operating costs.',
+      text: "RACE's market research & analytical tools have helped us select the best-in-class logistics service provider, thereby empowering us to achieve best practices in the logistics vertical and the vendor evaluation report was very informative & useful and largely reduced our logistics operating costs.",
       img: '/images/velmurugan-1.jpg',
     },
   ];
@@ -142,18 +155,43 @@ const Testimonial_v2 = () => {
                     {testimonial.text}
                   </p>
                   <div className="d-flex flex-column align-items-center">
-                    <Image
-                      src={testimonial.img}
-                      alt={testimonial.name}
-                      width={80}
-                      height={80}
-                      unoptimized
-                      style={{
-                        objectFit: 'cover',
-                        borderRadius: '50%',
-                        marginBottom: '.5rem',
-                      }}
-                    />
+                    {testimonial.img ? (
+                      <Image
+                        src={testimonial.img}
+                        alt={testimonial.name}
+                        width={80}
+                        height={80}
+                        unoptimized
+                        loading="lazy"
+                        style={{
+                          objectFit: 'cover',
+                          borderRadius: '50%',
+                          marginBottom: '.5rem',
+                        }}
+                      />
+                    ) : (
+                      // No real photo: initials in the same 80px circle
+                      // instead of a placeholder picture.
+                      <span
+                        aria-hidden="true"
+                        style={{
+                          width: '80px',
+                          height: '80px',
+                          borderRadius: '50%',
+                          marginBottom: '.5rem',
+                          backgroundColor: '#293BB1',
+                          color: '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 'bold',
+                          fontSize: '1.6rem',
+                          flexShrink: 0,
+                        }}
+                      >
+                        {getInitials(testimonial.name)}
+                      </span>
+                    )}
                     <h3
                       style={{
                         fontWeight: 'bold',

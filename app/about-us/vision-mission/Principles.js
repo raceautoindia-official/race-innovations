@@ -12,8 +12,8 @@ const fadeInUpVariants = {
 function Principles() {
   return (
     <>
-      <motion.h1
-        className="mt-4"
+      <motion.h2
+        className="h1 mt-4"
         style={{
           fontSize: "clamp(2rem, 5vw, 3rem)",
           whiteSpace: "nowrap",
@@ -25,9 +25,9 @@ function Principles() {
         variants={fadeInUpVariants}
         transition={{ duration: 0.3 }}
       >
-        <span style={{ color: "black" }}>Race</span>
-        <span style={{ color: "#293BB1", marginLeft: "15px" }}>Principles</span>
-      </motion.h1>
+        <span style={{ color: "black" }}>RACE</span>{" "}
+        <span style={{ color: "#293BB1", marginLeft: "4px" }}>Principles</span>
+      </motion.h2>
 
       <div
         className="container-fluid"
@@ -53,7 +53,7 @@ function Principles() {
                 {
                   img: "/images/group-89.png",
                   title: "Independent",
-                  text: "Inculcate entrepreneurship and freedom of mind to create nuances of creativity innovation in all our crucial project efforts.",
+                  text: "Inculcate entrepreneurship and freedom of mind to create nuances of creativity and innovation in all our crucial project efforts.",
                 },
                 {
                   img: "/images/group-90.png",
@@ -81,7 +81,7 @@ function Principles() {
                       width={120}
                       height={120}
                       className="img-fluid"
-                      alt={item.title}
+                      alt=""
                     />
                   </div>
                   <div className="col-md-8 d-flex flex-column">
@@ -134,7 +134,7 @@ function Principles() {
                       width={120}
                       height={120}
                       className="img-fluid"
-                      alt={item.title}
+                      alt=""
                     />
                   </div>
                   <div className="col-md-8 d-flex flex-column">

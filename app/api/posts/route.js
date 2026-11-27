@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { slugify } from "../../../lib/report-utils";
 import db from "../../../lib/db";
+import { refreshBlogPages } from "../../../lib/report-cache";
 
 export async function GET(req) {
   try {
@@ -140,6 +141,8 @@ export async function POST(req) {
       `,
       [result.insertId]
     );
+
+    refreshBlogPages(finalSlug);
 
     return NextResponse.json({
       success: true,

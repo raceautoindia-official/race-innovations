@@ -122,7 +122,7 @@ function World() {
                 height: "auto",
                 transition: "transform 0.3s ease-in-out",
               }}
-              alt="Connect Image"
+              alt="Connect: Building Business logo"
             />
           </motion.div>
 

@@ -1,40 +1,28 @@
-export const metadata = {
-    title: "Race Innovations",
-    description: "Race Innovations is a global leader in technology solutions, with a strong presence across multiple countries and headquarters in India.",
-    keywords: "Race Innovations, technology solutions, global innovation, AI, automation, digital transformation",
-    robots: "index, follow",
-    openGraph: {
-      title: "Race Innovations - Transforming Industries",
-      description: "Race Innovations provides cutting-edge technology solutions, AI-driven automation, and digital transformation services to businesses worldwide.",
-      url: "https://raceinnovations.in",
-      siteName: "Race Innovations",
-      images: [
-        {
-          url: "/images/logo.jpg", 
-          width: 1200,
-          height: 630,
-          alt: "Race Innovations",
-        },
-      ],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      site: "@raceinnovation",
-      title: "Race Innovations",
-      description: "Join Race Innovations in pioneering AI, automation, and digital transformation on a global scale.",
-      images: ["https://raceinnovations.in/assets/og-image.jpg"],
-    },
-    alternates: {
-      canonical: "https://raceinnovations.in",
-    },
-  };
 import Contact from "./Home.js";
+import JsonLd from "../components/JsonLd";
+import { pageMetadata, localBusinessJsonLd, breadcrumbJsonLd } from "../../lib/seo";
 
+const description =
+  "Contact RACE Innovations at Olympia Platina, Guindy, Chennai 600032. Email info@raceinnovations.in, call or WhatsApp us, or send an enquiry online.";
+
+export const metadata = pageMetadata({
+  path: "/contact",
+  title: "Contact Us: Chennai Office & Enquiries",
+  description,
+});
+
+const jsonLd = [
+  localBusinessJsonLd(),
+  breadcrumbJsonLd([
+    { name: "Home", path: "/" },
+    { name: "Contact Us", path: "/contact" },
+  ]),
+];
 
 export default function Page() {
  return(
   <main>
+   <JsonLd data={jsonLd} />
    <Contact/>
   </main>
  )

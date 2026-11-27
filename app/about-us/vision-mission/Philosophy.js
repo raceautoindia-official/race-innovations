@@ -13,8 +13,8 @@ const fadeInUpVariants = {
 function Philosophy() {
   return (
     <>
-      <motion.h1
-        className="mt-2"
+      <motion.h2
+        className="h1 mt-2"
         style={{
           fontSize: "clamp(2rem, 5vw, 3rem)",
           whiteSpace: "nowrap",
@@ -26,9 +26,9 @@ function Philosophy() {
         variants={fadeInUpVariants}
         transition={{ duration: 0.3 }}
       >
-        <span style={{ color: "black" }}>Race</span>
-        <span style={{ color: "#293BB1", marginLeft: "15px" }}>Philosophy</span>
-      </motion.h1>
+        <span style={{ color: "black" }}>RACE</span>{" "}
+        <span style={{ color: "#293BB1", marginLeft: "4px" }}>Philosophy</span>
+      </motion.h2>
 
       <div className="container-fluid ">
         <div className="row">
@@ -51,7 +51,7 @@ function Philosophy() {
                 height: "100%",
                 objectFit: "cover",
               }}
-              alt="Research"
+              alt="RACE stands for Research, Analytics, Consulting and Engineering"
             />
           </motion.div>
 

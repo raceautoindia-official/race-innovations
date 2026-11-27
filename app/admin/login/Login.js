@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import ExactEditor from "../../components/ExactEditor";
 
 function slugify(text = "") {
-  return text
+  const s = text
     .toLowerCase()
     .trim()
     .replace(/[^a-z0-9\s-]/g, "")
     .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 60);
+    .replace(/-+/g, "-");
+  // At most 60 characters, cut after the last whole word instead of mid-word.
+  return s.length <= 60 ? s : s.slice(0, 61).replace(/-[^-]*$/, "").slice(0, 60);
 }
 
 const MAX_INLINE_IMAGES = 3;
